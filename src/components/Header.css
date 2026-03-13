@@ -1,0 +1,449 @@
+/* Header Styles */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(26, 26, 26, 0.95);
+  backdrop-filter: blur(10px);
+  z-index: 999;
+}
+.header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 45px; /* ارتفاع بسيط */
+
+  background: linear-gradient(
+    to bottom,
+    rgba(26, 26, 26, 0),
+    rgba(26, 26, 26, 0.18) /* شفاف أكتر سنة صغيرة */
+  );
+
+  pointer-events: none;
+}
+
+
+.header-scrolled {
+  background: rgba(26, 26, 26, 0.98);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.header-container {
+  /* Removed max-width and margin: 0 auto */
+  width: 100%;
+  padding: 1rem 7rem;
+  
+  /* Flex settings to distribute items */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* --- 1. LEFT: Logo --- */
+.header-logo {
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  z-index: 1001;
+  
+  /* Takes up left space */
+  flex: 1;
+  display: flex;
+  justify-content: flex-start;
+}
+
+/* ضيف هذا الكود في نهاية ملف Header.css الموجود عندك */
+
+/* ===================================
+   Language Selector Styles
+   =================================== */
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  cursor: pointer;
+}
+
+.language-selector {
+  position: relative;
+}
+
+.language-toggle {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+  border-radius: 50%;
+}
+
+.language-toggle:hover {
+  transform: scale(1.1);
+}
+
+.language-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right:5%;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  min-width: 150px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.language-option {
+  width: 100%;
+  padding: 10px 15px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #000000;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.language-option:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.language-option.active {
+  background: #d4af37;
+  color: white;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .language-menu {
+    left: auto;
+    right: 0;
+    transform: none;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+.header-logo h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #d4af37  ;
+  margin: 0;
+  letter-spacing: 2px;
+  white-space: nowrap;
+}
+
+/* --- 2. CENTER: Navigation --- */
+.header-nav {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  justify-content: center; /* Ensures text stays centered */
+}
+
+.nav-link {
+  background: transparent;
+  border: none;
+  color: #f5f5dc;
+  font-size: 1.1rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  position: relative;
+  white-space: nowrap;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2px;
+  background: #d4af37;
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #d4af37;
+}
+
+.nav-link:hover::after {
+  width: 80%;
+}
+
+/* --- 3. RIGHT: Icons (Heart) --- */
+.header-icons {
+  /* Takes up right space */
+  flex: 1;
+  display: flex;
+  justify-content: flex-end; /* Pushes content to the far right */
+  align-items: center;
+  gap: 1rem;
+  z-index: 1001;
+}
+
+.wishlist-badge {
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+}
+
+.wishlist-badge-heart {
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+.wishlist-badge-heart:hover {
+  transform: scale(1.2);
+
+}
+
+.wishlist-icon {
+  font-size: 1.5rem;
+  transition: transform 0.3s ease;
+}
+
+.wishlist-badge:hover .wishlist-icon {
+  transform: scale(1.2);
+}
+
+.wishlist-count {
+  position: absolute;
+  top: -2px;
+  right: -5px;
+  background: #d4af37;
+  color: #1a1a1a;
+  font-size: 0.7rem;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #1a1a1a;
+}
+
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 25px;
+}
+
+.hamburger span {
+  display: block;
+  height: 3px;
+  width: 100%;
+  background: #d4af37;
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+.hamburger.active span:nth-child(1) {
+  transform: rotate(45deg) translate(8px, 8px);
+}
+
+.hamburger.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger.active span:nth-child(3) {
+  transform: rotate(-45deg) translate(7px, -7px);
+}
+
+
+.header.admin-mode {
+  padding: 0.5rem 2rem;
+  min-height: 60px;
+}
+
+/* Admin Mode - Center the language switcher */
+.header.admin-mode .header-container {
+  justify-content:right;
+}
+
+/* Admin Mode - Only Language Switcher */
+.header-icons.admin-icons-only {
+  gap: 0;
+}
+
+/* Admin Mode - Mobile Responsive */
+@media (max-width: 968px) {
+  .header.admin-mode {
+    padding: 0.5rem 1rem;
+    min-height: 50px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header.admin-mode {
+    padding: 0.4rem 0.8rem;
+    min-height: 45px;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .header-container {
+    padding: 0.75rem 1.5rem;
+  }
+  
+  /* Reset flex growing on mobile so elements don't squash */
+  .header-logo, .header-icons {
+    flex: unset; 
+  }
+
+  .header-logo h1 {
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+  }
+
+  .mobile-menu-toggle {
+    display: flex;
+  }
+
+  .header-nav {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(26, 26, 26, 0.98);
+    flex-direction: column;
+    gap: 0;
+    padding: 1rem 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    
+    transform: translateY(-20px);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 998;
+  }
+
+  .header-nav.mobile-menu-open {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .nav-link {
+    width: 100%;
+    text-align: center;
+    padding: 1rem 0;
+    border-radius: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .nav-link:last-child {
+    border-bottom: none;
+  }
+
+  .nav-link::after {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-container {
+    padding: 0.75rem 1rem;
+  }
+
+  .header-logo h1 {
+    font-size: 1.25rem;
+  }
+}
+
+.logout-btn {
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+  margin-left: 30px;
+}
+
+[dir="rtl"] .logout-btn {
+  margin-right: 30px;
+}
+
+
+.logout-btn:hover {
+  background: linear-gradient(135deg, #c82333, #bd2130);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+}
+
+.logout-btn:active {
+  transform: translateY(0);
+}
+
+/* للموبايل */
+@media (max-width: 768px) {
+  .logout-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
