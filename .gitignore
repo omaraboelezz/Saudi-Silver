@@ -26,4 +26,5 @@ dist-ssr
 # .gitignore
 .env
 .env.local
-.env.production
+.env.productionrelease/
+node_modules/
