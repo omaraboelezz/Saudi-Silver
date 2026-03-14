@@ -123,7 +123,7 @@ const Footer = ({ language = 'ar' }: FooterProps) => {
                 <FaFacebookF size={24} />
               </a>
               <a
-                href="https://wa.me/201226878735"
+                href="https://wa.me/201067365567"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="social-link whatsapp"

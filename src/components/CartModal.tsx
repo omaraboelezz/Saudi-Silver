@@ -160,7 +160,7 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
     const total = calculateTotal();
     message += `\n*${t.total} $${total.toLocaleString()}*`;
 
-    const phoneNumber = '201226878735';
+    const phoneNumber = '201067365567';
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
     window.open(whatsappUrl, '_blank');

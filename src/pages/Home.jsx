@@ -116,7 +116,7 @@ const Home = ({ language, onLanguageChange, navigate }) => {
   };
 
 const handleContactClick = (product) => {
-  const phoneNumber = '201226878735';
+  const phoneNumber = '201067365567';
 
   const helloText =
     language === 'ar'
