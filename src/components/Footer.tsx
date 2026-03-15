@@ -1,4 +1,4 @@
-import { FaInstagram, FaFacebookF, FaTwitter, FaWhatsapp } from 'react-icons/fa';
+import { FaInstagram, FaFacebookF, FaWhatsapp } from 'react-icons/fa';
 import './Footer.css';
 
 interface LanguageTexts {

@@ -1,4 +1,3 @@
-// import { useState, useEffect } from 'react';
 import ProductCollectionCard from './ProductCollectionCard';
 import './SectionProducts.css';
 

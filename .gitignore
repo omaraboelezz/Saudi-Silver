@@ -28,3 +28,6 @@ dist-ssr
 .env.local
 .env.productionrelease/
 node_modules/
+.vercel
+release/
+dist/

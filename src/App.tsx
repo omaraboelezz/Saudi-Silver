@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import WishlistProvider from './context/WishlistProvider';
-import { CartProvider } from './context/CartContext';
 import Home from './pages/Home';
-import Admin from './pages/Admin';
-import Login from './pages/Login';
 import './App.css';
+
+const Admin = lazy(() => import('./pages/Admin'));
+const Login = lazy(() => import('./pages/Login'));
 
 type Page = 'admin' | 'home' | 'login';
 type Language = 'ar' | 'en';
@@ -106,28 +106,28 @@ function App() {
 
   return (
     <WishlistProvider>
-      <CartProvider>
-        {currentPage === 'login' ? (
-          <Login 
-            onLogin={handleLogin}
-            language={language}
-            onLanguageChange={handleLanguageChange}
-          />
-        ) : currentPage === 'admin' ? (
-          <Admin 
-            navigate={navigate}
-            onLogout={handleLogout}
-            language={language}
-            onLanguageChange={handleLanguageChange}
-          />
-        ) : (
-          <Home 
-            navigate={navigate}
-            language={language}
-            onLanguageChange={handleLanguageChange}
-          />
-        )}
-      </CartProvider>
+        <Suspense fallback={null}>
+          {currentPage === 'login' ? (
+            <Login 
+              onLogin={handleLogin}
+              language={language}
+              onLanguageChange={handleLanguageChange}
+            />
+          ) : currentPage === 'admin' ? (
+            <Admin 
+              navigate={navigate}
+              onLogout={handleLogout}
+              language={language}
+              onLanguageChange={handleLanguageChange}
+            />
+          ) : (
+            <Home 
+              navigate={navigate}
+              language={language}
+              onLanguageChange={handleLanguageChange}
+            />
+          )}
+        </Suspense>
     </WishlistProvider>
   );
 }

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import useWishlist from '../context/useWishlist';
-import { FaInstagram, FaFacebookMessenger, FaWhatsapp, FaStar, FaStarHalfAlt, FaRegStar, FaHeart, FaLink } from 'react-icons/fa';
-import { FaShoppingCart, FaMinus, FaPlus, FaShareAlt } from 'react-icons/fa';
+import { FaFacebookMessenger, FaWhatsapp, FaStar, FaStarHalfAlt, FaRegStar, FaHeart, FaLink, FaShoppingCart, FaMinus, FaPlus, FaShareAlt } from 'react-icons/fa';
 import { useCart } from '../context/CartContext';
 import './ProductModal.css';
 
