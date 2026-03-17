@@ -1,0 +1,10 @@
+/* Existing Home styles if any */
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  font-size: 1.2rem;
+  color: #d4af37;
+}
