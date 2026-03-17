@@ -30,10 +30,14 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
 
   // ✅ التحقق من المنتجات المحذوفة عند فتح الـ Modal
   useEffect(() => {
-    if (isOpen && cartItems.length > 0) {
+  if (isOpen) {
+    if (cartItems.length > 0) {
       validateCartItems();
+    } else {
+      setValidatedItems([]); // ✅ Clear when cart is empty
     }
-  }, [isOpen, cartItems]);
+  }
+}, [isOpen, cartItems]); // cartItems was already there but the empty case wasn't handled
 
   const validateCartItems = async () => {
     try {
