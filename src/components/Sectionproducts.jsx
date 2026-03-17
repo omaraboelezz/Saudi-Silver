@@ -1,5 +1,5 @@
 import ProductCollectionCard from './ProductCollectionCard';
-import './SectionProducts.css';
+import './Sectionproducts.css';
 
 /**
  * SectionProducts Component
