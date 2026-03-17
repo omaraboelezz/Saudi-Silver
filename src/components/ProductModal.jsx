@@ -249,6 +249,7 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
   };
 
   const handleModalContentClick = (e) => {
+    // Close share options when clicking outside the share area
     if (!e.target.closest('.modal-share')) {
       setIsShareOpen(false);
     }
@@ -377,35 +378,42 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
             </div>
 
             {/* Add to Cart + Share */}
-            <div className="modal-actions " style={{
-              maxWidth: '15vw',
-            }}>
+            <div className="modal-actions" >
               <div className="modal-actions-row">
-                <button className="add-to-cart-btn" onClick={handleAddToCart}>
+                <button className="add-to-cart-btn" style={{ minWidth: "40%", maxWidth: "10vw" }} onClick={handleAddToCart}>
                   <FaShoppingCart size={18} />
                   <span>{t.addToCart}</span>
                 </button>
 
                 <div className="modal-share">
+                  {/* Share button — always rendered to hold its space */}
                   <button
                     className="share-main-btn"
+                    style={{
+                      visibility: isShareOpen ? 'hidden' : 'visible',
+                      pointerEvents: isShareOpen ? 'none' : 'auto'
+                    }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      setIsShareOpen(prev => !prev);
+                      setIsShareOpen(true);
                     }}
                     aria-label={t.shareProduct}
                   >
                     <FaShareAlt size={18} />
                   </button>
 
+                  {/* Share options — uses .share-options CSS (position: absolute, bottom: 60px, left: 0) */}
                   {isShareOpen && (
-                    <div className="share-options" onClick={(e) => e.stopPropagation()}>
+                    <div
+                      className="share-options"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <button onClick={() => handleShare('messenger')} title={t.messenger}>
-                        <FaFacebookMessenger />
+                        <FaFacebookMessenger size={18} />
                       </button>
 
                       <button onClick={() => handleShare('whatsapp')} title={t.whatsapp}>
-                        <FaWhatsapp size={20} />
+                        <FaWhatsapp size={18} />
                       </button>
 
                       <button
@@ -413,7 +421,7 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
                         title={t.copyLink}
                         style={{ position: 'relative' }}
                       >
-                        <FaLink />
+                        <FaLink size={18} />
                         {copySuccess && (
                           <span
                             style={{
@@ -435,6 +443,19 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
                             {t.copied}
                           </span>
                         )}
+                      </button>
+
+                      {/* ✕ — closes and restores share button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsShareOpen(false);
+                        }}
+                        aria-label="Close share"
+                        title="Close"
+                        style={{ fontSize: '18px', lineHeight: 1 }}
+                      >
+                        &times;
                       </button>
                     </div>
                   )}
