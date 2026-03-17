@@ -5,6 +5,7 @@ import './Sectionproducts.css';
  * SectionProducts Component
  * Displays products organized by sections
  */
+
 const SectionProducts = ({ 
   sections, 
   products, 

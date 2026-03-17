@@ -1,4 +1,5 @@
 import useWishlist from '../context/useWishlist';
+import { useCart } from '../context/CartContext';
 import { FaHeart } from 'react-icons/fa'; 
 import './ProductCollectionCard.css';
 
@@ -8,16 +9,19 @@ import './ProductCollectionCard.css';
  * @param {Object} product - Product object
  * @param {Function} onProductClick - Callback when card is clicked (opens modal)
  * @param {Function} onContactClick - Callback when "Contact to Buy" is clicked (opens WhatsApp)
+ * @param {Function} onAddToCart - Optional callback after adding to cart
  * @param {String} language - Current language ('ar' or 'en')
  */
-const ProductCollectionCard = ({ product, onProductClick, onContactClick, language = 'ar' }) => {
+const ProductCollectionCard = ({ product, onProductClick, onContactClick, onAddToCart, language = 'ar' }) => {
   const { toggleWishlist, isInWishlist } = useWishlist();
+  const { addToCart } = useCart();
   const isWishlisted = isInWishlist(product.id);
 
   // النصوص حسب اللغة
   const texts = {
     ar: {
       contactToBuy: 'تواصل للشراء',
+      addToCart: 'أضف للسلة',
       addToWishlist: 'أضف للمفضلة',
       removeFromWishlist: 'إزالة من المفضلة',
       newArrival: 'وصل حديثاً',
@@ -29,6 +33,7 @@ const ProductCollectionCard = ({ product, onProductClick, onContactClick, langua
     },
     en: {
       contactToBuy: 'Contact to Buy',
+      addToCart: 'Add to Cart',
       addToWishlist: 'Add to wishlist',
       removeFromWishlist: 'Remove from wishlist',
       newArrival: 'New Arrival',
@@ -49,14 +54,22 @@ const ProductCollectionCard = ({ product, onProductClick, onContactClick, langua
   };
 
   const handleContactClick = (e) => {
-    e.stopPropagation(); // Prevent card click when button is clicked
+    e.stopPropagation();
     if (onContactClick) {
       onContactClick(product);
     }
   };
 
+  const handleAddToCart = (e) => {
+    e.stopPropagation();
+    addToCart(product, 1);
+    if (onAddToCart) {
+      onAddToCart(product);
+    }
+  };
+
   const handleWishlistClick = (e) => {
-    e.stopPropagation(); // Prevent card click when heart is clicked
+    e.stopPropagation();
     toggleWishlist(product);
   };
 
@@ -67,7 +80,6 @@ const ProductCollectionCard = ({ product, onProductClick, onContactClick, langua
     return 'badge-default';
   };
 
-  // ترجمة الـ Badge
   const translateBadge = (badge) => {
     if (badge === 'New Arrival') return t.newArrival;
     if (badge === 'Best Seller') return t.bestSeller;
@@ -75,7 +87,6 @@ const ProductCollectionCard = ({ product, onProductClick, onContactClick, langua
     return badge;
   };
 
-  // ترجمة حالة المخزون
   const translateStock = (stock) => {
     if (stock === 'In Stock') return t.inStock;
     if (stock === 'Limited Stock') return t.limitedStock;
@@ -83,18 +94,10 @@ const ProductCollectionCard = ({ product, onProductClick, onContactClick, langua
     return stock;
   };
 
-  // Helper function to get the correct image URL
   const getImageUrl = () => {
-    // Priority: image_file (uploaded) > image_url (link) > fallback
-    if (product.image_file) {
-      return product.image_file;
-    }
-    if (product.image_url) {
-      return product.image_url;
-    }
-    if (product.image) {
-      return product.image;
-    }
+    if (product.image_file) return product.image_file;
+    if (product.image_url) return product.image_url;
+    if (product.image) return product.image;
     return 'https://via.placeholder.com/400x400?text=No+Image';
   };
 
@@ -104,14 +107,12 @@ const ProductCollectionCard = ({ product, onProductClick, onContactClick, langua
       onClick={handleCardClick}
     >
       <div className="product-collection-image-container">
-        {/* Product Badge - مترجم */}
         {product.badge && (
           <div className={`product-badge ${getBadgeClass(product.badge)}`}>
             {translateBadge(product.badge)}
           </div>
         )}
         
-        {/* Wishlist Heart */}
         <button 
           className={`wishlist-button ${isWishlisted ? 'active' : ''}`}
           onClick={handleWishlistClick}
@@ -120,7 +121,6 @@ const ProductCollectionCard = ({ product, onProductClick, onContactClick, langua
           {isWishlisted ? <FaHeart/> : '🤍'}
         </button>
 
-        {/* Stock Indicator - مترجم */}
         {product.stock && (
           <div className={`stock-indicator ${product.stock === 'Limited Stock' ? 'stock-limited' : 'stock-in'}`}>
             {translateStock(product.stock)}
@@ -135,11 +135,9 @@ const ProductCollectionCard = ({ product, onProductClick, onContactClick, langua
         />
       </div>
       <div className="product-collection-content">
-        {/* 👇 عرض الاسم حسب اللغة */}
         <h3 className="product-collection-name">
           {language === 'ar' ? (product.name_ar || product.name) : (product.name_en || product.name)}
         </h3>
-        {/* 👇 عرض الوصف المختصر حسب اللغة */}
         <p className="product-collection-short-description">
           {language === 'ar' 
             ? (product.shortDescription_ar || product.shortDescription || product.description_ar?.substring(0, 50) + '...' || product.description?.substring(0, 50) + '...')
@@ -149,13 +147,22 @@ const ProductCollectionCard = ({ product, onProductClick, onContactClick, langua
         {product.price && (
           <p className="product-collection-price">${product.price.toLocaleString()}</p>
         )}
-        {/* Contact to Buy Button - مترجم */}
-        <button 
-          className="contact-to-buy-button"
-          onClick={handleContactClick}
-        >
-          {t.contactToBuy}
-        </button>
+
+        {/* Buttons Row */}
+        <div className="card-buttons-row">
+          <button 
+            className="add-to-cart-button"
+            onClick={handleAddToCart}
+          >
+            {t.addToCart}
+          </button>
+          <button 
+            className="contact-to-buy-button"
+            onClick={handleContactClick}
+          >
+            {t.contactToBuy}
+          </button>
+        </div>
       </div>
     </article>
   );

@@ -30,9 +30,8 @@ const Home = ({ language, onLanguageChange, navigate }) => {
     const handleLogout = () => {
     localStorage.removeItem('isAdminAuthenticated');
     localStorage.removeItem('adminUsername');
-    // لو عندك navigate للصفحة الرئيسية أو صفحة Login
     if (navigate) {
-      navigate('login'); // أو navigate('/')
+      navigate('login');
     }
   };
 
@@ -68,6 +67,22 @@ const Home = ({ language, onLanguageChange, navigate }) => {
 
     loadData();
   }, []);
+
+  // ✅ فتح المنتج من الـ URL تلقائياً لما الـ products تتحمل
+  useEffect(() => {
+    if (products.length === 0) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get('product');
+
+    if (productId) {
+      const found = products.find(p => String(p.id) === String(productId));
+      if (found) {
+        setSelectedProduct(found);
+        setIsModalOpen(true);
+      }
+    }
+  }, [products]);
 
   // ✅ Get Featured Section
   const getFeaturedSection = () => {
@@ -152,6 +167,12 @@ const handleContactClick = (product) => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+
+    // ✅ امسح الـ ?product من الـ URL لما تقفل الـ modal
+    const url = new URL(window.location.href);
+    url.searchParams.delete('product');
+    window.history.replaceState({}, '', url.toString());
+
     setTimeout(() => {
       setSelectedProduct(null);
     }, 300);
@@ -199,11 +220,10 @@ const handleContactClick = (product) => {
             />
           )}
 
-          {/* ✅ عرض كل الـ Sections (بما فيها Featured) */}
           {/* ✅ عرض كل الـ Sections (بدون Featured عشان اتعرض فوق) */}
           {sections.length > 0 ? (
             <SectionProducts
-              sections={sections.filter(s => s.is_featured !== true)} // ❌ استبعد Featured
+              sections={sections.filter(s => s.is_featured !== true)}
               products={products}
               onProductClick={handleProductClick}
               onContactClick={handleContactClick}

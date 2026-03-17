@@ -17,10 +17,10 @@
   box-shadow: 0 12px 24px rgba(212, 175, 55, 0.3);
 }
 
-/* Image container - Increased height for larger image */
+/* Image container */
 .product-collection-image-container {
   width: 100%;
-  height: 320px; /* زادت من 220px */
+  height: 320px;
   overflow: hidden;
   background: #f5f5dc;
   position: relative;
@@ -63,7 +63,6 @@
   left: auto;
 }
 
-
 [dir="rtl"] .wishlist-button {
   right: auto;
   left: 12px;
@@ -76,28 +75,30 @@
   left: 12px;
 }
 
-
 [dir="rtl"] .product-collection-name {
   font-size: 22px;
   font-weight: 700;
   line-height: 1.5;
 }
 
-
 [dir="rtl"] .product-collection-short-description {
   font-size: 17px;
   line-height: 1.7;
 }
 
-
 [dir="rtl"] .product-collection-price {
   font-size: 26px;
 }
 
-
 [dir="rtl"] .contact-to-buy-button {
-  font-size: 18px;
-  padding: 14px 24px;
+  font-size: 16px;
+  padding: 12px 16px;
+  font-weight: 700;
+}
+
+[dir="rtl"] .add-to-cart-button {
+  font-size: 16px;
+  padding: 12px 16px;
   font-weight: 700;
 }
 
@@ -166,17 +167,17 @@
   transform: scale(1.1);
 }
 
-/* Card content - Reduced padding and more compact */
+/* Card content */
 .product-collection-content {
-  padding: 1rem; /* قللت من 1.25rem */
+  padding: 1rem;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem; /* قللت من 0.5rem */
+  gap: 0.4rem;
 }
 
 .product-collection-name {
-  font-size: 1rem; /* قللت شوية من 1.1rem */
+  font-size: 1rem;
   font-weight: 600;
   color: #1a1a1a;
   margin: 0;
@@ -184,42 +185,75 @@
 }
 
 .product-collection-short-description {
-  font-size: 0.8rem; /* قللت من 0.85rem */
+  font-size: 0.8rem;
   line-height: 1.4;
   color: #4a4a4a;
   margin: 0;
   flex-grow: 1;
   display: -webkit-box;
-  /* -webkit-line-clamp: 2; */
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
 .product-collection-price {
-  font-size: 1.25rem; /* قللت شوية من 1.3rem */
+  font-size: 1.25rem;
   font-weight: 700;
   color: #d4af37;
   margin: 0.25rem 0 0 0;
 }
 
-/* Contact to Buy Button */
-.contact-to-buy-button {
+/* Buttons Row */
+.card-buttons-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+/* Add to Cart Button */
+.add-to-cart-button {
+  flex: 1;
   background: #1a1a1a;
   color: #fff;
-  border: none;
-  padding: 0.7rem 1.2rem; /* قللت شوية */
-  font-size: 0.9rem; /* قللت من 0.95rem */
+  padding: 0.7rem 0.8rem;
+  font-size: 0.85rem;
   font-weight: 600;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
   font-family: inherit;
-  margin-top: auto;
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.15);
+}
+
+.add-to-cart-button:hover {
+  background: #d4af37;
+  color: #1a1a1a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+}
+
+.add-to-cart-button:active {
+  transform: translateY(0);
+}
+
+/* Contact to Buy Button */
+.contact-to-buy-button {
+  flex: 1;
+  background: #fff;
+  color: #1a1a1a;
+  border: none;
+  padding: 0.7rem 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
   box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
 }
 
 .contact-to-buy-button:hover {
   background: linear-gradient(to right, #f5deb3, #d4af37);
+  color: #1a1a1a;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(212, 175, 55, 0.5);
 }
@@ -243,7 +277,7 @@
 /* Responsive design */
 @media (max-width: 768px) {
   .product-collection-image-container {
-    height: 280px; /* زادت من 200px */
+    height: 280px;
   }
 
   .product-collection-content {
@@ -258,34 +292,36 @@
     font-size: 1.15rem;
   }
 
-  .contact-to-buy-button {
-    padding: 0.65rem 1rem;
-    font-size: 0.85rem;
+  .contact-to-buy-button,
+  .add-to-cart-button {
+    padding: 0.65rem 0.7rem;
+    font-size: 0.8rem;
   }
 
-    [dir="rtl"] .product-collection-name {
+  [dir="rtl"] .product-collection-name {
     font-size: 20px;
   }
 
-    [dir="rtl"] .product-collection-short-description {
+  [dir="rtl"] .product-collection-short-description {
     font-size: 16px;
   }
 
-    [dir="rtl"] .product-collection-price {
+  [dir="rtl"] .product-collection-price {
     font-size: 24px;
   }
 
-    [dir="rtl"] .contact-to-buy-button {
-    font-size: 17px;
-    padding: 12px 20px;
+  [dir="rtl"] .contact-to-buy-button,
+  [dir="rtl"] .add-to-cart-button {
+    font-size: 15px;
+    padding: 11px 14px;
   }
 
-    [dir="rtl"] .product-badge {
+  [dir="rtl"] .product-badge {
     font-size: 14px;
     padding: 6px 14px;
   }
 
-    [dir="rtl"] .stock-indicator {
+  [dir="rtl"] .stock-indicator {
     font-size: 13px;
     padding: 6px 14px;
   }
@@ -293,7 +329,7 @@
 
 @media (max-width: 480px) {
   .product-collection-image-container {
-    height: 240px; /* زادت من 180px */
+    height: 240px;
   }
 
   .product-collection-content {
@@ -313,7 +349,13 @@
     font-size: 1.05rem;
   }
 
-  .contact-to-buy-button {
+  .card-buttons-row {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .contact-to-buy-button,
+  .add-to-cart-button {
     padding: 0.6rem 0.875rem;
     font-size: 0.8rem;
   }

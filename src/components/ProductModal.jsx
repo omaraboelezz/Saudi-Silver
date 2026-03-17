@@ -445,18 +445,7 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
                         )}
                       </button>
 
-                      {/* ✕ — closes and restores share button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setIsShareOpen(false);
-                        }}
-                        aria-label="Close share"
-                        title="Close"
-                        style={{ fontSize: '18px', lineHeight: 1 }}
-                      >
-                        &times;
-                      </button>
+
                     </div>
                   )}
                 </div>
