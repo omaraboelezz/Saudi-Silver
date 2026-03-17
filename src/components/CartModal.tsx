@@ -216,8 +216,9 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
           className="cart-modal-close-button"
           onClick={onClose}
           aria-label={t.closeCart}
+          style={{ fontSize: '35px' }}
         >
-          ×
+          &times;
         </button>
 
         {/* رأس المودال - مترجم */}

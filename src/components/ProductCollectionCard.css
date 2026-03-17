@@ -185,7 +185,7 @@
 }
 
 .product-collection-short-description {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   line-height: 1.4;
   color: #4a4a4a;
   margin: 0;
@@ -196,7 +196,7 @@
 }
 
 .product-collection-price {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #d4af37;
   margin: 0.25rem 0 0 0;
@@ -215,8 +215,9 @@
   background: #1a1a1a;
   color: #fff;
   padding: 0.7rem 0.8rem;
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 1rem;
+  border: #fff solid 1px;
+  font-weight: bold;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -240,10 +241,10 @@
   flex: 1;
   background: #fff;
   color: #1a1a1a;
-  border: none;
+  border: 2px solid #d7d6d6;
   padding: 0.7rem 0.8rem;
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: bold;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;

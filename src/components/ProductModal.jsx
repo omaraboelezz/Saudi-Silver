@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import useWishlist from '../context/useWishlist';
-import { FaFacebookMessenger, FaWhatsapp, FaStar, FaStarHalfAlt, FaRegStar, FaHeart, FaLink, FaShoppingCart, FaMinus, FaPlus, FaShareAlt } from 'react-icons/fa';
+import { FaWhatsapp, FaStar, FaRegStar, FaHeart, FaLink, FaShoppingCart, FaMinus, FaPlus, FaShareAlt, FaInstagram } from 'react-icons/fa';
 import { useCart } from '../context/CartContext';
+import { FaRegHeart } from 'react-icons/fa';
 import './ProductModal.css';
 
 const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
@@ -12,6 +13,11 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
   const { addToCart } = useCart();
   const [copySuccess, setCopySuccess] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [userRating, setUserRating] = useState(0);
+  const [hoveredRating, setHoveredRating] = useState(0);
+  const [hasRated, setHasRated] = useState(false);
+  const [showThankYou, setShowThankYou] = useState(false);
+
 
   const texts = {
     ar: {
@@ -30,12 +36,11 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
       inStock: 'متوفر',
       limitedStock: 'مخزون محدود',
       outOfStock: 'غير متوفر',
-      messenger: 'ماسنجر',
       whatsapp: 'واتساب',
       copyLink: 'نسخ الرابط',
       copySuccess: '✅ تم النسخ!',
       copyFailed: '❌ فشل النسخ. الرجاء النسخ يدوياً',
-      instagramCopied: '✅ تم نسخ الرابط!\n\nالصقه في Instagram Stories أو Bio أو DM.'
+      instagram: 'انستغرام'
     },
     en: {
       closeModal: 'Close modal',
@@ -53,12 +58,11 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
       inStock: 'In Stock',
       limitedStock: 'Limited Stock',
       outOfStock: 'Out of Stock',
-      messenger: 'Messenger',
       whatsapp: 'WhatsApp',
       copyLink: 'Copy link',
       copySuccess: '✅ Copied!',
       copyFailed: '❌ Failed to copy. Please copy manually',
-      instagramCopied: '✅ Link copied!\n\nPaste it in Instagram Stories, Bio, or DM.'
+      instagram: 'Instagram'
     }
   };
 
@@ -127,6 +131,34 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
   };
 
   useEffect(() => {
+    if (!product) return;
+    setHoveredRating(0);
+    setUserRating(5);
+    setHasRated(false);
+    const saved = localStorage.getItem(`rating_${product.id}`);
+    if (saved) {
+      setUserRating(Number(saved));
+      setHasRated(true);
+
+      setShowThankYou(true);
+      setTimeout(() => setShowThankYou(false), 3000);
+    } else {
+      setUserRating(5);
+      setHasRated(false);
+    }
+  }, [product?.id]);
+
+  const handleRating = (value) => {
+    if (hasRated) return; // ✅ مقدرش تغير تقييمك
+    setUserRating(value);
+    setHasRated(true);
+    localStorage.setItem(`rating_${product.id}`, value);
+
+    setShowThankYou(true);
+    setTimeout(() => setShowThankYou(false), 3000);
+  };
+
+  useEffect(() => {
     if (!isOpen) return;
 
     const handleEscape = (e) => {
@@ -147,21 +179,8 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
     const productUrl = `${window.location.origin}?product=${product.id}`;
     const productName = getProductName();
     const productDesc = getProductDescription();
-    let shareUrl = '';
 
     switch (platform) {
-      case 'messenger': {
-        shareUrl = `fb-messenger://share?link=${encodeURIComponent(productUrl)}`;
-        window.open(shareUrl, '_blank');
-        break;
-      }
-
-      case 'twitter': {
-        const twitterText = `🌟 ${productName}\n💰 $${product.price?.toLocaleString()}\n\n`;
-        shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(twitterText)}&url=${encodeURIComponent(productUrl)}`;
-        window.open(shareUrl, '_blank', 'width=600,height=400');
-        break;
-      }
 
       case 'whatsapp': {
         const safeDesc = productDesc
@@ -187,18 +206,29 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
       }
 
       case 'instagram': {
+        const instaText =
+          `✨ SAUDI SILVER ✨\n` +
+          `──────────\n\n` +
+          `💎 ${productName}\n\n` +
+          `💰 Price: $${product.price?.toLocaleString()}\n\n` +
+          `🌐 View Product:\n${productUrl}\n\n` +
+          `✅ Premium Quality Guaranteed\n` +
+          `✅ Worldwide Shipping Available`;
+
         if (navigator.clipboard) {
           try {
-            await navigator.clipboard.writeText(productUrl);
+            await navigator.clipboard.writeText(instaText);
             setCopySuccess(true);
             setTimeout(() => setCopySuccess(false), 2000);
-            alert(t.instagramCopied);
           } catch {
-            fallbackCopyToClipboard(productUrl);
+            fallbackCopyToClipboard(instaText);
           }
         } else {
-          fallbackCopyToClipboard(productUrl);
+          fallbackCopyToClipboard(instaText);
         }
+
+        // أقرب صفحة لـ share مباشرة في Instagram
+        window.open('https://www.instagram.com/direct/new/', '_blank');
         break;
       }
 
@@ -280,7 +310,7 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
     <div className={`modal-backdrop ${isOpen ? 'modal-open' : ''}`} onClick={handleBackdropClick}>
       <div className="modal-content" onClick={handleModalContentClick}>
 
-        <button className="modal-close-button" onClick={handleClose} aria-label={t.closeModal}>
+        <button className="modal-close-button" onClick={handleClose} aria-label={t.closeModal} style={{ fontSize: '35px' }}>
           &times;
         </button>
 
@@ -336,28 +366,41 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
             <div className="modal-rating">
               <div className="stars">
                 {[...Array(5)].map((_, index) => {
-                  const rating = product.rating || 4.5;
                   const starValue = index + 1;
+                  const displayRating = hoveredRating || userRating;
+
                   return (
-                    <span key={index}>
-                      {rating >= starValue ? (
-                        <FaStar />
-                      ) : rating >= starValue - 0.5 ? (
-                        <FaStarHalfAlt />
+                    <span
+                      key={index}
+                      onClick={() => handleRating(starValue)}
+                      onMouseEnter={() => !hasRated && setHoveredRating(starValue)}
+                      onMouseLeave={() => !hasRated && setHoveredRating(0)}
+                      style={{ cursor: hasRated ? 'default' : 'pointer' }}
+                    >
+                      {displayRating >= starValue ? (
+                        <FaStar style={{ color: '#FFD700' }} /> // ✅ دايماً دهبي
                       ) : (
-                        <FaRegStar />
+                        <FaRegStar style={{ color: '#FFD700' }} />
                       )}
                     </span>
                   );
                 })}
               </div>
-              <span className="rating-count">({product.reviews || 120} {t.reviews})</span>
+              <span className="rating-count">
+                {showThankYou && hasRated
+                  ? (language === 'ar' ? `شكراً! قيّمت بـ ${userRating}/5` : `Thanks! You rated ${userRating}/5`)
+                  : hasRated
+                    ? (language === 'ar' ? ` تقييمك ${userRating}/5` : ` Your rating ${userRating}/5`)
+                    : (language === 'ar' ? ' قيّم هذا المنتج' : ' Rate this product')
+                }
+              </span>
+
               <button
                 className={`modal-wishlist-button ${isWishlisted ? 'active' : ''}`}
                 onClick={() => toggleWishlist(product)}
                 aria-label={isWishlisted ? t.removeFromWishlist : t.addToWishlist}
               >
-                {isWishlisted ? <FaHeart /> : '🤍'}
+                {isWishlisted ? <FaHeart /> : <FaRegHeart style={{ color: '#333' }} />}
               </button>
             </div>
 
@@ -408,12 +451,13 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
                       className="share-options"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <button onClick={() => handleShare('messenger')} title={t.messenger}>
-                        <FaFacebookMessenger size={18} />
-                      </button>
 
                       <button onClick={() => handleShare('whatsapp')} title={t.whatsapp}>
                         <FaWhatsapp size={18} />
+                      </button>
+
+                      <button onClick={() => handleShare('instagram')} title={t.instagram}>
+                        <FaInstagram size={18} />
                       </button>
 
                       <button

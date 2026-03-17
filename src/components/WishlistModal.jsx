@@ -115,8 +115,9 @@ const WishlistModal = ({ isOpen, onClose, onProductClick, onContactClick, langua
           className="wishlist-modal-close-button"
           onClick={onClose}
           aria-label={t.closeWishlist}
+          style={{ fontSize: '35px' }}
         >
-          ×
+          &times;
         </button>
         
         <div className="wishlist-modal-header">

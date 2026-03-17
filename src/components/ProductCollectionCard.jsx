@@ -1,6 +1,6 @@
 import useWishlist from '../context/useWishlist';
 import { useCart } from '../context/CartContext';
-import { FaHeart } from 'react-icons/fa'; 
+import { FaHeart ,FaRegHeart } from 'react-icons/fa'; 
 import './ProductCollectionCard.css';
 
 /**
@@ -118,7 +118,7 @@ const ProductCollectionCard = ({ product, onProductClick, onContactClick, onAddT
           onClick={handleWishlistClick}
           aria-label={isWishlisted ? t.removeFromWishlist : t.addToWishlist}
         >
-          {isWishlisted ? <FaHeart/> : '🤍'}
+          {isWishlisted ? <FaHeart/> : <FaRegHeart style={{ color: '#333'}}/>}
         </button>
 
         {product.stock && (

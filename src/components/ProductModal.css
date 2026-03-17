@@ -449,12 +449,17 @@
 
 .share-options button:hover { transform: scale(1.1); }
 
-.share-options button[title="Messenger"]:hover,
-.share-options button[title="ماسنجر"]:hover   { background-color: #0084ff; color: white; }
-
 .share-options button[title="WhatsApp"]:hover,
 .share-options button[title="واتساب"]:hover    { background-color: #25d366; color: white; }
 
+.share-options button[title="Instagram"]:hover { 
+  background-color: #e1306c; 
+  color: white; 
+}
+.share-options button[title="انستغرام"]:hover { 
+  background-color: #e1306c; 
+  color: white; 
+}
 .share-options button[title="Copy link"]:hover,
 .share-options button[title="نسخ الرابط"]:hover { background-color: #facc15; color: #1a1a1a; }
 
@@ -678,5 +683,22 @@ body[dir="rtl"] .share-options {
   /* Bottom safe area for iPhones with home bar */
   .modal-actions {
     margin-bottom: max(1.5rem, env(safe-area-inset-bottom, 1.5rem));
+  }
+}
+
+@media (max-width: 480px) {
+
+  /* LTR - share popup */
+  .share-options {
+    bottom: 21px;
+    left: 0;
+    right: auto;
+  }
+
+  /* ✅ RTL - خليها تفتح من اليمين */
+  [dir="rtl"] .share-options,
+  body[dir="rtl"] .share-options {
+    left: auto;
+    right: 0;
   }
 }
