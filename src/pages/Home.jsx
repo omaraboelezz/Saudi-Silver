@@ -4,7 +4,7 @@ import Hero from '../components/Hero';
 import Features from '../components/Features';
 import ProductCarousel from '../components/ProductCarousel';
 import ProductGrid from '../components/ProductGrid';
-import SectionProducts from '../components/Sectionproducts';
+import SectionProducts from '../components/SectionProducts';
 import Footer from '../components/Footer';
 import ProductModal from '../components/ProductModal';
 import WishlistModal from '../components/WishlistModal';
