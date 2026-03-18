@@ -188,7 +188,7 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
           : '';
 
         const whatsappText =
-          `✨ *SAUDI SILVER* ✨\n` +
+          `✨ *El-Saudi jewelry* ✨\n` +
           `──────────\n\n` +
           `💎 *${productName}*\n\n` +
           safeDesc +
@@ -207,7 +207,7 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
 
       case 'instagram': {
         const instaText =
-          `✨ SAUDI SILVER ✨\n` +
+          `✨ El-Saudi jewelry ✨\n` +
           `──────────\n\n` +
           `💎 ${productName}\n\n` +
           `💰 Price: $${product.price?.toLocaleString()}\n\n` +
@@ -352,7 +352,10 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
                 )}
 
                 {product.stock && (
-                  <div className={`modal-stock ${product.stock === 'Limited Stock' ? 'stock-limited' : 'stock-in'}`}>
+                  <div className={`modal-stock ${product.stock === 'Limited Stock' ? 'stock-limited' :
+                      product.stock === 'Out of Stock' ? 'stock-out' :
+                        'stock-in'
+                    }`}>
                     {translateStock(product.stock)}
                   </div>
                 )}

@@ -156,6 +156,11 @@
   color: #fff;
 }
 
+.stock-out {
+  background: rgba(207, 37, 18, 0.9); /* أحمر */
+  color: #fff;
+}
+
 .product-collection-image {
   width: 100%;
   height: 100%;

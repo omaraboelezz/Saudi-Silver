@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { FaWhatsapp, FaTrash, FaExclamationTriangle } from 'react-icons/fa';
 import './CartModal.css';
+import { pdf } from '@react-pdf/renderer';
+import InvoiceDocument from './InvoiceDocument';
 
-// 1. تعريف واجهة المنتج (Product Interface)
 export interface Product {
   id: number | string;
   name: string;
@@ -13,10 +14,9 @@ export interface Product {
   image_url?: string;
   quantity?: number;
   description?: string;
-  isDeleted?: boolean; // ✅ إضافة علامة للمنتجات المحذوفة
+  isDeleted?: boolean;
 }
 
-// 2. تعريف واجهة الـ Props الخاصة بالمودال
 interface CartModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -27,17 +27,18 @@ interface CartModalProps {
 const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, language = 'ar' }) => {
   const { cartItems, removeFromCart, cleanupDeletedProducts } = useCart();
   const [validatedItems, setValidatedItems] = useState<any[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  // ✅ التحقق من المنتجات المحذوفة عند فتح الـ Modal
+
   useEffect(() => {
-  if (isOpen) {
-    if (cartItems.length > 0) {
-      validateCartItems();
-    } else {
-      setValidatedItems([]); // ✅ Clear when cart is empty
+    if (isOpen) {
+      if (cartItems.length > 0) {
+        validateCartItems();
+      } else {
+        setValidatedItems([]);
+      }
     }
-  }
-}, [isOpen, cartItems]); // cartItems was already there but the empty case wasn't handled
+  }, [isOpen, cartItems]);
 
   const validateCartItems = async () => {
     try {
@@ -57,7 +58,6 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
     }
   };
 
-  // النصوص حسب اللغة
   const texts: Record<string, {
     shoppingCart: string;
     item: string;
@@ -82,7 +82,7 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
       connectToBuy: 'اطلب عبر واتساب',
       removeFromCart: 'إزالة من السلة',
       closeCart: 'إغلاق السلة',
-      whatsappMessage: 'مرحباً، أود طلب العناصر التالية من Saudi Silver:',
+      whatsappMessage: 'مرحباً، أود طلب العناصر التالية من El-Saudi jewelry:',
       productDeleted: 'هذا المنتج تم حذفه',
       cleanDeletedItems: 'إزالة المنتجات المحذوفة'
     },
@@ -96,7 +96,7 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
       connectToBuy: 'Connect to Buy',
       removeFromCart: 'Remove from cart',
       closeCart: 'Close cart',
-      whatsappMessage: 'Hello, I would like to order the following items from Saudi Silver:',
+      whatsappMessage: 'Hello, I would like to order the following items from El-Saudi jewelry:',
       productDeleted: 'This product has been deleted',
       cleanDeletedItems: 'Remove Deleted Items'
     }
@@ -104,7 +104,6 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
 
   const t = texts[language as string] || texts.ar;
 
-  // دالة للحصول على رابط الصورة الصحيح
   const getImageUrl = (product: Product): string => {
     if (product.image_file) {
       return product.image_file;
@@ -118,7 +117,6 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
     return 'https://via.placeholder.com/400x400?text=No+Image';
   };
 
-  // التعامل مع زر Escape وقفل الـ Scroll
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) onClose();
@@ -135,7 +133,6 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
     };
   }, [isOpen, onClose]);
 
-  // ✅ حساب السعر الإجمالي (بدون المنتجات المحذوفة)
   const calculateTotal = (): number => {
     return validatedItems
       .filter(item => !item.isDeleted)
@@ -144,43 +141,59 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
       }, 0);
   };
 
-  // دالة إرسال الطلب عبر واتساب
-  const handleConnectToBuy = () => {
-    const validItems = validatedItems.filter(item => !item.isDeleted);
-    if (validItems.length === 0) return;
+ const handleConnectToBuy = async () => {
+  if (isGenerating) return;
+  const validItems = validatedItems.filter(item => !item.isDeleted);
+  if (validItems.length === 0) return;
 
-    let message = `${t.whatsappMessage}\n\n`;
+  setIsGenerating(true);
+  try {
+    const blob = await pdf(
+      <InvoiceDocument items={validItems} language={language} />
+    ).toBlob();
 
-    validItems.forEach((item: any, index: number) => {
-      const qty = item.quantity || 1;
-      const productName =
-        language === 'ar'
-          ? item.name_ar || item.arabic_name || item.name || 'منتج'
-          : item.name_en || item.english_name || item.name || 'Product';
+    const file = new File([blob], 'Saudi-Silver-Invoice.pdf', { type: 'application/pdf' });
 
-      message += `${index + 1}. ${productName} (x${qty}) - $${(item.price * qty).toLocaleString()}\n`;
-    });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        files: [file],
+        title: 'Saudi Silver Invoice',
+        text: language === 'ar'
+          ? 'مرحباً، هذه فاتورة طلبي من Saudi Silver 🧾'
+          : 'Hello, here is my order invoice from Saudi Silver 🧾',
+      });
+    } else {
+      // fallback للديسكتوب بس
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'Saudi-Silver-Invoice.pdf';
+      link.click();
+      URL.revokeObjectURL(url);
 
-    const total = calculateTotal();
-    message += `\n*${t.total} $${total.toLocaleString()}*`;
-
-    const phoneNumber = '201067365567';
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-
-    window.open(whatsappUrl, '_blank');
-  };
-
+      const phoneNumber = '201067365567';
+      const message = language === 'ar'
+        ? 'مرحباً، أرسلت لك فاتورة طلبي 🧾'
+        : 'Hello, I sent you my order invoice 🧾';
+      window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
+    }
+  } catch (err: any) {
+    if (err?.name !== 'AbortError') {
+      console.error('Invoice error:', err);
+    }
+  } finally {
+    setIsGenerating(false);
+  }
+};
 
   if (!isOpen) return null;
 
-  // إغلاق المودال عند الضغط على الخلفية
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) onClose();
   };
 
-  // التعامل مع النقر على المنتج
   const handleProductClick = (product: Product) => {
-    if (product.isDeleted) return; // ✅ منع فتح المنتجات المحذوفة
+    if (product.isDeleted) return;
 
     if (onProductClick) {
       onProductClick(product);
@@ -203,6 +216,8 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
       }, 0);
   };
 
+
+
   const hasDeletedItems = validatedItems.some(item => item.isDeleted);
 
   return (
@@ -211,7 +226,6 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
       onClick={handleBackdropClick}
     >
       <div className="cart-modal-content">
-        {/* زر الإغلاق */}
         <button
           className="cart-modal-close-button"
           onClick={onClose}
@@ -221,7 +235,6 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
           &times;
         </button>
 
-        {/* رأس المودال - مترجم */}
         <div className="cart-modal-header">
           <h2 className="cart-modal-title">{t.shoppingCart}</h2>
           <p className="cart-modal-count">
@@ -229,7 +242,6 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
           </p>
         </div>
 
-        {/* ✅ تنبيه للمنتجات المحذوفة */}
         {hasDeletedItems && (
           <div style={{
             background: '#fff3cd',
@@ -269,7 +281,6 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
           </div>
         )}
 
-        {/* جسم المودال (المنتجات) */}
         <div className="cart-modal-body">
           {validatedItems.length === 0 ? (
             <div className="cart-empty">
@@ -290,7 +301,6 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
                     position: 'relative'
                   }}
                 >
-                  {/* ✅ علامة للمنتجات المحذوفة */}
                   {product.isDeleted && (
                     <div style={{
                       position: 'absolute',
@@ -345,7 +355,6 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
           )}
         </div>
 
-        {/* تذييل المودال (الإجمالي وزر الشراء) */}
         {validatedItems.filter(item => !item.isDeleted).length > 0 && (
           <div className="cart-modal-footer">
             <div className="cart-total">
@@ -355,9 +364,24 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
               </span>
             </div>
 
-            <button className="cart-connect-btn" onClick={handleConnectToBuy}>
-              <span>{t.connectToBuy}</span>
+            <button
+              className="cart-connect-btn"
+              onClick={handleConnectToBuy}
+              disabled={isGenerating}
+            >
+              <span>{isGenerating ? '⏳ جاري التحضير...' : t.connectToBuy}</span>
               <FaWhatsapp size={22} />
+            </button>
+
+            <button onClick={async () => {
+              const validItems = validatedItems.filter(item => !item.isDeleted);
+              const blob = await pdf(
+                <InvoiceDocument items={validItems} language={language} />
+              ).toBlob();
+              const url = URL.createObjectURL(blob);
+              window.open(url, '_blank');
+            }}>
+              تجربة PDF
             </button>
           </div>
         )}

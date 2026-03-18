@@ -122,7 +122,11 @@ const ProductCollectionCard = ({ product, onProductClick, onContactClick, onAddT
         </button>
 
         {product.stock && (
-          <div className={`stock-indicator ${product.stock === 'Limited Stock' ? 'stock-limited' : 'stock-in'}`}>
+          <div className={`stock-indicator ${
+  product.stock === 'Limited Stock' ? 'stock-limited' :
+  product.stock === 'Out of Stock' ? 'stock-out' :
+  'stock-in'
+}`}>
             {translateStock(product.stock)}
           </div>
         )}

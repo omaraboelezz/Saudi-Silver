@@ -124,7 +124,7 @@ const Hero = ({ language = 'ar' }: HeroProps) => {
       <div className="hero-overlay"></div>
       <div ref={contentRef} className="hero-content">
         <div className="hero-content-inner">
-          <h1 className="hero-title">Saudi Silver</h1>
+          <h1 className="hero-title">El-Saudi jewelry</h1>
           <p className="hero-tagline">{t.tagline}</p>
         </div>
       </div>

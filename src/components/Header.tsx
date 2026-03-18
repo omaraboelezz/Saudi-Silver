@@ -182,7 +182,7 @@ const Header = ({
 
         {!adminMode && (
           <div className="header-logo" onClick={scrollToTop}>
-            <h1>Saudi Silver</h1>
+            <h1>El-Saudi jewelry</h1>
           </div>
         )}
 

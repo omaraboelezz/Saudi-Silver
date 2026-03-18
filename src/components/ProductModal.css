@@ -257,6 +257,7 @@
 
 .modal-stock.stock-in      { background: rgba(76, 175, 80, 0.9);  color: #fff; }
 .modal-stock.stock-limited { background: rgba(255, 152, 0, 0.9); color: #fff; }
+.modal-stock.stock-out     { background: rgb(205, 28, 9);  color: #fff; } /* ← جديد */
 
 /* ─── Description ─────────────────────────────────────────── */
 .modal-description {

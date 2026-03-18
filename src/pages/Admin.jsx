@@ -365,14 +365,16 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
     }
   };
 
+
   const handleSectionSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
     try {
       const response = await fetch(SECTION_API_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(sectionFormData),
       });
 
@@ -383,13 +385,10 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
           type: 'success',
           message: language === 'ar' ? '✅ تم إنشاء القسم بنجاح!' : '✅ Section created successfully!'
         });
-
-        setSectionFormData({ title_ar: '', title_en: '', order: 1 }); // ✅ بدل 0
+        setSectionFormData({ title_ar: '', title_en: '', order: 1 });
         setShowSectionModal(false);
         fetchSections();
-
       } else {
-        // ✅ Modal بدل setStatus عشان تشوفها
         Modal.error({
           title: language === 'ar' ? '❌ فشل الإنشاء' : '❌ Creation Failed',
           content: language === 'ar'
@@ -402,6 +401,8 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
     } catch (error) {
       console.error('Error creating section:', error);
       setStatus({ type: 'error', message: `❌ Error: ${error.message}` });
+    } finally {
+      setIsSubmitting(false); // ✅ دايماً يرجع false سواء نجح أو فشل
     }
   };
 
@@ -1381,20 +1382,8 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                   </small>
                 </div>
 
-                {/* Price & Category */}
+                {/* Category */}
                 <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="price">{t.price}</label>
-                    <input
-                      type="number"
-                      id="price"
-                      name="price"
-                      value={formData.price || 0}
-                      onChange={handleChange}
-                      disabled
-                    />
-                  </div>
-
                   <div className="form-group">
                     <label htmlFor="category">{t.category} *</label>
                     <select
@@ -1753,18 +1742,40 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                   </button>
                   <button
                     type="submit"
+                    disabled={isSubmitting}
                     style={{
-                      background: '#28a745',
+                      background: isSubmitting ? '#6c757d' : '#28a745',
                       color: 'white',
                       border: 'none',
                       padding: '10px 20px',
                       borderRadius: '6px',
-                      cursor: 'pointer',
-                      fontWeight: '600'
+                      cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                      fontWeight: '600',
+                      opacity: isSubmitting ? 0.7 : 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      transition: 'all 0.2s',
                     }}
                   >
-                    {t.saveSection}
+                    {isSubmitting ? (
+                      <>
+                        <span style={{
+                          width: '14px',
+                          height: '14px',
+                          border: '2px solid rgba(255,255,255,0.4)',
+                          borderTopColor: 'white',
+                          borderRadius: '50%',
+                          display: 'inline-block',
+                          animation: 'spin 0.7s linear infinite',
+                        }} />
+                        {language === 'ar' ? 'جارٍ الحفظ...' : 'Saving...'}
+                      </>
+                    ) : t.saveSection}
                   </button>
+
+                  {/* أضف الـ CSS للـ spinner في أي style tag */}
+                  <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
                 </div>
               </form>
             </div>
