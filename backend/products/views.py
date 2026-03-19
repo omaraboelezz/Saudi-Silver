@@ -5,6 +5,8 @@ from .models import Product, Section, AdminUser, AdminSession, LoginAttempt, Met
 from .serializers import ProductSerializer, SectionSerializer
 from rest_framework.parsers import MultiPartParser, FormParser
 import json
+import requests as http_requests
+
 
 
 # ==================== HELPER FUNCTIONS ====================
@@ -543,6 +545,59 @@ def metal_prices(request):
                 'silver_products_updated': updated_counts['silver_updated'],
                 'total_products_updated': updated_counts['gold_updated'] + updated_counts['silver_updated']
             })
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+    
+
+# ==================== WHATSAPP VIEWS ====================
+
+
+WHATSAPP_TOKEN = 'EAAiDBFYTu4cBQZBoq2Q3W029FSG4aYVGpzg86Aqmk4klRDhfxcjmeTkhSFfZCkHfZBd3FmFO3YmDCt9BCi3HQ2ict2H4xMk2PoZAZAZBAEmLiiQrZCjCwhNW0CpKkOy0q5HuqYZBAEQyMP4IS8dKWni2gHyQVKY5MmUq2xt3Xu4bxBzmhhsLRXFksZCKZB2QFMYdaTJoHI3TggNXBUUlx1N0x77xdO0UZBZACBrHOSlis0f5NFcKfjZAz3JcyZAKTb0fmJzZCrFFR2p6Y74SMLDUJGw8XXY1U6i'  # token بتاعك
+PHONE_NUMBER_ID = '1107440045780222'
+OWNER_PHONE = '201067365567'
+
+@api_view(['POST'])
+def send_whatsapp_order(request):
+    try:
+        data = request.data
+        message = data.get('message')
+        image_url = data.get('image_url')
+
+        headers = {
+            'Authorization': f'Bearer {WHATSAPP_TOKEN}',
+            'Content-Type': 'application/json'
+        }
+
+        # بعت الصورة
+        if image_url:
+            http_requests.post(
+                f'https://graph.facebook.com/v18.0/{PHONE_NUMBER_ID}/messages',
+                headers=headers,
+                json={
+                    'messaging_product': 'whatsapp',
+                    'to': OWNER_PHONE,
+                    'type': 'image',
+                    'image': {'link': image_url}
+                }
+            )
+
+        # بعت النص
+        res = http_requests.post(
+            f'https://graph.facebook.com/v18.0/{PHONE_NUMBER_ID}/messages',
+            headers=headers,
+            json={
+                'messaging_product': 'whatsapp',
+                'to': OWNER_PHONE,
+                'type': 'text',
+                'text': {'body': message}
+            }
+        )
+
+        if res.status_code == 200:
+            return Response({'success': True})
+        else:
+            return Response({'success': False}, status=500)
 
     except Exception as e:
         return Response({'error': str(e)}, status=500)

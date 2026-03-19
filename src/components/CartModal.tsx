@@ -2,8 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { FaWhatsapp, FaTrash, FaExclamationTriangle } from 'react-icons/fa';
 import './CartModal.css';
-import { pdf } from '@react-pdf/renderer';
-import InvoiceDocument from './InvoiceDocument';
 
 export interface Product {
   id: number | string;
@@ -14,7 +12,7 @@ export interface Product {
   image_url?: string;
   quantity?: number;
   description?: string;
-  isDeleted?: boolean;
+  isDeleted?: boolean; 
 }
 
 interface CartModalProps {
@@ -27,18 +25,16 @@ interface CartModalProps {
 const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, language = 'ar' }) => {
   const { cartItems, removeFromCart, cleanupDeletedProducts } = useCart();
   const [validatedItems, setValidatedItems] = useState<any[]>([]);
-  const [isGenerating, setIsGenerating] = useState(false);
-
 
   useEffect(() => {
-    if (isOpen) {
-      if (cartItems.length > 0) {
-        validateCartItems();
-      } else {
-        setValidatedItems([]);
-      }
+  if (isOpen) {
+    if (cartItems.length > 0) {
+      validateCartItems();
+    } else {
+      setValidatedItems([]); 
     }
-  }, [isOpen, cartItems]);
+  }
+}, [isOpen, cartItems]); 
 
   const validateCartItems = async () => {
     try {
@@ -142,49 +138,40 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
   };
 
  const handleConnectToBuy = async () => {
-  if (isGenerating) return;
   const validItems = validatedItems.filter(item => !item.isDeleted);
   if (validItems.length === 0) return;
 
-  setIsGenerating(true);
+  const phoneNumber = '201067365567';
+
+  let message = `${t.whatsappMessage}\n\n`;
+  validItems.forEach((item: any, index: number) => {
+    const qty = item.quantity || 1;
+    const productName = language === 'ar'
+      ? item.name_ar || item.arabic_name || item.name || 'منتج'
+      : item.name_en || item.english_name || item.name || 'Product';
+    message += `${index + 1}. ${productName} (x${qty}) - $${(item.price * qty).toLocaleString()}\n`;
+  });
+  message += `\n*${t.total} $${calculateTotal().toLocaleString()}*`;
+
+  const firstItem = validItems[0];
+  const imageUrl = getImageUrl(firstItem);
+
   try {
-    const blob = await pdf(
-      <InvoiceDocument items={validItems} language={language} />
-    ).toBlob();
+    const res = await fetch('https://omarawad9.pythonanywhere.com/api/send-whatsapp/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, image_url: imageUrl })
+    });
 
-    const file = new File([blob], 'Saudi-Silver-Invoice.pdf', { type: 'application/pdf' });
+    if (!res.ok) throw new Error('failed');
+    alert(language === 'ar' ? 'تم إرسال طلبك بنجاح!' : 'Order sent successfully!');
 
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({
-        files: [file],
-        title: 'Saudi Silver Invoice',
-        text: language === 'ar'
-          ? 'مرحباً، هذه فاتورة طلبي من Saudi Silver 🧾'
-          : 'Hello, here is my order invoice from Saudi Silver 🧾',
-      });
-    } else {
-      // fallback للديسكتوب بس
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'Saudi-Silver-Invoice.pdf';
-      link.click();
-      URL.revokeObjectURL(url);
-
-      const phoneNumber = '201067365567';
-      const message = language === 'ar'
-        ? 'مرحباً، أرسلت لك فاتورة طلبي 🧾'
-        : 'Hello, I sent you my order invoice 🧾';
-      window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
-    }
-  } catch (err: any) {
-    if (err?.name !== 'AbortError') {
-      console.error('Invoice error:', err);
-    }
-  } finally {
-    setIsGenerating(false);
+  } catch (error) {
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
   }
 };
+
 
   if (!isOpen) return null;
 
@@ -215,8 +202,6 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
         return total + (item.quantity || 1);
       }, 0);
   };
-
-
 
   const hasDeletedItems = validatedItems.some(item => item.isDeleted);
 
@@ -364,24 +349,9 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
               </span>
             </div>
 
-            <button
-              className="cart-connect-btn"
-              onClick={handleConnectToBuy}
-              disabled={isGenerating}
-            >
-              <span>{isGenerating ? '⏳ جاري التحضير...' : t.connectToBuy}</span>
+            <button className="cart-connect-btn" onClick={handleConnectToBuy}>
+              <span>{t.connectToBuy}</span>
               <FaWhatsapp size={22} />
-            </button>
-
-            <button onClick={async () => {
-              const validItems = validatedItems.filter(item => !item.isDeleted);
-              const blob = await pdf(
-                <InvoiceDocument items={validItems} language={language} />
-              ).toBlob();
-              const url = URL.createObjectURL(blob);
-              window.open(url, '_blank');
-            }}>
-              تجربة PDF
             </button>
           </div>
         )}
