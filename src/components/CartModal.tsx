@@ -12,7 +12,7 @@ export interface Product {
   image_url?: string;
   quantity?: number;
   description?: string;
-  isDeleted?: boolean; 
+  isDeleted?: boolean;
 }
 
 interface CartModalProps {
@@ -27,39 +27,39 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
   const [validatedItems, setValidatedItems] = useState<any[]>([]);
 
   useEffect(() => {
-  if (isOpen) {
-    if (cartItems.length > 0) {
-      validateCartItems();
-    } else {
-      setValidatedItems([]); 
-    }
-  }
-}, [isOpen, cartItems]); 
-
-const validateCartItems = async () => {
-  try {
-    const response = await fetch('https://omarawad9.pythonanywhere.com/api/products/');
-    const existingProducts = await response.json();
-    const existingMap = new Map(existingProducts.map((p: any) => [p.id, p]));
-
-    const validated = cartItems.map(item => {
-      const freshProduct = existingMap.get(item.id);
-      if (!freshProduct) {
-        return { ...item, isDeleted: true };
+    if (isOpen) {
+      if (cartItems.length > 0) {
+        validateCartItems();
+      } else {
+        setValidatedItems([]);
       }
-      return {
-        ...item,
-        ...freshProduct,
-        isDeleted: false
-      };
-    });
+    }
+  }, [isOpen, cartItems]);
 
-    setValidatedItems(validated);
-  } catch (error) {
-    console.error('Error validating cart items:', error);
-    setValidatedItems(cartItems);
-  }
-};
+  const validateCartItems = async () => {
+    try {
+      const response = await fetch('https://omarawad9.pythonanywhere.com/api/products/');
+      const existingProducts = await response.json();
+      const existingMap = new Map(existingProducts.map((p: any) => [p.id, p]));
+
+      const validated = cartItems.map(item => {
+        const freshProduct = existingMap.get(item.id);
+        if (!freshProduct) {
+          return { ...item, isDeleted: true };
+        }
+        return {
+          ...item,
+          ...freshProduct,
+          isDeleted: false
+        };
+      });
+
+      setValidatedItems(validated);
+    } catch (error) {
+      console.error('Error validating cart items:', error);
+      setValidatedItems(cartItems);
+    }
+  };
 
   const texts: Record<string, {
     shoppingCart: string;
@@ -108,11 +108,11 @@ const validateCartItems = async () => {
   const t = texts[language as string] || texts.ar;
 
   const getImageUrl = (product: Product): string => {
+    if (product.image_url) {
+      return product.image_url;  // ✅ Cloudinary أول
+    }
     if (product.image_file) {
       return product.image_file;
-    }
-    if (product.image_url) {
-      return product.image_url;
     }
     if (product.image) {
       return product.image;
@@ -144,40 +144,46 @@ const validateCartItems = async () => {
       }, 0);
   };
 
- const handleConnectToBuy = async () => {
-  const validItems = validatedItems.filter(item => !item.isDeleted);
-  if (validItems.length === 0) return;
+  const handleConnectToBuy = async () => {
+    const validItems = validatedItems.filter(item => !item.isDeleted);
+    if (validItems.length === 0) return;
 
-  const phoneNumber = '201067365567';
+    const phoneNumber = '201067365567';
 
-  let message = `${t.whatsappMessage}\n\n`;
-  validItems.forEach((item: any, index: number) => {
-    const qty = item.quantity || 1;
-    const productName = language === 'ar'
-      ? item.name_ar || item.arabic_name || item.name || 'منتج'
-      : item.name_en || item.english_name || item.name || 'Product';
-    message += `${index + 1}. ${productName} (x${qty}) - $${(item.price * qty).toLocaleString()}\n`;
-  });
-  message += `\n*${t.total} $${calculateTotal().toLocaleString()}*`;
-
-  const firstItem = validItems[0];
-  const imageUrl = getImageUrl(firstItem);
-
-  try {
-    const res = await fetch('https://omarawad9.pythonanywhere.com/api/send-whatsapp/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message, image_url: imageUrl })
+    let message = `${t.whatsappMessage}\n\n`;
+    validItems.forEach((item: any, index: number) => {
+      const qty = item.quantity || 1;
+      const productName = language === 'ar'
+        ? item.name_ar || item.arabic_name || item.name || 'منتج'
+        : item.name_en || item.english_name || item.name || 'Product';
+      message += `${index + 1}. ${productName} (x${qty}) - $${(item.price * qty).toLocaleString()}\n`;
     });
+    message += `\n*${t.total} $${calculateTotal().toLocaleString()}*`;
 
-    if (!res.ok) throw new Error('failed');
-    alert(language === 'ar' ? 'تم إرسال طلبك بنجاح!' : 'Order sent successfully!');
+    const firstItem = validItems[0];
+    const imageUrl = getImageUrl(firstItem);
 
-  } catch (error) {
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-  }
-};
+    try {
+      console.log('🚀 image_url being sent:', imageUrl);
+      const res = await fetch('https://omarawad9.pythonanywhere.com/api/send-whatsapp/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, image_url: imageUrl })
+      });
+
+      console.log('📥 Response status:', res.status);
+      const data = await res.json();
+      console.log('📥 Response data:', data);
+
+      if (!res.ok) throw new Error('failed');
+      alert(language === 'ar' ? 'تم إرسال طلبك بنجاح!' : 'Order sent successfully!');
+
+    } catch (error) {
+      console.error('❌ Error:', error);
+      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
+    }
+  };
 
 
   if (!isOpen) return null;
