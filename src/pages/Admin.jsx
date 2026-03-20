@@ -670,7 +670,28 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
 
       // إضافة الصورة
       if (imageType === 'file' && selectedFile) {
-        form.append('image_file', selectedFile);
+        // ✅ رفع على Cloudinary مباشرة
+        const cloudinaryForm = new FormData();
+        cloudinaryForm.append('file', selectedFile);
+        cloudinaryForm.append('upload_preset', 'saudi_silver_upload');
+
+        const cloudRes = await fetch(
+          'https://api.cloudinary.com/v1_1/dpiwfb3sr/image/upload',
+          { method: 'POST', body: cloudinaryForm }
+        );
+        const cloudData = await cloudRes.json();
+
+        if (!cloudData.secure_url) {
+          Modal.error({
+            title: language === 'ar' ? '❌ فشل رفع الصورة' : '❌ Image Upload Failed',
+            content: language === 'ar' ? 'تعذر رفع الصورة على Cloudinary' : 'Failed to upload image to Cloudinary',
+            centered: true,
+          });
+          setIsSubmitting(false);
+          return;
+        }
+
+        form.append('image_url', cloudData.secure_url);
       } else if (imageType === 'url' && formData.image_url) {
         form.append('image_url', formData.image_url);
       }

@@ -36,23 +36,30 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
   }
 }, [isOpen, cartItems]); 
 
-  const validateCartItems = async () => {
-    try {
-      const response = await fetch('https://omarawad9.pythonanywhere.com/api/products/');
-      const existingProducts = await response.json();
-      const existingIds = new Set(existingProducts.map((p: any) => p.id));
+const validateCartItems = async () => {
+  try {
+    const response = await fetch('https://omarawad9.pythonanywhere.com/api/products/');
+    const existingProducts = await response.json();
+    const existingMap = new Map(existingProducts.map((p: any) => [p.id, p]));
 
-      const validated = cartItems.map(item => ({
+    const validated = cartItems.map(item => {
+      const freshProduct = existingMap.get(item.id);
+      if (!freshProduct) {
+        return { ...item, isDeleted: true };
+      }
+      return {
         ...item,
-        isDeleted: !existingIds.has(item.id)
-      }));
+        ...freshProduct,
+        isDeleted: false
+      };
+    });
 
-      setValidatedItems(validated);
-    } catch (error) {
-      console.error('Error validating cart items:', error);
-      setValidatedItems(cartItems);
-    }
-  };
+    setValidatedItems(validated);
+  } catch (error) {
+    console.error('Error validating cart items:', error);
+    setValidatedItems(cartItems);
+  }
+};
 
   const texts: Record<string, {
     shoppingCart: string;
