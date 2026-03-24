@@ -144,46 +144,31 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
       }, 0);
   };
 
-  const handleConnectToBuy = async () => {
-    const validItems = validatedItems.filter(item => !item.isDeleted);
-    if (validItems.length === 0) return;
+ const handleConnectToBuy = () => {
+  const validItems = validatedItems.filter(item => !item.isDeleted);
+  if (validItems.length === 0) return;
 
-    const phoneNumber = '201067365567';
+  const phoneNumber = '201067365567';
 
-    let message = `${t.whatsappMessage}\n\n`;
-    validItems.forEach((item: any, index: number) => {
-      const qty = item.quantity || 1;
-      const productName = language === 'ar'
-        ? item.name_ar || item.arabic_name || item.name || 'منتج'
-        : item.name_en || item.english_name || item.name || 'Product';
-      message += `${index + 1}. ${productName} (x${qty}) - $${(item.price * qty).toLocaleString()}\n`;
-    });
-    message += `\n*${t.total} $${calculateTotal().toLocaleString()}*`;
+  let message = `${t.whatsappMessage}\n\n`;
+  
+  validItems.forEach((item: any, index: number) => {
+    const qty = item.quantity || 1;
+    const productName = language === 'ar'
+      ? item.name_ar || item.arabic_name || item.name || 'منتج'
+      : item.name_en || item.english_name || item.name || 'Product';
+    
+    message += `${index + 1}. ${productName} (x${qty}) - $${(item.price * qty).toLocaleString()}\n`;
+    
+    // ✅ رابط كل منتج
+    message += `   🔗 https://saudi-silver.vercel.app/?product=${item.id}\n\n`;
+  });
 
-    const firstItem = validItems[0];
-    const imageUrl = getImageUrl(firstItem);
+  message += `*${t.total} $${calculateTotal().toLocaleString()}*`;
 
-    try {
-      console.log('🚀 image_url being sent:', imageUrl);
-      const res = await fetch('https://omarawad9.pythonanywhere.com/api/send-whatsapp/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, image_url: imageUrl })
-      });
-
-      console.log('📥 Response status:', res.status);
-      const data = await res.json();
-      console.log('📥 Response data:', data);
-
-      if (!res.ok) throw new Error('failed');
-      alert(language === 'ar' ? 'تم إرسال طلبك بنجاح!' : 'Order sent successfully!');
-
-    } catch (error) {
-      console.error('❌ Error:', error);
-      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, '_blank');
-    }
-  };
+  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+  window.open(whatsappUrl, '_blank');
+};
 
 
   if (!isOpen) return null;

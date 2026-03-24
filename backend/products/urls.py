@@ -20,7 +20,4 @@ urlpatterns = [
     # 📈 METAL PRICES
     path('metal-prices/', views.metal_prices, name='metal_prices'),
 
-    path('send-whatsapp/', views.send_whatsapp_order),
-
-
 ]
