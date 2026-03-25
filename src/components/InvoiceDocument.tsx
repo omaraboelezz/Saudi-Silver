@@ -30,7 +30,7 @@ const rowAlt    = '#1f160a';
 // ─── QR Code via free API (gold on dark) ─────────────────────────────────────
 // Points to saudi-silver.vercel.app — rendered as an image from qrserver.com
 const QR_URL =
-  'https://api.qrserver.com/v1/create-qr-code/?size=80x80&color=C9A84C&bgcolor=0d0a04&data=https://saudi-silver.pages.dev/';
+  'https://api.qrserver.com/v1/create-qr-code/?size=80x80&color=C9A84C&bgcolor=0d0a04&data=https://elsaudi-jewelry.vercel.app/';
 
 const FALLBACK_IMAGE = `${window.location.origin}/Saudi_Silver_Logo.png`;
 
