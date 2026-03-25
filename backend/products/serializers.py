@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product, Section
+from .models import Badge, Product, Section
 
 
 class SectionSerializer(serializers.ModelSerializer):
@@ -72,3 +72,9 @@ class ProductSerializer(serializers.ModelSerializer):
         
         data['price'] = float(instance.price)
         return data
+    
+
+class BadgeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Badge
+        fields = ['id', 'name', 'created_at']

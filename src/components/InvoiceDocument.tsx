@@ -10,7 +10,7 @@ import {
 } from '@react-pdf/renderer';
 
 import CairoFont from '../assets/fonts/Cairo.ttf';
-import LogoImage from '../assets/Saudi_Silver_Logo-removebg-preview.png';
+import LogoImage from '../assets/Saudi-Silver-Logo.png';
 
 Font.register({
   family: 'Cairo',
@@ -31,7 +31,7 @@ const rowAlt    = '#1f160a';
 const QR_URL =
   'https://api.qrserver.com/v1/create-qr-code/?size=80x80&color=C9A84C&bgcolor=0d0a04&data=https://elsaudi-jewelry.vercel.app/';
 
-const FALLBACK_IMAGE = `${window.location.origin}/Saudi_Silver_Logo.png`;
+const FALLBACK_IMAGE = `${window.location.origin}/Saudi-Silver-Logo.png`;
 
 // ─── Currency formatter ───────────────────────────────────────────────────────
 const fmt = (amount: number) => `${amount.toLocaleString('en-US')} EGP`;
@@ -167,7 +167,7 @@ interface InvoiceDocumentProps {
   language?: string;
   invoiceNumber?: string;
   date?: string;
-  status?: string; // e.g. "مكتمل" | "قيد التجهيز"
+  status?: string; 
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -217,7 +217,7 @@ const InvoiceDocument = ({
           </View>
 
           <View style={styles.headerCenter}>
-            <Text style={styles.brandName}>SAUDI SILVER</Text>
+            <Text style={styles.brandName}>El-Saudi JEWELRY</Text>
             <Text style={styles.brandSub}>✦  LUXURY JEWELRY  ✦</Text>
           </View>
 
@@ -274,7 +274,7 @@ const InvoiceDocument = ({
                 <View style={styles.itemInfo}>
                   <Text style={styles.itemName}>{getProductName(item, language)}</Text>
                   <Text style={styles.itemDesc}>
-                    {isAr ? 'فضة سعودية أصيلة' : 'Authentic Saudi Silver'}
+                    {isAr ? 'فضة سعودية أصيلة' : 'Authentic EL-SAUDI JEWELRY '}
                   </Text>
                 </View>
                 <Text style={styles.itemQty}>{qty}</Text>
@@ -329,10 +329,10 @@ const InvoiceDocument = ({
           <View style={styles.footer}>
             <Text style={styles.footerText}>
               {isAr
-                ? 'شكراً لثقتك في Saudi Silver — نلتزم بأعلى معايير الجودة'
-                : 'Thank you for choosing Saudi Silver — Committed to the highest quality standards'}
+                ? 'شكراً لثقتك في EL-SAUDI JEWELRY  — نلتزم بأعلى معايير الجودة'
+                : 'Thank you for choosing EL-SAUDI JEWELRY  — Committed to the highest quality standards'}
             </Text>
-            <Text style={styles.footerBrand}>✦  SAUDI SILVER  ✦</Text>
+            <Text style={styles.footerBrand}>✦  EL-SAUDI JEWELRY  ✦</Text>
             <Text style={styles.footerWebsite}>elsaudi-jewelry.vercel.app</Text>
           </View>
         </View>

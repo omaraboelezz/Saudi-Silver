@@ -1,8 +1,8 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.response import Response
-from .models import Product, Section, AdminUser, AdminSession, LoginAttempt, MetalPrice
-from .serializers import ProductSerializer, SectionSerializer
+from .models import Badge, Product, Section, AdminUser, AdminSession, LoginAttempt, MetalPrice
+from .serializers import BadgeSerializer, ProductSerializer, SectionSerializer
 from rest_framework.parsers import MultiPartParser, FormParser
 import json
 
@@ -548,3 +548,32 @@ def metal_prices(request):
     except Exception as e:
         return Response({'error': str(e)}, status=500)
     
+
+
+@api_view(['GET', 'POST'])
+def badge_list(request):
+    try:
+        if request.method == 'GET':
+            badges = Badge.objects.all().order_by('-created_at')
+            serializer = BadgeSerializer(badges, many=True)
+            return Response(serializer.data)
+
+        elif request.method == 'POST':
+            serializer = BadgeSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['DELETE'])
+def badge_detail(request, pk):
+    try:
+        badge = Badge.objects.get(pk=pk)
+        badge.delete()
+        return Response({'message': 'Badge deleted'}, status=status.HTTP_204_NO_CONTENT)
+    except Badge.DoesNotExist:
+        return Response({'error': 'Badge not found'}, status=status.HTTP_404_NOT_FOUND)

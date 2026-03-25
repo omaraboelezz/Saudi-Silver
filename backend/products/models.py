@@ -296,3 +296,7 @@ class LoginAttempt(models.Model):
         ).count()
         
         return recent_failures >= max_attempts
+
+class Badge(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)

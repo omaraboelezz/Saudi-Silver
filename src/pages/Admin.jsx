@@ -45,6 +45,10 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
   const [manualItem, setManualItem] = useState({ name: '', price: '' });
   const [invoiceItems, setInvoiceItems] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showBadgeModal, setShowBadgeModal] = useState(false);
+  const [newBadgeName, setNewBadgeName] = useState('');
+  const [customBadges, setCustomBadges] = useState([]);
+  const [isSavingBadge, setIsSavingBadge] = useState(false);
 
   // eslint-disable-next-line no-unused-vars
   const [searchText, setSearchText] = useState("");
@@ -875,11 +879,53 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
     }
   };
 
+  const BADGES_API_URL = "https://omarawad9.pythonanywhere.com/api/badges/";
+
+  const fetchBadges = async () => {
+    try {
+      const response = await fetch(BADGES_API_URL);
+      const data = await response.json();
+      if (Array.isArray(data)) setCustomBadges(data);
+    } catch (error) {
+      console.error("Error fetching badges:", error);
+    }
+  };
+
+  const handleSaveBadge = async () => {
+    if (!newBadgeName.trim()) return;
+    setIsSavingBadge(true);
+    try {
+      const response = await fetch(BADGES_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newBadgeName.trim() }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setCustomBadges((prev) => [...prev, data]);
+        setFormData((prev) => ({ ...prev, badge: data.name }));
+        setNewBadgeName('');
+        setShowBadgeModal(false);
+      } else {
+        Modal.error({
+          title: language === 'ar' ? '❌ خطأ' : '❌ Error',
+          content: data.error || 'Failed to save badge',
+          centered: true,
+        });
+      }
+    } catch (err) {
+      Modal.error({ title: '❌ Network Error', content: err.message, centered: true });
+    } finally {
+      setIsSavingBadge(false);
+    }
+  };
+
   // في useEffect
   useEffect(() => {
     fetchProducts();
     fetchSections();
     fetchMetalPrices(); // ✅ إضافة هنا
+    fetchBadges(); // ✅ إضافة هنا
   }, []);
 
   const handleUpdateMetalPrices = async () => {
@@ -1848,20 +1894,106 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                 <div className="form-row">
                   <div className="form-group">
                     <label htmlFor="badge">{t.badge}</label>
-                    <select
-                      id="badge"
-                      name="badge"
-                      value={formData.badge}
-                      onChange={handleChange}
-                    >
-                      <option value="">{t.noBadge}</option>
-                      <option value="Best Seller">{t.bestSeller}</option>
-                      <option value="New Arrival">{t.newArrival}</option>
-                      <option value="Limited Edition">
-                        {t.limitedEdition}
-                      </option>
-                    </select>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <select
+                        id="badge"
+                        name="badge"
+                        value={formData.badge}
+                        onChange={handleChange}
+                        style={{ flex: 1 }}
+                      >
+                        <option value="">{t.noBadge}</option>
+                        <option value="Best Seller">{t.bestSeller}</option>
+                        <option value="New Arrival">{t.newArrival}</option>
+                        <option value="Limited Edition">{t.limitedEdition}</option>
+                        {customBadges.map((b) => (
+                          <option key={b.id} value={b.name}>{b.name}</option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => setShowBadgeModal(true)}
+                        title={language === 'ar' ? 'إضافة بادج جديد' : 'Add new badge'}
+                        style={{
+                          width: '36px', height: '36px',
+                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                          color: 'white', border: 'none', borderRadius: '8px',
+                          cursor: 'pointer', fontSize: '20px', fontWeight: '700',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          flexShrink: 0,
+                        }}
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
+
+                  {showBadgeModal && (
+  <div style={{
+    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+    background: 'rgba(0,0,0,0.7)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    zIndex: 2000,
+  }}>
+    <div style={{
+      background: 'white', padding: '28px', borderRadius: '12px',
+      maxWidth: '400px', width: '90%',
+      boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
+    }}>
+      <h3 style={{ marginBottom: '16px', color: '#2c3e50', fontSize: '20px' }}>
+        🏷️ {language === 'ar' ? 'إضافة بادج جديد' : 'Add New Badge'}
+      </h3>
+      <div style={{ marginBottom: '20px' }}>
+        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', fontSize: '14px' }}>
+          {language === 'ar' ? 'اسم البادج' : 'Badge Name'} *
+        </label>
+        <input
+          type="text"
+          autoFocus
+          value={newBadgeName}
+          onChange={(e) => setNewBadgeName(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleSaveBadge(); if (e.key === 'Escape') setShowBadgeModal(false); }}
+          maxLength={30}
+          placeholder={language === 'ar' ? 'مثال: حصري، خاص، مميز...' : 'e.g., Exclusive, Special...'}
+          style={{
+            width: '100%', padding: '10px 14px', borderRadius: '8px',
+            border: '2px solid #667eea', fontSize: '16px', boxSizing: 'border-box',
+          }}
+        />
+        <small style={{ color: '#6c757d', fontSize: '13px', marginTop: '6px', display: 'block' }}>
+          {newBadgeName.length}/30
+        </small>
+      </div>
+      <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+        <button
+          type="button"
+          onClick={() => { setShowBadgeModal(false); setNewBadgeName(''); }}
+          style={{
+            background: '#6c757d', color: 'white', border: 'none',
+            padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600',
+          }}
+        >
+          {t.cancel}
+        </button>
+        <button
+          type="button"
+          onClick={handleSaveBadge}
+          disabled={!newBadgeName.trim() || isSavingBadge}
+          style={{
+            background: (!newBadgeName.trim() || isSavingBadge) ? '#ccc' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white', border: 'none', padding: '10px 20px',
+            borderRadius: '8px', cursor: (!newBadgeName.trim() || isSavingBadge) ? 'not-allowed' : 'pointer',
+            fontWeight: '600', opacity: isSavingBadge ? 0.7 : 1,
+          }}
+        >
+          {isSavingBadge
+            ? (language === 'ar' ? '⏳ جاري الحفظ...' : '⏳ Saving...')
+            : (language === 'ar' ? '💾 حفظ البادج' : '💾 Save Badge')}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
                   <div className="form-group">
                     <label htmlFor="stock">{t.stock} *</label>
