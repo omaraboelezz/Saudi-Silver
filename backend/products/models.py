@@ -100,8 +100,12 @@ class Product(models.Model):
         else:  # silver
             price_per_gram = metal_prices.silver_price_per_gram
         
-        # المعادلة: (سعر الجرام + المصنعية) × الوزن
-        final_price = (price_per_gram + self.manufacturing_cost) * self.weight
+        if self.weight < 3:
+            # 🔵 وزن خفيف: مصنعية ثابتة للقطعة
+            final_price = (price_per_gram * self.weight) + self.manufacturing_cost
+        else:
+            # 🟢 وزن تقيل: مصنعية per gram
+            final_price = (price_per_gram + self.manufacturing_cost) * self.weight
         
         return final_price
 

@@ -42,7 +42,7 @@ function createWindow() {
 
   const startUrl = isDev
     ? 'http://localhost:5173'
-    : 'https://saudi-silver.pages.dev';
+    : 'https://elsaudi-jewelry.vercel.app/';
 
   mainWindow.loadURL(startUrl);
 

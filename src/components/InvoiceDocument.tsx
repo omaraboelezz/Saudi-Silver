@@ -28,7 +28,6 @@ const deepBlack = '#0d0a04';
 const rowAlt    = '#1f160a';
 
 // ─── QR Code via free API (gold on dark) ─────────────────────────────────────
-// Points to saudi-silver.vercel.app — rendered as an image from qrserver.com
 const QR_URL =
   'https://api.qrserver.com/v1/create-qr-code/?size=80x80&color=C9A84C&bgcolor=0d0a04&data=https://elsaudi-jewelry.vercel.app/';
 
@@ -74,8 +73,8 @@ const styles = StyleSheet.create({
   brandSub:  { color: lightGold, fontSize: 7, letterSpacing: 3, marginTop: 3, opacity: 0.75 },
 
   headerRight: { alignItems: 'flex-end', width: 68 },
-  qrImage:  { width: 60, height: 60, borderWidth: 1, borderColor: goldDim,  marginRight: 4 },
-  qrLabel:  { color: gray, fontSize: 6, marginTop: 3,  textAlign: 'center', letterSpacing: 0.5 },
+  qrImage:  { width: 60, height: 60, borderWidth: 1, borderColor: goldDim },
+  qrLabel:  { color: gray, fontSize: 6, marginTop: 3,  textAlign: 'center', letterSpacing: 0.5 , marginRight: 6 },
 
   // ─── Meta Strip ─────────────────────────────────────────────────────────
   metaStrip: {
@@ -224,7 +223,7 @@ const InvoiceDocument = ({
 
           <View style={styles.headerRight}>
             <Image src={QR_URL} style={styles.qrImage} />
-            <Text style={styles.qrLabel}>saudi-silver.pages.dev</Text>
+            <Text style={styles.qrLabel}>elsaudi-jewelry</Text>
           </View>
         </View>
 
@@ -334,7 +333,7 @@ const InvoiceDocument = ({
                 : 'Thank you for choosing Saudi Silver — Committed to the highest quality standards'}
             </Text>
             <Text style={styles.footerBrand}>✦  SAUDI SILVER  ✦</Text>
-            <Text style={styles.footerWebsite}>saudi-silver.pages.dev</Text>
+            <Text style={styles.footerWebsite}>elsaudi-jewelry.vercel.app</Text>
           </View>
         </View>
 
