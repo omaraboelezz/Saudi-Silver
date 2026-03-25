@@ -5,7 +5,6 @@ from .models import Product, Section, AdminUser, AdminSession, LoginAttempt, Met
 from .serializers import ProductSerializer, SectionSerializer
 from rest_framework.parsers import MultiPartParser, FormParser
 import json
-import requests as http_requests
 
 
 
@@ -549,55 +548,3 @@ def metal_prices(request):
     except Exception as e:
         return Response({'error': str(e)}, status=500)
     
-
-# ==================== WHATSAPP VIEWS ====================
-
-
-WHATSAPP_TOKEN = 'EAAiDBFYTu4cBQynsPDNIHXcucHcZC0LyQS2f3RXTwYudbicNpt4bao9jfy61AaX6caSZArLA4GIUR7G1mcoOk9fNHiEz2GQ6ykJKb51VZBIu5D4YZBAxLJXAPUmfJA4vthHlWRiJewJGZCLEcmWspIGLsNsrhQ5K2mg7PKIinhrpn8rKKvk4vkQbkz3jhjmUpYC01OIbbEBHQbz4EP0W6uAxXi55mq0xE91osj1VfQnpXxZCyJvIZAYXh0kKFZCrmMY8rn3nYTLFuZAJRjqOfXnLG2gP6ZAQZDZD'  # token بتاعك
-PHONE_NUMBER_ID = '1107440045780222'
-OWNER_PHONE = '201067365567'
-
-@api_view(['POST'])
-def send_whatsapp_order(request):
-    try:
-        data = request.data
-        message = data.get('message')
-        image_url = data.get('image_url')
-
-        headers = {
-            'Authorization': f'Bearer {WHATSAPP_TOKEN}',
-            'Content-Type': 'application/json'
-        }
-
-        # بعت الصورة
-        if image_url:
-            http_requests.post(
-                f'https://graph.facebook.com/v18.0/{PHONE_NUMBER_ID}/messages',
-                headers=headers,
-                json={
-                    'messaging_product': 'whatsapp',
-                    'to': OWNER_PHONE,
-                    'type': 'image',
-                    'image': {'link': image_url}
-                }
-            )
-
-        # بعت النص
-        res = http_requests.post(
-            f'https://graph.facebook.com/v18.0/{PHONE_NUMBER_ID}/messages',
-            headers=headers,
-            json={
-                'messaging_product': 'whatsapp',
-                'to': OWNER_PHONE,
-                'type': 'text',
-                'text': {'body': message}
-            }
-        )
-
-        if res.status_code == 200:
-            return Response({'success': True})
-        else:
-            return Response({'success': False}, status=500)
-
-    except Exception as e:
-        return Response({'error': str(e)}, status=500)

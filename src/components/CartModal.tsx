@@ -161,7 +161,7 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
     message += `${index + 1}. ${productName} (x${qty}) - $${(item.price * qty).toLocaleString()}\n`;
     
     // ✅ رابط كل منتج
-    message += `   🔗  https://saudi-silver.vercel.app/?product=${item.id}\n\n`;
+    message += `   🔗 https://saudi-silver.vercel.app/?product=${item.id}\n\n`;
   });
 
   message += `*${t.total} $${calculateTotal().toLocaleString()}*`;
