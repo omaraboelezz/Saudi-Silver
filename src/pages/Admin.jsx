@@ -15,7 +15,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
     weight: "",
     manufacturing_cost: "",
     price: "",
-    category: "",
     badge: "",
     stock: "In Stock",
     section: "",
@@ -148,7 +147,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
       gold: "ذهب",
       silver: "فضة",
       price: "السعر ($)",
-      category: "الفئة",
       badge: "شارة (اختياري)",
       stock: "حالة المخزون",
       image: "صورة المنتج",
@@ -173,14 +171,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
       noProducts: "لا توجد منتجات",
       delete: "حذف",
       edit: "تعديل",
-      selectCategory: "اختر الفئة",
       noBadge: "بدون شارة",
-      rings: "خواتم",
-      necklaces: "قلادات",
-      bracelets: "أساور",
-      earrings: "أقراط",
-      watches: "ساعات",
-      newArrivals: "وصل حديثاً",
       inStock: "متوفر",
       limitedStock: "مخزون محدود",
       outOfStock: "غير متوفر",
@@ -214,7 +205,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
       gold: "Gold",
       silver: "Silver",
       price: "Price ($)",
-      category: "Category",
       badge: "Badge (Optional)",
       stock: "Stock Status",
       image: "Product Image",
@@ -239,14 +229,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
       noProducts: "No products found",
       delete: "Delete",
       edit: "Edit",
-      selectCategory: "Select category",
       noBadge: "No badge",
-      rings: "Rings",
-      necklaces: "Necklaces",
-      bracelets: "Bracelets",
-      earrings: "Earrings",
-      watches: "Watches",
-      newArrivals: "New Arrivals",
       inStock: "In Stock",
       limitedStock: "Limited Stock",
       outOfStock: "Out of Stock",
@@ -326,7 +309,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
             weight: "",
             manufacturing_cost: "",
             price: "",
-            category: "",
             badge: "",
             stock: "In Stock",
             section: "",
@@ -739,7 +721,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
       form.append("weight", Number(formData.weight));
       form.append("manufacturing_cost", Number(formData.manufacturing_cost));
       form.append("price", Number(formData.price));
-      form.append("category", formData.category);
       form.append("badge", formData.badge || "");
       form.append("stock", formData.stock);
       form.append("section", formData.section);
@@ -831,7 +812,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
               weight: "",
               manufacturing_cost: "",
               price: "",
-              category: "",
               badge: "",
               stock: "In Stock",
               section: "",
@@ -1834,55 +1814,35 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                   )}
                 </div>
 
-                {/* Manufacturing Cost — يتغير حسب الوزن */}
-                <div className="form-group">
-                  <label htmlFor="manufacturing_cost">
-                    {formData.weight !== "" && parseFloat(formData.weight) < 3
-                      ? (language === "ar" ? "المصنعية (للقطعة كلها)" : "Manufacturing Cost (flat per piece)")
-                      : (language === "ar" ? "المصنعية (للجرام)" : "Manufacturing Cost (per gram)")
-                    } *
-                  </label>
-                  <input
-                    type="number"
-                    id="manufacturing_cost"
-                    name="manufacturing_cost"
-                    value={formData.manufacturing_cost}
-                    onChange={handleChange}
-                    required
-                    onWheel={(e) => e.target.blur()}
-                    min="0"
-                    step="0.01"
-                    placeholder={language === "ar" ? "مثال: 2.5" : "e.g., 2.5"}
-                  />
-                  <small style={{ color: "#6c757d", fontSize: "13px", marginTop: "5px", display: "block" }}>
-                    {parseFloat(formData.weight) < 3
-                      ? (language === "ar" ? "💡 مصنعية ثابتة للقطعة" : "💡 Flat cost per piece")
-                      : (language === "ar" ? "💡 مصنعية لكل جرام" : "💡 Cost per gram")
-                    }
-                  </small>
-                </div>
-
-                {/* Category */}
-                <div className="form-row">
+                {/* Manufacturing Cost — يظهر بس لو في وزن */}
+                {formData.weight !== "" && parseFloat(formData.weight) > 0 && (
                   <div className="form-group">
-                    <label htmlFor="category">{t.category} *</label>
-                    <select
-                      id="category"
-                      name="category"
-                      value={formData.category}
+                    <label htmlFor="manufacturing_cost">
+                      {parseFloat(formData.weight) < 3
+                        ? (language === "ar" ? "المصنعية (للقطعة كلها)" : "Manufacturing Cost (per piece)")
+                        : (language === "ar" ? "المصنعية (للجرام)" : "Manufacturing Cost (per gram)")
+                      } *
+                    </label>
+                    <input
+                      type="number"
+                      id="manufacturing_cost"
+                      name="manufacturing_cost"
+                      value={formData.manufacturing_cost}
                       onChange={handleChange}
                       required
-                    >
-                      <option value="">{t.selectCategory}</option>
-                      <option value="Rings">{t.rings}</option>
-                      <option value="Necklaces">{t.necklaces}</option>
-                      <option value="Bracelets">{t.bracelets}</option>
-                      <option value="Earrings">{t.earrings}</option>
-                      <option value="Watches">{t.watches}</option>
-                      <option value="New Arrivals">{t.newArrivals}</option>
-                    </select>
+                      onWheel={(e) => e.target.blur()}
+                      min="0"
+                      step="0.01"
+                      placeholder={language === "ar" ? "مثال: 2.5" : "e.g., 2.5"}
+                    />
+                    <small style={{ color: "#6c757d", fontSize: "13px", marginTop: "5px", display: "block" }}>
+                      {parseFloat(formData.weight) < 3
+                        ? (language === "ar" ? "💡 مصنعية ثابتة للقطعة" : "💡 Flat cost per piece")
+                        : (language === "ar" ? "💡 مصنعية لكل جرام" : "💡 Cost per gram")
+                      }
+                    </small>
                   </div>
-                </div>
+                )}
 
                 {/* Badge & Stock */}
                 <div className="form-row">
@@ -2069,7 +2029,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                         weight: "",
                         manufacturing_cost: "",
                         price: "",
-                        category: "",
                         badge: "",
                         stock: "In Stock",
                         section: "",
@@ -2651,7 +2610,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                                     manufacturing_cost:
                                       product.manufacturing_cost || "",
                                     price: product.price,
-                                    category: product.category,
                                     badge: product.badge || "",
                                     stock: product.stock,
                                     section: product.section,
@@ -2878,9 +2836,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                       >
                         ${product.price}
                       </span>
-                      <span style={{ fontSize: "12px", color: "#6c757d" }}>
-                        {product.category}
-                      </span>
                     </div>
 
                     <span
@@ -2913,7 +2868,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                             manufacturing_cost:
                               product.manufacturing_cost || "",
                             price: product.price,
-                            category: product.category,
                             badge: product.badge || "",
                             stock: product.stock,
                             section: product.section || "",

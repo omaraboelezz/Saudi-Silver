@@ -10,14 +10,13 @@ class ProductAdmin(admin.ModelAdmin):
         'name_ar',           # بدل 'name'
         'name_en',           # جديد
         'price', 
-        'category', 
         'badge',
         'stock', 
         'created_at'
     ]
     
     # ✅ تحديث الفلاتر
-    list_filter = ['category', 'stock', 'badge', 'created_at']
+    list_filter = [ 'stock', 'badge', 'created_at']
     
     # ✅ تحديث البحث للحقول الجديدة
     search_fields = [
@@ -25,7 +24,6 @@ class ProductAdmin(admin.ModelAdmin):
         'name_en', 
         'description_ar', 
         'description_en',
-        'category'
     ]
     
     # ترتيب حسب الأحدث
@@ -39,8 +37,8 @@ class ProductAdmin(admin.ModelAdmin):
         ('🔤 Product Names', {
             'fields': ('name_ar', 'name_en')
         }),
-        ('💰 Pricing & Category', {
-            'fields': ('price', 'category', 'badge', 'stock')
+        ('💰 Pricing', {
+            'fields': ('price', 'badge', 'stock')
         }),
         ('🖼️ Images', {
             'fields': ('image_file', 'image_url'),

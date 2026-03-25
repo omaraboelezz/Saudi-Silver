@@ -130,7 +130,6 @@ Fetch all products from the database.
     "id": 1,
     "name": "Classic Gold Ring",
     "price": 1299.00,
-    "category": "Rings",
     "badge": "Best Seller",
     "stock": "In Stock",
     "image": "https://example.com/image.jpg",
@@ -148,7 +147,6 @@ Add a new product to the database.
 {
   "name": "Classic Gold Ring",
   "price": 1299,
-  "category": "Rings",
   "badge": "Best Seller",
   "stock": "In Stock",
   "image": "https://example.com/image.jpg",

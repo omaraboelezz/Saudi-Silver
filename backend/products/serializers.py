@@ -41,7 +41,7 @@ class ProductSerializer(serializers.ModelSerializer):
             'name_ar', 'name_en',
             'type',
             'weight', 'manufacturing_cost',
-            'price', 'category', 'badge', 'stock',
+            'price', 'badge', 'stock',
             'image_file', 'image_url',
             'description_ar', 'description_en',
             'shortDescription_ar', 'shortDescription_en'

@@ -70,7 +70,6 @@ class Product(models.Model):
 )
     
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    category = models.CharField(max_length=100)
     badge = models.CharField(max_length=100, null=True, blank=True)
     stock = models.CharField(max_length=50)
     
