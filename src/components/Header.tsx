@@ -138,7 +138,8 @@ const Header = ({
   const scrollToFeatures = () => {
     const el = document.getElementById('featured-collection');
     if (el) {
-      window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
+      const top = el.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top, behavior: 'smooth' });
     }
     closeDrawer();
   };
@@ -146,7 +147,8 @@ const Header = ({
   const scrollToSection = (sectionId: number) => {
     const el = document.getElementById(`section-${sectionId}`);
     if (el) {
-      window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
+      const top = el.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top, behavior: 'smooth' });
     }
     closeDrawer();
   };

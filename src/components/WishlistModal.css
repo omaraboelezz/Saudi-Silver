@@ -197,7 +197,7 @@ body[dir="rtl"] .wishlist-modal-close-button  {
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
-  opacity: 0;
+  opacity: 1;
 }
 
 .wishlist-item:hover .wishlist-item-remove {
