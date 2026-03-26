@@ -24,7 +24,7 @@ function createWindow() {
     minWidth: 1024,
     minHeight: 768,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.cjs'), 
+      preload: path.join(__dirname, 'preload.cjs'),
       nodeIntegration: false,
       contextIsolation: true,
       enableRemoteModule: false,
@@ -59,7 +59,7 @@ function createWindow() {
   // ✅ معالجة أخطاء التحميل
   mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
     console.error('Failed to load:', errorCode, errorDescription);
-    
+
     // في Production، حاول إعادة التحميل
     if (!isDev) {
       setTimeout(() => {
@@ -81,14 +81,14 @@ function createWindow() {
   mainWindow.webContents.on('will-navigate', (event, navigationUrl) => {
     const parsedUrl = new URL(navigationUrl);
     const currentUrl = mainWindow.webContents.getURL();
-    
+
     // السماح فقط بالتنقل داخل التطبيق
     if (isDev) {
       if (parsedUrl.origin !== 'http://localhost:5173') {
         event.preventDefault();
       }
     } else {
-      if (!navigationUrl.startsWith('file://')) {
+      if (!navigationUrl.startsWith('https://elsaudi-jewelry.vercel.app')) {
         event.preventDefault();
       }
     }
