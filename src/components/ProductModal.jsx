@@ -3,6 +3,7 @@ import useWishlist from '../context/useWishlist';
 import { FaWhatsapp, FaStar, FaRegStar, FaHeart, FaLink, FaShoppingCart, FaMinus, FaPlus, FaShareAlt, FaInstagram } from 'react-icons/fa';
 import { useCart } from '../context/CartContext';
 import { FaRegHeart } from 'react-icons/fa';
+import useBadges from '../utils/useBadges';
 import './ProductModal.css';
 
 const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
@@ -11,6 +12,7 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
   const { toggleWishlist, isInWishlist } = useWishlist();
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
+  const { getBadgeColor, getLocalizedBadgeName } = useBadges();
   const [copySuccess, setCopySuccess] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [userRating, setUserRating] = useState(0);
@@ -69,6 +71,7 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
   const t = texts[language] || texts.ar;
 
   const isWishlisted = isInWishlist(product?.id);
+  const customBadgeColor = getBadgeColor(product?.badge);
 
   const getProductName = () => {
     if (!product) return '';
@@ -102,7 +105,7 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
     if (badge === 'New Arrival') return t.newArrival;
     if (badge === 'Best Seller') return t.bestSeller;
     if (badge === 'Limited Edition') return t.limitedEdition;
-    return badge;
+    return getLocalizedBadgeName(badge, language);
   };
 
   const translateStock = (stock) => {
@@ -346,15 +349,18 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
             {(product.badge || product.stock) && (
               <div className="badge-stock-row">
                 {product.badge && (
-                  <div className={`modal-badge badge-${product.badge.toLowerCase().replace(' ', '-')}`}>
+                  <div
+                    className={`modal-badge badge-${product.badge.toLowerCase().replace(' ', '-')}`}
+                    style={customBadgeColor ? { backgroundColor: customBadgeColor, color: '#fff', border: 'none' } : {}}
+                  >
                     {translateBadge(product.badge)}
                   </div>
                 )}
 
                 {product.stock && (
                   <div className={`modal-stock ${product.stock === 'Limited Stock' ? 'stock-limited' :
-                      product.stock === 'Out of Stock' ? 'stock-out' :
-                        'stock-in'
+                    product.stock === 'Out of Stock' ? 'stock-out' :
+                      'stock-in'
                     }`}>
                     {translateStock(product.stock)}
                   </div>

@@ -22,6 +22,7 @@ class SectionSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
+    price = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
     # ✅ إضافة section field
     section = serializers.PrimaryKeyRelatedField(
         queryset=Section.objects.all(),
@@ -48,7 +49,6 @@ class ProductSerializer(serializers.ModelSerializer):
         ]
         extra_kwargs = {
             'id': {'read_only': True},
-            'price': {'read_only': True},
         }
 
     def validate(self, data):

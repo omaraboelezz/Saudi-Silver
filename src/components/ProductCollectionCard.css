@@ -10,6 +10,31 @@
   height: 100%;
   animation: fadeIn 0.6s ease-out;
   cursor: pointer;
+  position: relative;
+}
+
+/* Luxury Card Gleam Effect */
+.product-collection-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+  z-index: 10;
+  transition: all 0.7s ease;
+  pointer-events: none;
+}
+
+.product-collection-card:hover::before {
+  left: 200%;
 }
 
 .product-collection-card:hover {
@@ -24,6 +49,21 @@
   overflow: hidden;
   background: #f5f5dc;
   position: relative;
+}
+
+/* Subtle image overlay to make gold buttons/badges pop */
+.product-collection-image-container::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0);
+  transition: background 0.3s ease;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.product-collection-card:hover .product-collection-image-container::after {
+  background: rgba(0, 0, 0, 0.12); /* Subtle luxurious shadow */
 }
 
 /* Product Badge */
@@ -129,6 +169,13 @@
 
 .wishlist-button.active {
   background: rgba(212, 175, 55, 0.9);
+  animation: heartPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes heartPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
 }
 
 /* Stock Indicator */
@@ -157,7 +204,8 @@
 }
 
 .stock-out {
-  background: rgba(207, 37, 18, 0.9); /* أحمر */
+  background: rgba(207, 37, 18, 0.9);
+  /* أحمر */
   color: #fff;
 }
 
@@ -182,7 +230,7 @@
 }
 
 .product-collection-name {
-  font-size: 1rem;
+  font-size: 1.3rem;
   font-weight: 600;
   color: #1a1a1a;
   margin: 0;
@@ -231,10 +279,18 @@
 }
 
 .add-to-cart-button:hover {
-  background: #d4af37;
+  background: linear-gradient(-45deg, #d4af37, #f5deb3, #d4af37, #b5952f);
+  background-size: 300% 300%;
+  animation: shimmerGrain 2s linear infinite;
   color: #1a1a1a;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+}
+
+@keyframes shimmerGrain {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .add-to-cart-button:active {
@@ -274,6 +330,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

@@ -1,7 +1,15 @@
 import { useEffect, useState } from 'react';
 import useWishlist from '../context/useWishlist';
 import { useCart } from '../context/CartContext';
-import { FaShoppingCart, FaHeart, FaMapMarkerAlt, FaGlobeAmericas } from 'react-icons/fa';
+import {
+  FaShoppingCart,
+  FaHeart,
+  FaMapMarkerAlt,
+  FaGlobeAmericas,
+  FaHome,
+  FaStar,
+  FaTimes,
+} from 'react-icons/fa';
 import './Header.css';
 
 interface Section {
@@ -23,6 +31,8 @@ interface LanguageTexts {
   features: string;
   admin: string;
   logout: string;
+  location: string;
+  language: string;
 }
 
 interface Texts {
@@ -47,10 +57,10 @@ const Header = ({
   onLanguageChange,
   adminMode = false,
   onLogout,
-  isAdmin = false
+  isAdmin = false,
 }: HeaderProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const [sections, setSections] = useState<Section[]>([]);
   const [hasFeaturedWithProducts, setHasFeaturedWithProducts] = useState(false);
@@ -61,260 +71,367 @@ const Header = ({
   const SECTION_API_URL = 'https://omarawad9.pythonanywhere.com/api/sections/';
   const PRODUCTS_API_URL = 'https://omarawad9.pythonanywhere.com/api/products/';
 
+  /* ── Fetch sections & products ── */
   useEffect(() => {
     const fetchSectionsAndProducts = async () => {
       try {
-        const sectionsResponse = await fetch(SECTION_API_URL);
-        const sectionsData: Section[] = await sectionsResponse.json();
-
-        const productsResponse = await fetch(PRODUCTS_API_URL);
-        const productsData: Product[] = await productsResponse.json();
+        const [sectionsRes, productsRes] = await Promise.all([
+          fetch(SECTION_API_URL),
+          fetch(PRODUCTS_API_URL),
+        ]);
+        const sectionsData: Section[] = await sectionsRes.json();
+        const productsData: Product[] = await productsRes.json();
 
         if (Array.isArray(sectionsData)) {
-          const sortedSections = sectionsData.sort((a, b) => a.order - b.order);
-          setSections(sortedSections);
+          const sorted = sectionsData.sort((a, b) => a.order - b.order);
+          setSections(sorted);
 
-          const featuredSection = sortedSections.find(s => s.is_featured === true);
-
-          if (featuredSection && Array.isArray(productsData)) {
-            const featuredProducts = productsData.filter(
-              product => product.section === featuredSection.id
+          const featured = sorted.find((s) => s.is_featured === true);
+          if (featured && Array.isArray(productsData)) {
+            setHasFeaturedWithProducts(
+              productsData.some((p) => p.section === featured.id)
             );
-
-            setHasFeaturedWithProducts(featuredProducts.length > 0);
           } else {
             setHasFeaturedWithProducts(false);
           }
         }
-      } catch (error) {
-        console.error('Error fetching sections and products:', error);
+      } catch {
         setHasFeaturedWithProducts(false);
       }
     };
 
-    if (!adminMode) {
-      fetchSectionsAndProducts();
-    }
+    if (!adminMode) fetchSectionsAndProducts();
   }, [adminMode]);
 
+  /* ── Scroll detection ── */
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    const onScroll = () => setIsScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  /* ── Close desktop language menu on outside click ── */
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (!(event.target as HTMLElement).closest('.language-selector')) {
+    const handler = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement).closest('.language-selector')) {
         setIsLanguageMenuOpen(false);
       }
     };
-
-    if (isLanguageMenuOpen) {
-      document.addEventListener('click', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-    };
+    if (isLanguageMenuOpen) document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
   }, [isLanguageMenuOpen]);
+
+  /* ── Lock body scroll when drawer is open ── */
+  useEffect(() => {
+    document.body.style.overflow = isDrawerOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [isDrawerOpen]);
+
+  /* ── Scroll helpers ── */
+  const closeDrawer = () => setIsDrawerOpen(false);
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    setIsMobileMenuOpen(false);
+    closeDrawer();
   };
 
   const scrollToFeatures = () => {
-    const featuredCollectionElement = document.getElementById('featured-collection');
-    if (featuredCollectionElement) {
-      const headerHeight = 80;
-      const featuredPosition = featuredCollectionElement.offsetTop - headerHeight;
-      window.scrollTo({ top: featuredPosition, behavior: 'smooth' });
+    const el = document.getElementById('featured-collection');
+    if (el) {
+      window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
     }
-    setIsMobileMenuOpen(false);
+    closeDrawer();
   };
 
   const scrollToSection = (sectionId: number) => {
-    const sectionElement = document.getElementById(`section-${sectionId}`);
-    if (sectionElement) {
-      const headerHeight = 80;
-      const sectionPosition = sectionElement.offsetTop - headerHeight;
-      window.scrollTo({ top: sectionPosition, behavior: 'smooth' });
+    const el = document.getElementById(`section-${sectionId}`);
+    if (el) {
+      window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
     }
-    setIsMobileMenuOpen(false);
+    closeDrawer();
   };
 
-  const handleNavClick = (scrollFunc: () => void) => {
-    scrollFunc();
-    setIsMobileMenuOpen(false);
+  const openLocation = () => {
+    window.open('https://maps.app.goo.gl/qRKKuKsW12zPRh327', '_blank');
+    closeDrawer();
   };
 
   const handleLanguageChange = (lang: 'ar' | 'en') => {
-    if (onLanguageChange) {
-      onLanguageChange(lang);
-    }
+    onLanguageChange?.(lang);
     setIsLanguageMenuOpen(false);
+    closeDrawer();
   };
 
+  /* ── Texts ── */
   const texts: Texts = {
     ar: {
       home: 'الرئيسية',
       features: 'المميزات',
       admin: 'لوحة التحكم',
-      logout: 'تسجيل الخروج'
+      logout: 'تسجيل الخروج',
+      location: 'موقعنا',
+      language: 'اللغة',
     },
     en: {
       home: 'Home',
       features: 'Features',
       admin: 'Admin',
-      logout: 'Logout'
-    }
+      logout: 'Logout',
+      location: 'Our Location',
+      language: 'Language',
+    },
   };
 
-  const currentTexts: LanguageTexts = texts[language] || texts.ar;
+  const t = texts[language] || texts.ar;
+  const isRtl = language === 'ar';
 
   return (
-    <header className={`header ${isScrolled ? 'header-scrolled' : ''} ${adminMode ? 'admin-mode' : ''}`}>
-      <div className="header-container">
+    <>
+      <header
+        className={`header ${isScrolled ? 'header-scrolled' : ''} ${adminMode ? 'admin-mode' : ''}`}
+      >
+        <div className="header-container">
 
-        {!adminMode && (
-          <div className="header-logo" onClick={scrollToTop}>
-            <h1>El-Saudi jewelry</h1>
-          </div>
-        )}
+          {/* ── Logo ── */}
+          {!adminMode && (
+            <div className="header-logo" onClick={scrollToTop}>
+              <h1>El-Saudi jewelry</h1>
+            </div>
+          )}
 
-        {!adminMode && (
-          <nav className={`header-nav ${isMobileMenuOpen ? 'mobile-menu-open' : ''}`}>
-            <button className="nav-link" onClick={() => handleNavClick(scrollToTop)}>
-              {currentTexts.home}
-            </button>
+          {/* ── Desktop nav ── */}
+          {!adminMode && (
+            <nav className="header-nav">
+              <button className="nav-link" onClick={scrollToTop}>
+                {t.home}
+              </button>
 
-            {hasFeaturedWithProducts && (
-              <button className="nav-link" onClick={() => handleNavClick(scrollToFeatures)}>
-                {currentTexts.features}
+              {hasFeaturedWithProducts && (
+                <button className="nav-link" onClick={scrollToFeatures}>
+                  {t.features}
+                </button>
+              )}
+
+              {sections
+                .filter((s) => !s.is_featured)
+                .map((s) => (
+                  <button
+                    key={s.id}
+                    className="nav-link"
+                    onClick={() => scrollToSection(s.id)}
+                  >
+                    {language === 'ar' ? s.title_ar : s.title_en}
+                  </button>
+                ))}
+            </nav>
+          )}
+
+          {/* ── Right icons ── */}
+          <div className={`header-icons ${adminMode ? 'admin-icons-only' : ''}`}>
+
+            {/* Desktop language selector */}
+            <div className="language-selector">
+              <button
+                className="language-toggle"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsLanguageMenuOpen(!isLanguageMenuOpen);
+                }}
+                aria-label="Change language"
+              >
+                <FaGlobeAmericas size={24} style={{ color: '#fff' }} />
+              </button>
+
+              {isLanguageMenuOpen && (
+                <div className="language-menu">
+                  <button
+                    className={`language-option ${language === 'ar' ? 'active' : ''}`}
+                    onClick={() => handleLanguageChange('ar')}
+                  >
+                    العربية
+                  </button>
+                  <button
+                    className={`language-option ${language === 'en' ? 'active' : ''}`}
+                    onClick={() => handleLanguageChange('en')}
+                  >
+                    English
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Admin logout */}
+            {adminMode && onLogout && (
+              <button className="logout-btn" onClick={onLogout} aria-label="Logout">
+                {t.logout}
               </button>
             )}
 
-            {sections
-              .filter(section => !section.is_featured)
-              .map(section => (
-                <button
-                  key={section.id}
-                  className="nav-link"
-                  onClick={() => scrollToSection(section.id)}
-                >
-                  {language === 'ar' ? section.title_ar : section.title_en}
-                </button>
-              ))}
-          </nav>
-        )}
-
-        <div className={`header-icons ${adminMode ? 'admin-icons-only' : ''}`}>
-
-          <div className="language-selector">
-            <button
-              className="language-toggle"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsLanguageMenuOpen(!isLanguageMenuOpen);
-              }}
-              aria-label="Change language"
-            >
-              <FaGlobeAmericas size={24} style={{ color: '#fff' }} />
-            </button>
-
-            {isLanguageMenuOpen && (
-              <div className="language-menu">
-                <button
-                  className={`language-option ${language === 'ar' ? 'active' : ''}`}
-                  onClick={() => handleLanguageChange('ar')}
-                >
-                  العربية
-                </button>
-                <button
-                  className={`language-option ${language === 'en' ? 'active' : ''}`}
-                  onClick={() => handleLanguageChange('en')}
-                >
-                  English
-                </button>
+            {/* Desktop map icon (hidden on mobile via CSS) */}
+            {!adminMode && (
+              <div
+                className="wishlist-badge location-badge"
+                onClick={openLocation}
+                style={{ marginRight: '2px', cursor: 'pointer' }}
+              >
+                <FaMapMarkerAlt size={25} className="wishlist-icon" style={{ color: '#fff' }} />
               </div>
+            )}
+
+            {/* Wishlist heart — always visible */}
+            {!adminMode && (
+              <div
+                className="wishlist-badge-heart"
+                onClick={() => onWishlistClick?.()}
+              >
+                <span className="wishlist-icon">
+                  <FaHeart color="white" size={22} style={{ marginTop: '12px' }} />
+                </span>
+                {wishlistCount > 0 && (
+                  <span className="wishlist-count">{wishlistCount}</span>
+                )}
+              </div>
+            )}
+
+            {/* Cart — always visible */}
+            {!adminMode && (
+              <div
+                className="wishlist-badge"
+                onClick={() => onCartClick?.()}
+                style={{ marginRight: '2px' }}
+              >
+                <FaShoppingCart size={25} className="wishlist-icon" style={{ color: '#fff' }} />
+                {cartCount > 0 && (
+                  <span className="wishlist-count">{cartCount}</span>
+                )}
+              </div>
+            )}
+
+            {/* ── Hamburger (mobile only) ── */}
+            {!adminMode && (
+              <button
+                className="mobile-menu-toggle"
+                onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+                aria-label="Open menu"
+                aria-expanded={isDrawerOpen}
+              >
+                <span className={`hamburger ${isDrawerOpen ? 'active' : ''}`}>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </span>
+              </button>
             )}
           </div>
 
-          {adminMode && onLogout && (
-            <button
-              className="logout-btn"
-              onClick={onLogout}
-              aria-label="Logout"
-            >
-              {currentTexts.logout}
-            </button>
-          )}
-
-          {!adminMode && (
-            <div
-              className="wishlist-badge"
-              onClick={() => window.open(
-                'https://maps.app.goo.gl/qRKKuKsW12zPRh327',
-                '_blank'
-              )}
-              style={{ marginRight: '2px', cursor: 'pointer' }}
-            >
-              <FaMapMarkerAlt size={25} className="wishlist-icon" style={{ color: '#fff' }} />
-            </div>
-          )}
-
-          {!adminMode && (
-            <div
-              className="wishlist-badge-heart"
-              onClick={() => {
-                if (onWishlistClick) onWishlistClick();
-              }}
-            >
-              <span className="wishlist-icon">
-                <FaHeart color='white' size={22} style={{ marginTop: "12px" }} />
-              </span>
-              {wishlistCount > 0 && (
-                <span className="wishlist-count">{wishlistCount}</span>
-              )}
-            </div>
-          )}
-
-          {!adminMode && (
-            <div
-              className="wishlist-badge"
-              onClick={() => {
-                if (onCartClick) onCartClick();
-              }}
-              style={{ marginRight: '2px' }}
-            >
-              <FaShoppingCart size={25} className="wishlist-icon" style={{ color: '#fff' }} />
-              {cartCount > 0 && (
-                <span className="wishlist-count">{cartCount}</span>
-              )}
-            </div>
-          )}
-
-          {!adminMode && (
-            <button
-              className="mobile-menu-toggle"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              aria-label="Toggle menu"
-            >
-              <span className={`hamburger ${isMobileMenuOpen ? 'active' : ''}`}>
-                <span></span>
-                <span></span>
-                <span></span>
-              </span>
-            </button>
-          )}
         </div>
+      </header>
 
-      </div>
-    </header>
+      {/* ══════════════════════════════════════════════════════
+          UNIFIED MOBILE DRAWER
+          (renders outside the header so it covers full screen)
+          ══════════════════════════════════════════════════════ */}
+      {!adminMode && (
+        <div
+          className={`mobile-drawer ${isDrawerOpen ? 'open' : ''}`}
+          aria-hidden={!isDrawerOpen}
+        >
+          {/* Overlay — tap to close */}
+          <div className="mobile-drawer-overlay" onClick={closeDrawer} />
+
+          {/* Panel */}
+          <div
+            className="mobile-drawer-panel"
+            dir={isRtl ? 'rtl' : 'ltr'}
+          >
+            {/* Drawer header */}
+            <div className="drawer-header">
+              <span className="drawer-brand">El-Saudi</span>
+              <button className="drawer-close" onClick={closeDrawer} aria-label="Close menu">
+                <FaTimes size={18} />
+              </button>
+            </div>
+
+            {/* ── Navigation section ── */}
+            <p className="drawer-section-label">
+              {language === 'ar' ? 'التنقل' : 'Navigation'}
+            </p>
+
+            <div className="drawer-nav">
+              <button className="drawer-nav-link" onClick={scrollToTop}>
+                <FaHome size={15} style={{ color: '#d4af37', flexShrink: 0 }} />
+                {t.home}
+              </button>
+
+              {hasFeaturedWithProducts && (
+                <button className="drawer-nav-link" onClick={scrollToFeatures}>
+                  <FaStar size={14} style={{ color: '#d4af37', flexShrink: 0 }} />
+                  {t.features}
+                </button>
+              )}
+
+              {sections
+                .filter((s) => !s.is_featured)
+                .map((s) => (
+                  <button
+                    key={s.id}
+                    className="drawer-nav-link"
+                    onClick={() => scrollToSection(s.id)}
+                  >
+                    {/* Bullet dot */}
+                    <span
+                      style={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: '50%',
+                        background: '#d4af37',
+                        flexShrink: 0,
+                        display: 'inline-block',
+                      }}
+                    />
+                    {language === 'ar' ? s.title_ar : s.title_en}
+                  </button>
+                ))}
+            </div>
+
+            <div className="drawer-divider" />
+
+            {/* ── Location ── */}
+            <p className="drawer-section-label">
+              {language === 'ar' ? 'زيارتنا' : 'Visit Us'}
+            </p>
+
+            <button className="drawer-location-btn" onClick={openLocation}>
+              <FaMapMarkerAlt size={16} style={{ color: '#d4af37', flexShrink: 0 }} />
+              {t.location}
+            </button>
+
+            <div className="drawer-divider" />
+
+            {/* ── Language ── */}
+            <p className="drawer-section-label">
+              {language === 'ar' ? 'اللغة' : 'Language'}
+            </p>
+
+            <div className="drawer-lang-row">
+              <button
+                className={`drawer-lang-btn ${language === 'ar' ? 'active' : ''}`}
+                onClick={() => handleLanguageChange('ar')}
+              >
+                العربية
+              </button>
+              <button
+                className={`drawer-lang-btn ${language === 'en' ? 'active' : ''}`}
+                onClick={() => handleLanguageChange('en')}
+              >
+                English
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

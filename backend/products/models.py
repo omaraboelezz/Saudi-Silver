@@ -44,6 +44,7 @@ class Product(models.Model):
     TYPE_CHOICES = [
         ('gold', 'Gold / ذهب'),
         ('silver', 'Silver / فضة'),
+        ('accessories', 'Accessories / إكسسوارات'),
     ]
     
     # ✨ NEW: Type field
@@ -92,6 +93,9 @@ class Product(models.Model):
         return f"{self.name_ar or 'N/A'} / {self.name_en or 'N/A'}"
     
     def calculate_price(self):
+        if self.type == 'accessories':
+            return self.price
+
         metal_prices = MetalPrice.get_current_prices()
         
         if self.type == 'gold':
@@ -298,5 +302,13 @@ class LoginAttempt(models.Model):
         return recent_failures >= max_attempts
 
 class Badge(models.Model):
-    name = models.CharField(max_length=50, unique=True)
+    name_ar = models.CharField(max_length=50, verbose_name="Arabic Name")
+    name_en = models.CharField(max_length=50, verbose_name="English Name")
+    color = models.CharField(max_length=20, default='#667eea', verbose_name="Badge Color")
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'badges'
+
+    def __str__(self):
+        return f"{self.name_ar} / {self.name_en}"

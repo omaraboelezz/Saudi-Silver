@@ -1,6 +1,7 @@
 import useWishlist from '../context/useWishlist';
 import { useCart } from '../context/CartContext';
 import { FaHeart ,FaRegHeart } from 'react-icons/fa'; 
+import useBadges from '../utils/useBadges';
 import './ProductCollectionCard.css';
 
 /**
@@ -15,7 +16,9 @@ import './ProductCollectionCard.css';
 const ProductCollectionCard = ({ product, onProductClick, onContactClick, onAddToCart, language = 'ar' }) => {
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { addToCart } = useCart();
+  const { getBadgeColor, getLocalizedBadgeName } = useBadges();
   const isWishlisted = isInWishlist(product.id);
+  const customBadgeColor = getBadgeColor(product.badge);
 
   // النصوص حسب اللغة
   const texts = {
@@ -74,6 +77,7 @@ const ProductCollectionCard = ({ product, onProductClick, onContactClick, onAddT
   };
 
   const getBadgeClass = (badge) => {
+    if (customBadgeColor) return 'badge-custom'; // Or simply fall back without overriding if we use inline logic
     if (badge === 'New Arrival') return 'badge-new';
     if (badge === 'Best Seller') return 'badge-bestseller';
     if (badge === 'Limited Edition') return 'badge-limited';
@@ -84,7 +88,7 @@ const ProductCollectionCard = ({ product, onProductClick, onContactClick, onAddT
     if (badge === 'New Arrival') return t.newArrival;
     if (badge === 'Best Seller') return t.bestSeller;
     if (badge === 'Limited Edition') return t.limitedEdition;
-    return badge;
+    return getLocalizedBadgeName(badge, language);
   };
 
   const translateStock = (stock) => {
@@ -108,7 +112,10 @@ const ProductCollectionCard = ({ product, onProductClick, onContactClick, onAddT
     >
       <div className="product-collection-image-container">
         {product.badge && (
-          <div className={`product-badge ${getBadgeClass(product.badge)}`}>
+          <div 
+            className={`product-badge ${getBadgeClass(product.badge)}`}
+            style={customBadgeColor ? { backgroundColor: customBadgeColor, color: '#fff', border: 'none' } : {}}
+          >
             {translateBadge(product.badge)}
           </div>
         )}

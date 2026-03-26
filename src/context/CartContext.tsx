@@ -22,6 +22,7 @@ interface CartContextType {
   clearCart: () => void;
   cartCount: number;
   cleanupDeletedProducts: () => Promise<void>; // ✅ إضافة دالة التنضيف
+  removeEntireItem: (id: number | string) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -116,6 +117,11 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     );
   };
 
+  // دالة حذف العنصر بالكامل من السلة
+  const removeEntireItem = (id: number | string) => {
+    setCartItems(prevItems => prevItems.filter(item => item.id !== id));
+  };
+
   // دالة تفريغ السلة بالكامل
   const clearCart = () => {
     setCartItems([]);
@@ -132,7 +138,8 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         removeFromCart, 
         clearCart, 
         cartCount,
-        cleanupDeletedProducts // ✅ تصدير الدالة
+        cleanupDeletedProducts, // ✅ تصدير الدالة
+        removeEntireItem
       }}
     >
       {children}

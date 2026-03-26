@@ -46,9 +46,19 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
   const [invoiceItems, setInvoiceItems] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showBadgeModal, setShowBadgeModal] = useState(false);
-  const [newBadgeName, setNewBadgeName] = useState('');
+  const [newBadgeNameAr, setNewBadgeNameAr] = useState('');
+  const [newBadgeNameEn, setNewBadgeNameEn] = useState('');
+  const [newBadgeColor, setNewBadgeColor] = useState('#667eea');
   const [customBadges, setCustomBadges] = useState([]);
   const [isSavingBadge, setIsSavingBadge] = useState(false);
+  const [editingBadgeId, setEditingBadgeId] = useState(null);
+  const [badgeModalView, setBadgeModalView] = useState("list"); // "list" | "form" | "confirmDelete"
+  const [badgeToDelete, setBadgeToDelete] = useState(null);
+  const [selectedOrphans, setSelectedOrphans] = useState([]);
+  const [showDeleteOrphansModal, setShowDeleteOrphansModal] = useState(false);
+  const [isDeletingOrphans, setIsDeletingOrphans] = useState(false);
+
+
 
   // eslint-disable-next-line no-unused-vars
   const [searchText, setSearchText] = useState("");
@@ -65,6 +75,38 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
   const handleReset = (clearFilters) => {
     clearFilters();
     setSearchText("");
+  };
+
+  const handleDeleteSelectedOrphans = async () => {
+    setIsDeletingOrphans(true);
+    try {
+      for (const id of selectedOrphans) {
+        await fetch(`${API_URL}${id}/`, { method: "DELETE" });
+      }
+      setProducts((prev) =>
+        prev.filter((p) => !selectedOrphans.includes(p.id || p._id))
+      );
+      setSelectedOrphans([]);
+      setShowDeleteOrphansModal(false);
+      Modal.success({
+        title: language === "ar" ? "🎉 تم الحذف!" : "🎉 Deleted!",
+        content:
+          language === "ar"
+            ? `✅ تم حذف ${selectedOrphans.length} منتج بنجاح`
+            : `✅ ${selectedOrphans.length} product${selectedOrphans.length !== 1 ? "s" : ""} deleted successfully`,
+        centered: true,
+        okText: language === "ar" ? "حسناً" : "OK",
+      });
+    } catch (err) {
+      Modal.error({
+        title: language === "ar" ? "❌ خطأ في الاتصال" : "❌ Network Error",
+        content: err.message,
+        centered: true,
+        okText: language === "ar" ? "حسناً" : "OK",
+      });
+    } finally {
+      setIsDeletingOrphans(false);
+    }
   };
 
   const getColumnSearchProps = (dataIndex, title) => ({
@@ -767,11 +809,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
         form.append("image_url", formData.image_url);
       }
 
-      console.log("📤 Sending data:");
-      for (let pair of form.entries()) {
-        console.log(pair[0], ":", pair[1]);
-      }
-
       const method = editingProductId ? "PUT" : "POST";
       const url = editingProductId ? `${API_URL}${editingProductId}/` : API_URL;
 
@@ -892,19 +929,25 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
   };
 
   const handleSaveBadge = async () => {
-    if (!newBadgeName.trim()) return;
+    if (!newBadgeNameAr.trim() || !newBadgeNameEn.trim()) return;
     setIsSavingBadge(true);
     try {
       const response = await fetch(BADGES_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newBadgeName.trim() }),
+        body: JSON.stringify({
+          name_ar: newBadgeNameAr.trim(),
+          name_en: newBadgeNameEn.trim(),
+          color: newBadgeColor
+        }),
       });
       const data = await response.json();
       if (response.ok) {
         setCustomBadges((prev) => [...prev, data]);
-        setFormData((prev) => ({ ...prev, badge: data.name }));
-        setNewBadgeName('');
+        setFormData((prev) => ({ ...prev, badge: language === 'ar' ? data.name_ar : data.name_en }));
+        setNewBadgeNameAr('');
+        setNewBadgeNameEn('');
+        setNewBadgeColor('#667eea'); // ← ضيف ده كمان عشان يعمل reset للون
         setShowBadgeModal(false);
       } else {
         Modal.error({
@@ -912,6 +955,106 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
           content: data.error || 'Failed to save badge',
           centered: true,
         });
+      }
+    } catch (err) {
+      Modal.error({ title: '❌ Network Error', content: err.message, centered: true });
+    } finally {
+      setIsSavingBadge(false);
+    }
+  };
+
+  const handleUpdateBadge = async () => {
+    if (!newBadgeNameAr.trim() || !newBadgeNameEn.trim() || !editingBadgeId) return;
+    setIsSavingBadge(true);
+    try {
+      // Find the old badge name before we delete it
+      const oldBadge = customBadges.find(b => b.id === editingBadgeId);
+      const nameChanged = oldBadge && (
+        oldBadge.name_ar !== newBadgeNameAr.trim() ||
+        oldBadge.name_en !== newBadgeNameEn.trim()
+      );
+
+      // 1. Delete the old badge
+      await fetch(`${BADGES_API_URL}${editingBadgeId}/`, { method: "DELETE" });
+
+      // 2. Post the new badge
+      const postResponse = await fetch(BADGES_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name_ar: newBadgeNameAr.trim(),
+          name_en: newBadgeNameEn.trim(),
+          color: newBadgeColor
+        }),
+      });
+      const data = await postResponse.json();
+
+      if (postResponse.ok) {
+        // Update local state by removing old and adding new
+        setCustomBadges((prev) => [...prev.filter(b => b.id !== editingBadgeId), data]);
+
+        // 3. Patch affected products ONLY if the name changed
+        if (nameChanged) {
+          const affected = products.filter(p => p.badge === oldBadge?.name_ar || p.badge === oldBadge?.name_en);
+          for (const p of affected) {
+            try {
+              const form = new FormData();
+              form.append("badge", language === 'ar' ? newBadgeNameAr.trim() : newBadgeNameEn.trim());
+              await fetch(`${API_URL}${p.id || p._id}/`, { method: "PATCH", body: form });
+            } catch (e) { console.error('Error updating product badge:', e); }
+          }
+          fetchProducts(); // Refresh after patching
+        }
+
+        setNewBadgeNameAr('');
+        setNewBadgeNameEn('');
+        setNewBadgeColor('#667eea');
+        setEditingBadgeId(null);
+        setBadgeModalView('list');
+      } else {
+        Modal.error({
+          title: language === 'ar' ? '❌ خطأ' : '❌ Error',
+          content: data.error || 'Failed to update badge',
+          centered: true,
+        });
+      }
+    } catch (err) {
+      Modal.error({ title: '❌ Network Error', content: err.message, centered: true });
+    } finally {
+      setIsSavingBadge(false);
+    }
+  };
+
+  const handleDeleteBadge = async () => {
+    if (!badgeToDelete) return;
+    setIsSavingBadge(true);
+    try {
+      // 1. Remove badge from affected products using robust PATCH
+      const affected = products.filter(p => p.badge === badgeToDelete.name_ar || p.badge === badgeToDelete.name_en);
+      for (const p of affected) {
+        try {
+          const form = new FormData();
+          form.append("badge", ""); // Remove the badge assignment securely
+          await fetch(`${API_URL}${p.id || p._id}/`, { method: "PATCH", body: form });
+        } catch (e) { console.error('Error updating affected product:', e); }
+      }
+
+      fetchProducts(); // Refresh local products list
+
+      // 2. Delete the badge itself
+      const response = await fetch(`${BADGES_API_URL}${badgeToDelete.id}/`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        setCustomBadges((prev) => prev.filter(b => b.id !== badgeToDelete.id));
+        setBadgeToDelete(null);
+        setBadgeModalView('list');
+      } else {
+        try {
+          const data = await response.json();
+          Modal.error({ title: language === 'ar' ? '❌ خطأ' : '❌ Error', content: data.error || 'Failed to delete badge', centered: true });
+        } catch (e) { /* IGNORE PARSE ERROR */ }
       }
     } catch (err) {
       Modal.error({ title: '❌ Network Error', content: err.message, centered: true });
@@ -1825,43 +1968,69 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                     <option value="silver" style={{ padding: "10px" }}>
                       {language === "ar" ? "فضة" : "Silver"}
                     </option>
+                    <option value="accessories" style={{ padding: "10px" }}>
+                      {language === "ar" ? "إكسسوارات" : "Accessories"}
+                    </option>
                   </select>
                 </div>
 
+                {/* Price Input for Accessories */}
+                {formData.type === "accessories" && (
+                  <div className="form-group">
+                    <label htmlFor="price">
+                      {language === "ar" ? "السعر ($)" : "Price ($)"} *
+                    </label>
+                    <input
+                      type="number"
+                      id="price"
+                      name="price"
+                      value={formData.price}
+                      onChange={handleChange}
+                      required
+                      onWheel={(e) => e.target.blur()}
+                      min="0"
+                      step="0.01"
+                      placeholder="150"
+                    />
+                  </div>
+                )}
+
                 {/* Weight Input */}
-                <div className="form-group">
-                  <label htmlFor="weight">
-                    {language === "ar" ? "الوزن (جرام)" : "Weight (grams)"} *
-                  </label>
-                  <input
-                    type="number"
-                    id="weight"
-                    name="weight"
-                    value={formData.weight}
-                    onChange={handleChange}
-                    required
-                    onWheel={(e) => e.target.blur()}
-                    min="0"
-                    step="0.01"
-                    placeholder="10.5"
-                  />
-                  {formData.weight !== "" && (
-                    <small style={{
-                      marginTop: "6px",
-                      display: "block",
-                      fontWeight: "600",
-                      color: parseFloat(formData.weight) < 3 ? "#1976d2" : "#28a745",
-                    }}>
-                      {parseFloat(formData.weight) < 3
-                        ? (language === "ar" ? "🔵 وزن خفيف" : "🔵 Light weight")
-                        : (language === "ar" ? "🟢 وزن تقيل" : "🟢 Heavy weight")
-                      }
-                    </small>
-                  )}
-                </div>
+                {formData.type !== "accessories" && (
+                  <div className="form-group">
+                    <label htmlFor="weight">
+                      {language === "ar" ? "الوزن (جرام)" : "Weight (grams)"} *
+                    </label>
+                    <input
+                      type="number"
+                      id="weight"
+                      name="weight"
+                      value={formData.weight}
+                      onChange={handleChange}
+                      required
+                      onWheel={(e) => e.target.blur()}
+                      min="0"
+                      step="0.01"
+                      placeholder="10.5"
+                    />
+                    {formData.weight !== "" && (
+                      <small style={{
+                        marginTop: "6px",
+                        display: "block",
+                        fontWeight: "600",
+                        color: parseFloat(formData.weight) < 3 ? "#1976d2" : "#28a745",
+                      }}>
+                        {parseFloat(formData.weight) < 3
+                          ? (language === "ar" ? "🔵 وزن خفيف" : "🔵 Light weight")
+                          : (language === "ar" ? "🟢 وزن تقيل" : "🟢 Heavy weight")
+                        }
+                      </small>
+                    )}
+                  </div>
+                )}
 
                 {/* Manufacturing Cost — يظهر بس لو في وزن */}
-                {formData.weight !== "" && parseFloat(formData.weight) > 0 && (
+                {formData.type !== "accessories" && formData.weight !== "" && parseFloat(formData.weight) > 0 && (
                   <div className="form-group">
                     <label htmlFor="manufacturing_cost">
                       {parseFloat(formData.weight) < 3
@@ -1907,7 +2076,9 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                         <option value="New Arrival">{t.newArrival}</option>
                         <option value="Limited Edition">{t.limitedEdition}</option>
                         {customBadges.map((b) => (
-                          <option key={b.id} value={b.name}>{b.name}</option>
+                          <option key={b.id} value={language === 'ar' ? b.name_ar : b.name_en}>
+                            {language === 'ar' ? b.name_ar : b.name_en}
+                          </option>
                         ))}
                       </select>
                       <button
@@ -1929,71 +2100,271 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                   </div>
 
                   {showBadgeModal && (
-  <div style={{
-    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-    background: 'rgba(0,0,0,0.7)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    zIndex: 2000,
-  }}>
-    <div style={{
-      background: 'white', padding: '28px', borderRadius: '12px',
-      maxWidth: '400px', width: '90%',
-      boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
-    }}>
-      <h3 style={{ marginBottom: '16px', color: '#2c3e50', fontSize: '20px' }}>
-        🏷️ {language === 'ar' ? 'إضافة بادج جديد' : 'Add New Badge'}
-      </h3>
-      <div style={{ marginBottom: '20px' }}>
-        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', fontSize: '14px' }}>
-          {language === 'ar' ? 'اسم البادج' : 'Badge Name'} *
-        </label>
-        <input
-          type="text"
-          autoFocus
-          value={newBadgeName}
-          onChange={(e) => setNewBadgeName(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') handleSaveBadge(); if (e.key === 'Escape') setShowBadgeModal(false); }}
-          maxLength={30}
-          placeholder={language === 'ar' ? 'مثال: حصري، خاص، مميز...' : 'e.g., Exclusive, Special...'}
-          style={{
-            width: '100%', padding: '10px 14px', borderRadius: '8px',
-            border: '2px solid #667eea', fontSize: '16px', boxSizing: 'border-box',
-          }}
-        />
-        <small style={{ color: '#6c757d', fontSize: '13px', marginTop: '6px', display: 'block' }}>
-          {newBadgeName.length}/30
-        </small>
-      </div>
-      <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-        <button
-          type="button"
-          onClick={() => { setShowBadgeModal(false); setNewBadgeName(''); }}
-          style={{
-            background: '#6c757d', color: 'white', border: 'none',
-            padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600',
-          }}
-        >
-          {t.cancel}
-        </button>
-        <button
-          type="button"
-          onClick={handleSaveBadge}
-          disabled={!newBadgeName.trim() || isSavingBadge}
-          style={{
-            background: (!newBadgeName.trim() || isSavingBadge) ? '#ccc' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            color: 'white', border: 'none', padding: '10px 20px',
-            borderRadius: '8px', cursor: (!newBadgeName.trim() || isSavingBadge) ? 'not-allowed' : 'pointer',
-            fontWeight: '600', opacity: isSavingBadge ? 0.7 : 1,
-          }}
-        >
-          {isSavingBadge
-            ? (language === 'ar' ? '⏳ جاري الحفظ...' : '⏳ Saving...')
-            : (language === 'ar' ? '💾 حفظ البادج' : '💾 Save Badge')}
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+                    <div style={{
+                      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                      background: 'rgba(0,0,0,0.7)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      zIndex: 2000,
+                    }}>
+                      <div style={{
+                        background: 'white', padding: '28px', borderRadius: '12px',
+                        maxWidth: '450px', width: '90%', maxHeight: '85vh', overflow: 'hidden', display: 'flex', flexDirection: 'column',
+                        boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                          <h3 style={{ margin: 0, color: '#2c3e50', fontSize: '20px' }}>
+                            {badgeModalView === 'list' && (language === 'ar' ? '🏷️ إدارة البادجات' : '🏷️ Manage Badges')}
+                            {badgeModalView === 'form' && editingBadgeId && (language === 'ar' ? '✏️ تعديل البادج' : '✏️ Edit Badge')}
+                            {badgeModalView === 'form' && !editingBadgeId && (language === 'ar' ? '➕ إضافة بادج جديد' : '➕ Add New Badge')}
+                            {badgeModalView === 'confirmDelete' && (language === 'ar' ? '⚠️ تأكيد الحذف' : '⚠️ Confirm Delete')}
+                          </h3>
+                          <button
+                            onClick={() => { setShowBadgeModal(false); setBadgeModalView('list'); setNewBadgeNameAr(''); setNewBadgeNameEn(''); setNewBadgeColor('#667eea'); setEditingBadgeId(null); }}
+                            style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#888' }}
+                          >×</button>
+                        </div>
+
+                        {badgeModalView === 'list' && (
+                          <>
+                            <div style={{ overflowY: 'auto', flex: 1, paddingRight: '5px' }}>
+                              {customBadges.length === 0 ? (
+                                <p style={{ textAlign: 'center', color: '#6c757d', padding: '20px 0' }}>
+                                  {language === 'ar' ? 'لا يوجد بادجات مخصصة بعد.' : 'No custom badges yet.'}
+                                </p>
+                              ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                  {customBadges.map(badge => (
+                                    <div key={badge.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', border: '1px solid #eee', borderRadius: '8px' }}>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <span style={{ color: badge.color, fontWeight: 'bold' }}>{badge.name_ar} / {badge.name_en}</span>
+                                      </div>
+                                      <div style={{ display: 'flex', gap: '8px' }}>
+                                        <button
+                                          onClick={() => {
+                                            setEditingBadgeId(badge.id);
+                                            setNewBadgeNameAr(badge.name_ar);
+                                            setNewBadgeNameEn(badge.name_en);
+                                            setNewBadgeColor(badge.color);
+                                            setBadgeModalView('form');
+                                          }}
+                                          style={{ padding: '6px 12px', background: '#f8f9fa', color: '#1a1a1a', border: '1px solid #ddd', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}
+                                        >
+                                          {language === 'ar' ? 'تعديل' : 'Edit'}
+                                        </button>
+                                        <button
+                                          onClick={() => {
+                                            setBadgeToDelete(badge);
+                                            setBadgeModalView('confirmDelete');
+                                          }}
+                                          style={{ padding: '6px 12px', background: '#fff0f0', color: '#dc3545', border: '1px solid #ffcccc', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}
+                                        >
+                                          {language === 'ar' ? 'حذف' : 'Delete'}
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                              <button
+                                onClick={() => { setShowBadgeModal(false); setBadgeModalView('list'); }}
+                                style={{ background: '#6c757d', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}
+                              >
+                                {t.cancel}
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setEditingBadgeId(null);
+                                  setNewBadgeNameAr('');
+                                  setNewBadgeNameEn('');
+                                  setNewBadgeColor('#667eea');
+                                  setBadgeModalView('form');
+                                }}
+                                style={{
+                                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                  color: 'white', border: 'none', padding: '10px 20px',
+                                  borderRadius: '8px', cursor: 'pointer', fontWeight: '600'
+                                }}
+                              >
+                                {language === 'ar' ? '➕ إضافة بادج' : '➕ Add Badge'}
+                              </button>
+                            </div>
+                          </>
+                        )}
+
+                        {badgeModalView === 'form' && (
+                          <div style={{ overflowY: 'auto', paddingRight: '5px' }}>
+                            {/* Arabic Name */}
+                            <div style={{ marginBottom: '16px' }}>
+                              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', fontSize: '14px' }}>
+                                {language === 'ar' ? 'اسم البادج (عربي)' : 'Badge Name (Arabic)'} *
+                              </label>
+                              <input
+                                type="text"
+                                autoFocus
+                                value={newBadgeNameAr}
+                                onChange={(e) => setNewBadgeNameAr(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') editingBadgeId ? handleUpdateBadge() : handleSaveBadge();
+                                  if (e.key === 'Escape') setBadgeModalView('list');
+                                }}
+                                maxLength={15}
+                                placeholder="مثال: حصري، مميز..."
+                                style={{
+                                  width: '100%', padding: '10px 14px', borderRadius: '8px',
+                                  border: '2px solid #667eea', fontSize: '16px', boxSizing: 'border-box',
+                                  direction: 'rtl'
+                                }}
+                              />
+                              <small style={{ color: '#6c757d', fontSize: '13px', marginTop: '6px', display: 'block' }}>
+                                {newBadgeNameAr.length}/15
+                              </small>
+                            </div>
+
+                            {/* English Name */}
+                            <div style={{ marginBottom: '16px' }}>
+                              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', fontSize: '14px' }}>
+                                {language === 'ar' ? 'اسم البادج (إنجليزي)' : 'Badge Name (English)'} *
+                              </label>
+                              <input
+                                type="text"
+                                value={newBadgeNameEn}
+                                onChange={(e) => setNewBadgeNameEn(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') editingBadgeId ? handleUpdateBadge() : handleSaveBadge();
+                                  if (e.key === 'Escape') setBadgeModalView('list');
+                                }}
+                                maxLength={15}
+                                placeholder="e.g., Exclusive, Special..."
+                                style={{
+                                  width: '100%', padding: '10px 14px', borderRadius: '8px',
+                                  border: '2px solid #667eea', fontSize: '16px', boxSizing: 'border-box',
+                                  direction: 'ltr'
+                                }}
+                              />
+                              <small style={{ color: '#6c757d', fontSize: '13px', marginTop: '6px', display: 'block' }}>
+                                {newBadgeNameEn.length}/15
+                              </small>
+                            </div>
+
+                            <div style={{ marginBottom: '20px' }}>
+                              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', fontSize: '14px' }}>
+                                {language === 'ar' ? 'لون البادج' : 'Badge Color'}
+                              </label>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <input
+                                  type="color"
+                                  value={newBadgeColor}
+                                  onChange={(e) => setNewBadgeColor(e.target.value)}
+                                  style={{ width: '48px', height: '48px', border: 'none', borderRadius: '8px', cursor: 'pointer', padding: '2px', background: 'none' }}
+                                />
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                                  {['#667eea', '#28a745', '#dc3545', '#C9A84C', '#17a2b8', '#fd7e14'].map(color => (
+                                    <div
+                                      key={color}
+                                      onClick={() => setNewBadgeColor(color)}
+                                      style={{
+                                        width: '28px', height: '28px', borderRadius: '50%', background: color,
+                                        cursor: 'pointer', border: newBadgeColor === color ? '3px solid #333' : '2px solid transparent',
+                                        boxSizing: 'border-box', transition: 'transform 0.15s',
+                                      }}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+
+                              <div style={{ marginTop: '12px' }}>
+                                <span style={{ fontSize: '13px', color: '#6c757d', marginBottom: '6px', display: 'block' }}>
+                                  {language === 'ar' ? 'معاينة:' : 'Preview:'}
+                                </span>
+                                <span style={{
+                                  display: 'inline-block', color: newBadgeColor, backgroundColor: '#fff', border: `1px solid ${newBadgeColor}`,
+                                  padding: '4px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: '600',
+                                }}>
+                                  {language === 'ar' ? (newBadgeNameAr || 'اسم البادج') : (newBadgeNameEn || 'Badge Name')}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setBadgeModalView('list'); setNewBadgeNameAr('');
+                                  setNewBadgeNameEn(''); setNewBadgeColor('#667eea'); setEditingBadgeId(null);
+                                }}
+                                style={{ background: '#6c757d', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}
+                              >
+                                {language === 'ar' ? 'رجوع' : 'Back'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={editingBadgeId ? handleUpdateBadge : handleSaveBadge}
+                                disabled={!newBadgeNameAr.trim() || !newBadgeNameEn.trim() || isSavingBadge}
+                                style={{
+                                  background: (!newBadgeNameAr.trim() || !newBadgeNameEn.trim() || isSavingBadge) ? '#ccc' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                  color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: (!newBadgeNameAr.trim() || !newBadgeNameEn.trim() || isSavingBadge) ? 'not-allowed' : 'pointer', fontWeight: '600', opacity: isSavingBadge ? 0.7 : 1,
+                                }}
+                              >
+                                {isSavingBadge ? (language === 'ar' ? '⏳ جاري الحفظ...' : '⏳ Saving...') : (language === 'ar' ? '💾 حفظ البادج' : '💾 Save Badge')}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {badgeModalView === 'confirmDelete' && badgeToDelete && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                            <p style={{ margin: 0, fontSize: '15px' }}>
+                              {language === 'ar' ? `هل أنت متأكد أنك تريد حذف البادج "${language === 'ar' ? badgeToDelete.name_ar : badgeToDelete.name_en}"؟` : `Are you sure you want to delete the badge "${language === 'ar' ? badgeToDelete.name_ar : badgeToDelete.name_en}"?`}
+                            </p>
+
+                            {(() => {
+                              const affected = products.filter(p => p.badge === badgeToDelete.name_ar || p.badge === badgeToDelete.name_en);
+                              if (affected.length > 0) {
+                                return (
+                                  <div style={{ background: '#fff3cd', color: '#856404', padding: '12px', borderRadius: '8px', fontSize: '14px' }}>
+                                    <strong>{language === 'ar' ? `⚠️ تحذير: ${affected.length} منتجات تستخدم هذا البادج.` : `⚠️ Warning: ${affected.length} products are using this badge.`}</strong>
+                                    <br />
+                                    <span style={{ fontSize: '13px' }}>
+                                      {language === 'ar' ? 'سيتم إزالة البادج من هذه المنتجات تلقائياً عند الحذف.' : 'The badge will be automatically removed from these products upon deletion.'}
+                                    </span>
+                                    <ul style={{ marginTop: '8px', marginBottom: 0, paddingLeft: '20px', maxHeight: '100px', overflowY: 'auto' }}>
+                                      {affected.map(p => (
+                                        <li key={p.id || p._id} style={{ marginBottom: '2px' }}>{language === 'ar' ? (p.name_ar || p.name) : (p.name_en || p.name)}</li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                );
+                              }
+                              return (
+                                <p style={{ margin: 0, fontSize: '14px', color: '#28a745' }}>
+                                  {language === 'ar' ? '✅ لا توجد منتجات تستخدم هذا البادج حالياً.' : '✅ No products are currently using this badge.'}
+                                </p>
+                              );
+                            })()}
+
+                            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '10px' }}>
+                              <button
+                                onClick={() => { setBadgeToDelete(null); setBadgeModalView('list'); }}
+                                disabled={isSavingBadge}
+                                style={{ background: '#6c757d', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', opacity: isSavingBadge ? 0.7 : 1 }}
+                              >
+                                {language === 'ar' ? 'رجوع' : 'Back'}
+                              </button>
+                              <button
+                                onClick={handleDeleteBadge}
+                                disabled={isSavingBadge}
+                                style={{ background: '#dc3545', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: isSavingBadge ? 'not-allowed' : 'pointer', fontWeight: '600', opacity: isSavingBadge ? 0.7 : 1 }}
+                              >
+                                {isSavingBadge ? (language === 'ar' ? '⏳ جاري الحذف...' : '⏳ Deleting...') : (language === 'ar' ? '🗑️ تأكيد الحذف' : '🗑️ Confirm Delete')}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="form-group">
                     <label htmlFor="stock">{t.stock} *</label>
@@ -2683,7 +3054,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                               ${product.price}
                             </span>
 
-                            {/* ✨ Type Badge (Gold/Silver) */}
+                            {/* ✨ Type Badge (Gold/Silver/Accessories) */}
                             <span
                               style={{
                                 display: "inline-block",
@@ -2691,11 +3062,15 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                                 background:
                                   product.type === "gold"
                                     ? "linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)"
-                                    : "linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%)",
+                                    : product.type === "accessories"
+                                      ? "linear-gradient(135deg, #a8c0ff 0%, #3f2b96 100%)"
+                                      : "linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%)",
                                 color:
                                   product.type === "gold"
                                     ? "#856404"
-                                    : "#393939",
+                                    : product.type === "accessories"
+                                      ? "#ffffff"
+                                      : "#393939",
                                 padding: "3px 10px",
                                 borderRadius: "12px",
                                 fontSize: "11px",
@@ -2707,9 +3082,13 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                                 ? language === "ar"
                                   ? "ذهب"
                                   : "Gold"
-                                : language === "ar"
-                                  ? "فضة"
-                                  : "Silver"}
+                                : product.type === "accessories"
+                                  ? language === "ar"
+                                    ? "إكسسوارات"
+                                    : "Accessories"
+                                  : language === "ar"
+                                    ? "فضة"
+                                    : "Silver"}
                             </span>
 
                             <span
@@ -2816,34 +3195,238 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
 
         {/* ✅ Current Inventory - المنتجات بدون قسم (Orphaned Products) */}
         {(() => {
-          // ✅ فلترة المنتجات اللي بدون section أو section مش موجود
           const orphanedProducts = products.filter((product) => {
-            if (!product.section) return true; // لو مافيش section خالص
-            // لو الـ section موجود لكن مش في قائمة الـ sections (تم حذفه)
+            if (!product.section) return true;
             return !sections.find((s) => s.id === product.section);
           });
 
-          // ✅ لو مافيش منتجات orphaned، ما تظهرش القسم ده
           if (orphanedProducts.length === 0) return null;
+
+          const allSelected =
+            orphanedProducts.length > 0 &&
+            orphanedProducts.every((p) =>
+              selectedOrphans.includes(p.id || p._id)
+            );
 
           return (
             <div style={{ marginTop: "40px" }}>
-              <h2 style={{ marginBottom: "20px", color: "#ff9800" }}>
-                ⚠️ {language === "ar" ? "منتجات بدون قسم" : "Orphaned Products"}
-              </h2>
-              <p
+              {/* ── Header row ── */}
+              <div
                 style={{
-                  marginBottom: "15px",
-                  color: "#6c757d",
-                  fontSize: "14px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  flexWrap: "wrap",
+                  gap: "12px",
+                  marginBottom: "12px",
                 }}
               >
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  {/* Select-All checkbox */}
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    onChange={() => {
+                      if (allSelected) {
+                        setSelectedOrphans([]);
+                      } else {
+                        setSelectedOrphans(
+                          orphanedProducts.map((p) => p.id || p._id)
+                        );
+                      }
+                    }}
+                    style={{ width: "18px", height: "18px", cursor: "pointer" }}
+                    title={
+                      language === "ar" ? "تحديد الكل" : "Select all"
+                    }
+                  />
+                  <h2 style={{ margin: 0, color: "#ff9800" }}>
+                    ⚠️{" "}
+                    {language === "ar"
+                      ? "منتجات بدون قسم"
+                      : "Orphaned Products"}
+                  </h2>
+                </div>
+
+                {/* Delete selected button — shows only when something is selected */}
+                {selectedOrphans.length > 0 && (
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <button
+                      onClick={() => setShowDeleteOrphansModal(true)}
+                      style={{
+                        background: "linear-gradient(135deg, #dc3545 0%, #c82333 100%)",
+                        color: "white",
+                        border: "none",
+                        padding: "10px 22px",
+                        borderRadius: "8px",
+                        cursor: "pointer",
+                        fontWeight: "700",
+                        fontSize: "15px",
+                        boxShadow: "0 4px 12px rgba(220,53,69,0.35)",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      🗑️ {language === "ar" ? "حذف المحدد" : "Delete Selected"}
+                    </button>
+
+                    <span style={{ color: "#6c757d", fontSize: "14px", fontWeight: "500" }}>
+                      {language === "ar"
+                        ? `${selectedOrphans.length} محدد`
+                        : `${selectedOrphans.length} selected`}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <p style={{ marginBottom: "15px", color: "#6c757d", fontSize: "14px" }}>
                 {language === "ar"
                   ? `تم العثور على ${orphanedProducts.length} منتج بدون قسم. يرجى تعيين قسم لهم.`
                   : `Found ${orphanedProducts.length} product${orphanedProducts.length !== 1 ? "s" : ""} without a section. Please assign them to a section.`}
               </p>
               <hr style={{ marginBottom: "20px" }} />
 
+              {/* ── Confirmation Modal ── */}
+              {showDeleteOrphansModal && (
+                <div
+                  style={{
+                    position: "fixed",
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    background: "rgba(0,0,0,0.7)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 1100,
+                  }}
+                >
+                  <div
+                    style={{
+                      background: "white",
+                      padding: "30px",
+                      borderRadius: "14px",
+                      maxWidth: "420px",
+                      width: "90%",
+                      boxShadow: "0 10px 40px rgba(0,0,0,0.25)",
+                    }}
+                  >
+                    <h3
+                      style={{
+                        marginBottom: "16px",
+                        color: "#dc3545",
+                        fontSize: "20px",
+                      }}
+                    >
+                      🗑️{" "}
+                      {language === "ar" ? "تأكيد الحذف" : "Confirm Delete"}
+                    </h3>
+
+                    <p style={{ marginBottom: "12px", fontSize: "15px" }}>
+                      {language === "ar"
+                        ? `هل أنت متأكد أنك تريد حذف ${selectedOrphans.length} منتج؟`
+                        : `Are you sure you want to delete ${selectedOrphans.length} product${selectedOrphans.length !== 1 ? "s" : ""}?`}
+                    </p>
+
+                    {/* List the selected products */}
+                    <div
+                      style={{
+                        background: "#fff5f5",
+                        border: "1px solid #ffcccc",
+                        borderRadius: "8px",
+                        padding: "12px",
+                        maxHeight: "160px",
+                        overflowY: "auto",
+                        marginBottom: "20px",
+                      }}
+                    >
+                      {orphanedProducts
+                        .filter((p) =>
+                          selectedOrphans.includes(p.id || p._id)
+                        )
+                        .map((p) => (
+                          <div
+                            key={p.id || p._id}
+                            style={{
+                              fontSize: "14px",
+                              padding: "4px 0",
+                              borderBottom: "1px solid #ffe0e0",
+                              color: "#2c3e50",
+                            }}
+                          >
+                            •{" "}
+                            {language === "ar"
+                              ? p.name_ar || p.name
+                              : p.name_en || p.name}
+                          </div>
+                        ))}
+                    </div>
+
+                    <p
+                      style={{
+                        color: "#dc3545",
+                        fontSize: "13px",
+                        fontWeight: "600",
+                        marginBottom: "20px",
+                      }}
+                    >
+                      ⚠️{" "}
+                      {language === "ar"
+                        ? "لا يمكن التراجع عن هذا الإجراء."
+                        : "This action cannot be undone."}
+                    </p>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "10px",
+                        justifyContent: "flex-end",
+                      }}
+                    >
+                      <button
+                        onClick={() => setShowDeleteOrphansModal(false)}
+                        disabled={isDeletingOrphans}
+                        style={{
+                          background: "#6c757d",
+                          color: "white",
+                          border: "none",
+                          padding: "10px 22px",
+                          borderRadius: "8px",
+                          cursor: isDeletingOrphans ? "not-allowed" : "pointer",
+                          fontWeight: "600",
+                          opacity: isDeletingOrphans ? 0.7 : 1,
+                        }}
+                      >
+                        {language === "ar" ? "إلغاء" : "Cancel"}
+                      </button>
+                      <button
+                        onClick={handleDeleteSelectedOrphans}
+                        disabled={isDeletingOrphans}
+                        style={{
+                          background: isDeletingOrphans ? "#ccc" : "#dc3545",
+                          color: "white",
+                          border: "none",
+                          padding: "10px 22px",
+                          borderRadius: "8px",
+                          cursor: isDeletingOrphans ? "not-allowed" : "pointer",
+                          fontWeight: "700",
+                          fontSize: "15px",
+                          opacity: isDeletingOrphans ? 0.7 : 1,
+                        }}
+                      >
+                        {isDeletingOrphans
+                          ? language === "ar"
+                            ? "⏳ جاري الحذف..."
+                            : "⏳ Deleting..."
+                          : language === "ar"
+                            ? "🗑️ تأكيد الحذف"
+                            : "🗑️ Confirm Delete"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ── Product Cards ── */}
               <div
                 style={{
                   display: "grid",
@@ -2851,71 +3434,92 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                   gap: "20px",
                 }}
               >
-                {orphanedProducts.map((product) => (
-                  <div
-                    key={`${product.id || product._id}-${refreshKey}`}
-                    style={{
-                      background: "#fff8e1",
-                      padding: "20px",
-                      borderRadius: "12px",
-                      border: "2px solid #ff9800",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "12px",
-                      boxShadow: "0 2px 8px rgba(255, 152, 0, 0.1)",
-                      transition: "transform 0.2s, box-shadow 0.2s",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = "translateY(-4px)";
-                      e.currentTarget.style.boxShadow =
-                        "0 4px 16px rgba(255, 152, 0, 0.2)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = "translateY(0)";
-                      e.currentTarget.style.boxShadow =
-                        "0 2px 8px rgba(255, 152, 0, 0.1)";
-                    }}
-                  >
-                    {/* Warning Badge */}
-                    <span
+                {orphanedProducts.map((product) => {
+                  const pid = product.id || product._id;
+                  const isSelected = selectedOrphans.includes(pid);
+                  return (
+                    <div
+                      key={`${pid}-${refreshKey}`}
+                      onClick={() =>
+                        setSelectedOrphans((prev) =>
+                          prev.includes(pid)
+                            ? prev.filter((id) => id !== pid)
+                            : [...prev, pid]
+                        )
+                      }
                       style={{
-                        display: "inline-block",
-                        width: "fit-content",
-                        background: "#ff9800",
-                        color: "white",
-                        padding: "4px 10px",
-                        borderRadius: "6px",
-                        fontSize: "11px",
-                        fontWeight: "600",
+                        background: isSelected ? "#fff0f0" : "#fff8e1",
+                        padding: "20px",
+                        borderRadius: "12px",
+                        border: isSelected ? "2px solid #dc3545" : "2px solid #ff9800",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "12px",
+                        boxShadow: isSelected
+                          ? "0 4px 16px rgba(220,53,69,0.18)"
+                          : "0 2px 8px rgba(255,152,0,0.1)",
+                        transition: "transform 0.2s, box-shadow 0.2s, border 0.2s, background 0.2s",
+                        cursor: "pointer",
+                        position: "relative",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = "translateY(-4px)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "translateY(0)";
                       }}
                     >
-                      ⚠️ {language === "ar" ? "بدون قسم" : "No Section"}
-                    </span>
+                      {/* Circular checkbox top-right */}
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "12px",
+                          right: "12px",
+                          width: "26px",
+                          height: "26px",
+                          borderRadius: "50%",
+                          background: isSelected ? "#dc3545" : "white",
+                          border: isSelected ? "2px solid #dc3545" : "2px solid #ccc",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+                          transition: "all 0.2s",
+                          zIndex: 2,
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedOrphans((prev) =>
+                            prev.includes(pid)
+                              ? prev.filter((id) => id !== pid)
+                              : [...prev, pid]
+                          );
+                        }}
+                      >
+                        {isSelected && (
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 14 14"
+                            fill="none"
+                          >
+                            <path
+                              d="M2 7L5.5 10.5L12 3.5"
+                              stroke="white"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        )}
+                      </div>
 
-                    <img
-                      src={
-                        product.image ||
-                        product.image_url ||
-                        product.image_file ||
-                        "https://via.placeholder.com/250"
-                      }
-                      alt={
-                        language === "ar" ? product.name_ar : product.name_en
-                      }
-                      style={{
-                        width: "100%",
-                        height: "200px",
-                        objectFit: "cover",
-                        borderRadius: "8px",
-                      }}
-                    />
-
-                    {product.badge && (
+                      {/* Warning Badge */}
                       <span
                         style={{
                           display: "inline-block",
                           width: "fit-content",
-                          background: "#667eea",
+                          background: "#ff9800",
                           color: "white",
                           padding: "4px 10px",
                           borderRadius: "6px",
@@ -2923,154 +3527,162 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                           fontWeight: "600",
                         }}
                       >
-                        {product.badge}
+                        ⚠️ {language === "ar" ? "بدون قسم" : "No Section"}
                       </span>
-                    )}
 
-                    <strong style={{ fontSize: "16px", color: "#2c3e50" }}>
-                      {language === "ar"
-                        ? product.name_ar || product.name
-                        : product.name_en || product.name}
-                    </strong>
+                      <img
+                        src={
+                          product.image ||
+                          product.image_url ||
+                          product.image_file ||
+                          "https://via.placeholder.com/250"
+                        }
+                        alt={language === "ar" ? product.name_ar : product.name_en}
+                        style={{
+                          width: "100%",
+                          height: "200px",
+                          objectFit: "cover",
+                          borderRadius: "8px",
+                        }}
+                      />
 
-                    <p
-                      style={{
-                        fontSize: "14px",
-                        color: "#6c757d",
-                        margin: 0,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
-                      }}
-                    >
-                      {language === "ar"
-                        ? product.shortDescription_ar ||
-                        product.shortDescription
-                        : product.shortDescription_en ||
-                        product.shortDescription}
-                    </p>
+                      {product.badge && (
+                        <span
+                          style={{
+                            display: "inline-block",
+                            width: "fit-content",
+                            background: "#667eea",
+                            color: "white",
+                            padding: "4px 10px",
+                            borderRadius: "6px",
+                            fontSize: "11px",
+                            fontWeight: "600",
+                          }}
+                        >
+                          {product.badge}
+                        </span>
+                      )}
 
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
+                      <strong style={{ fontSize: "16px", color: "#2c3e50" }}>
+                        {language === "ar"
+                          ? product.name_ar || product.name
+                          : product.name_en || product.name}
+                      </strong>
+
+                      <p
+                        style={{
+                          fontSize: "14px",
+                          color: "#6c757d",
+                          margin: 0,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                        }}
+                      >
+                        {language === "ar"
+                          ? product.shortDescription_ar || product.shortDescription
+                          : product.shortDescription_en || product.shortDescription}
+                      </p>
+
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: "20px",
+                            fontWeight: "700",
+                            color: "#28a745",
+                          }}
+                        >
+                          ${product.price}
+                        </span>
+                      </div>
+
                       <span
+                        className={`stock-badge ${product.stock?.toLowerCase().replace(/\s/g, "-")}`}
                         style={{
-                          fontSize: "20px",
-                          fontWeight: "700",
-                          color: "#28a745",
+                          fontSize: "12px",
+                          textAlign: "center",
+                          padding: "6px",
+                          borderRadius: "6px",
                         }}
                       >
-                        ${product.price}
+                        {product.stock}
                       </span>
-                    </div>
 
-                    <span
-                      className={`stock-badge ${product.stock?.toLowerCase().replace(/\s/g, "-")}`}
-                      style={{
-                        fontSize: "12px",
-                        textAlign: "center",
-                        padding: "6px",
-                        borderRadius: "6px",
-                      }}
-                    >
-                      {product.stock}
-                    </span>
-
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "10px",
-                        marginTop: "auto",
-                      }}
-                    >
-                      <button
-                        onClick={() => {
-                          setEditingProductId(product.id || product._id);
-                          setFormData({
-                            name_ar: product.name_ar || product.name || "",
-                            name_en: product.name_en || product.name || "",
-                            type: product.type || "silver",
-                            weight: product.weight || "",
-                            manufacturing_cost:
-                              product.manufacturing_cost || "",
-                            price: product.price,
-                            badge: product.badge || "",
-                            stock: product.stock,
-                            section: product.section || "",
-                            image_url: product.image_url || product.image || "",
-                            description_ar:
-                              product.description_ar ||
-                              product.description ||
-                              "",
-                            description_en:
-                              product.description_en ||
-                              product.description ||
-                              "",
-                            shortDescription_ar:
-                              product.shortDescription_ar ||
-                              product.shortDescription ||
-                              "",
-                            shortDescription_en:
-                              product.shortDescription_en ||
-                              product.shortDescription ||
-                              "",
-                          });
-                          setShowProductModal(true);
-                        }}
-                        style={{
-                          flex: 1,
-                          background: "#ffc107",
-                          color: "white",
-                          border: "none",
-                          padding: "10px",
-                          borderRadius: "6px",
-                          cursor: "pointer",
-                          fontSize: "14px",
-                          fontWeight: "600",
-                          transition: "background 0.2s",
-                        }}
-                        onMouseEnter={(e) =>
-                          (e.currentTarget.style.background = "#e0a800")
-                        }
-                        onMouseLeave={(e) =>
-                          (e.currentTarget.style.background = "#ffc107")
-                        }
+                      {/* Stop propagation on action buttons */}
+                      <div
+                        style={{ display: "flex", gap: "10px", marginTop: "auto" }}
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        {t.edit}
-                      </button>
+                        <button
+                          onClick={() => {
+                            setEditingProductId(product.id || product._id);
+                            setFormData({
+                              name_ar: product.name_ar || product.name || "",
+                              name_en: product.name_en || product.name || "",
+                              type: product.type || "silver",
+                              weight: product.weight || "",
+                              manufacturing_cost: product.manufacturing_cost || "",
+                              price: product.price,
+                              badge: product.badge || "",
+                              stock: product.stock,
+                              section: product.section || "",
+                              image_url: product.image_url || product.image || "",
+                              description_ar:
+                                product.description_ar || product.description || "",
+                              description_en:
+                                product.description_en || product.description || "",
+                              shortDescription_ar:
+                                product.shortDescription_ar ||
+                                product.shortDescription || "",
+                              shortDescription_en:
+                                product.shortDescription_en ||
+                                product.shortDescription || "",
+                            });
+                            setShowProductModal(true);
+                          }}
+                          style={{
+                            flex: 1,
+                            background: "#ffc107",
+                            color: "white",
+                            border: "none",
+                            padding: "10px",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            fontSize: "14px",
+                            fontWeight: "600",
+                          }}
+                        >
+                          {t.edit}
+                        </button>
 
-                      <button
-                        onClick={() => handleDelete(product.id || product._id)}
-                        style={{
-                          flex: 1,
-                          background: "#dc3545",
-                          color: "white",
-                          border: "none",
-                          padding: "10px",
-                          borderRadius: "6px",
-                          cursor: "pointer",
-                          fontSize: "14px",
-                          fontWeight: "600",
-                          transition: "background 0.2s",
-                        }}
-                        onMouseEnter={(e) =>
-                          (e.currentTarget.style.background = "#c82333")
-                        }
-                        onMouseLeave={(e) =>
-                          (e.currentTarget.style.background = "#dc3545")
-                        }
-                      >
-                        {t.delete}
-                      </button>
+                        <button
+                          onClick={() => handleDelete(product.id || product._id)}
+                          style={{
+                            flex: 1,
+                            background: "#dc3545",
+                            color: "white",
+                            border: "none",
+                            padding: "10px",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            fontSize: "14px",
+                            fontWeight: "600",
+                          }}
+                        >
+                          {t.delete}
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           );

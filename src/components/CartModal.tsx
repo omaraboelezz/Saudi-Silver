@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useCart } from '../context/CartContext';
-import { FaWhatsapp, FaTrash, FaExclamationTriangle } from 'react-icons/fa';
+import { FaWhatsapp, FaTrash, FaExclamationTriangle, FaMinus, FaPlus } from 'react-icons/fa';
 import './CartModal.css';
 
 export interface Product {
@@ -22,8 +22,14 @@ interface CartModalProps {
   language?: string;
 }
 
-const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, language = 'ar' }) => {
-  const { cartItems, removeFromCart, cleanupDeletedProducts } = useCart();
+const CartModal: React.FC<CartModalProps> = ({
+  isOpen,
+  onClose,
+  onProductClick,
+  language = 'ar',
+}) => {
+  const { cartItems, removeFromCart, addToCart, removeEntireItem, cleanupDeletedProducts } =
+    useCart();
   const [validatedItems, setValidatedItems] = useState<any[]>([]);
 
   useEffect(() => {
@@ -42,16 +48,12 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
       const existingProducts = await response.json();
       const existingMap = new Map(existingProducts.map((p: any) => [p.id, p]));
 
-      const validated = cartItems.map(item => {
+      const validated = cartItems.map((item) => {
         const freshProduct = existingMap.get(item.id);
         if (!freshProduct) {
           return { ...item, isDeleted: true };
         }
-        return {
-          ...item,
-          ...freshProduct,
-          isDeleted: false
-        };
+        return { ...item, ...freshProduct, isDeleted: false };
       });
 
       setValidatedItems(validated);
@@ -61,20 +63,23 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
     }
   };
 
-  const texts: Record<string, {
-    shoppingCart: string;
-    item: string;
-    items: string;
-    cartEmpty: string;
-    nothingAdded: string;
-    total: string;
-    connectToBuy: string;
-    removeFromCart: string;
-    closeCart: string;
-    whatsappMessage: string;
-    productDeleted: string;
-    cleanDeletedItems: string;
-  }> = {
+  const texts: Record<
+    string,
+    {
+      shoppingCart: string;
+      item: string;
+      items: string;
+      cartEmpty: string;
+      nothingAdded: string;
+      total: string;
+      connectToBuy: string;
+      removeFromCart: string;
+      closeCart: string;
+      whatsappMessage: string;
+      productDeleted: string;
+      cleanDeletedItems: string;
+    }
+  > = {
     ar: {
       shoppingCart: 'سلة التسوق',
       item: 'عنصر',
@@ -87,36 +92,31 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
       closeCart: 'إغلاق السلة',
       whatsappMessage: 'مرحباً، أود طلب العناصر التالية من El-Saudi jewelry:',
       productDeleted: 'هذا المنتج تم حذفه',
-      cleanDeletedItems: 'إزالة المنتجات المحذوفة'
+      cleanDeletedItems: 'إزالة المنتجات المحذوفة',
     },
     en: {
       shoppingCart: 'Shopping Cart',
       item: 'item',
       items: 'items',
       cartEmpty: 'Your cart is empty',
-      nothingAdded: 'Looks like you haven\'t added anything yet.',
+      nothingAdded: "Looks like you haven't added anything yet.",
       total: 'Total:',
       connectToBuy: 'Connect to Buy',
       removeFromCart: 'Remove from cart',
       closeCart: 'Close cart',
-      whatsappMessage: 'Hello, I would like to order the following items from El-Saudi jewelry:',
+      whatsappMessage:
+        'Hello, I would like to order the following items from El-Saudi jewelry:',
       productDeleted: 'This product has been deleted',
-      cleanDeletedItems: 'Remove Deleted Items'
-    }
+      cleanDeletedItems: 'Remove Deleted Items',
+    },
   };
 
   const t = texts[language as string] || texts.ar;
 
   const getImageUrl = (product: Product): string => {
-    if (product.image_url) {
-      return product.image_url;  // ✅ Cloudinary أول
-    }
-    if (product.image_file) {
-      return product.image_file;
-    }
-    if (product.image) {
-      return product.image;
-    }
+    if (product.image_url) return product.image_url;
+    if (product.image_file) return product.image_file;
+    if (product.image) return product.image;
     return 'https://via.placeholder.com/400x400?text=No+Image';
   };
 
@@ -136,40 +136,33 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
     };
   }, [isOpen, onClose]);
 
-  const calculateTotal = (): number => {
-    return validatedItems
-      .filter(item => !item.isDeleted)
-      .reduce((acc: number, item: any) => {
-        return acc + (item.price * (item.quantity || 1));
-      }, 0);
+  const calculateTotal = (): number =>
+    validatedItems
+      .filter((item) => !item.isDeleted)
+      .reduce((acc: number, item: any) => acc + item.price * (item.quantity || 1), 0);
+
+  const handleConnectToBuy = () => {
+    const validItems = validatedItems.filter((item) => !item.isDeleted);
+    if (validItems.length === 0) return;
+
+    const phoneNumber = '201067365567';
+    let message = `${t.whatsappMessage}\n\n`;
+
+    validItems.forEach((item: any, index: number) => {
+      const qty = item.quantity || 1;
+      const productName =
+        language === 'ar'
+          ? item.name_ar || item.arabic_name || item.name || 'منتج'
+          : item.name_en || item.english_name || item.name || 'Product';
+
+      message += `${index + 1}. ${productName} (x${qty}) - $${(item.price * qty).toLocaleString()}\n`;
+      message += `   🔗 https://elsaudi-jewelry.vercel.app/?product=${item.id}\n\n`;
+    });
+
+    message += `*${t.total} $${calculateTotal().toLocaleString()}*`;
+
+    window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
   };
-
- const handleConnectToBuy = () => {
-  const validItems = validatedItems.filter(item => !item.isDeleted);
-  if (validItems.length === 0) return;
-
-  const phoneNumber = '201067365567';
-
-  let message = `${t.whatsappMessage}\n\n`;
-  
-  validItems.forEach((item: any, index: number) => {
-    const qty = item.quantity || 1;
-    const productName = language === 'ar'
-      ? item.name_ar || item.arabic_name || item.name || 'منتج'
-      : item.name_en || item.english_name || item.name || 'Product';
-    
-    message += `${index + 1}. ${productName} (x${qty}) - $${(item.price * qty).toLocaleString()}\n`;
-    
-    // ✅ رابط كل منتج
-    message += `   🔗 https://elsaudi-jewelry.vercel.app/?product=${item.id}\n\n`;
-  });
-
-  message += `*${t.total} $${calculateTotal().toLocaleString()}*`;
-
-  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-  window.open(whatsappUrl, '_blank');
-};
-
 
   if (!isOpen) return null;
 
@@ -179,7 +172,6 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
 
   const handleProductClick = (product: Product) => {
     if (product.isDeleted) return;
-
     if (onProductClick) {
       onProductClick(product);
       onClose();
@@ -189,19 +181,16 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
   const getProductName = (product: any): string => {
     if (!product) return '';
     return language === 'ar'
-      ? (product.arabic_name || product.name_ar || product.name || 'منتج')
-      : (product.english_name || product.name_en || product.name || 'Product');
+      ? product.arabic_name || product.name_ar || product.name || 'منتج'
+      : product.english_name || product.name_en || product.name || 'Product';
   };
 
-  const getTotalQuantity = (): number => {
-    return validatedItems
-      .filter(item => !item.isDeleted)
-      .reduce((total: number, item: any) => {
-        return total + (item.quantity || 1);
-      }, 0);
-  };
+  const getTotalQuantity = (): number =>
+    validatedItems
+      .filter((item) => !item.isDeleted)
+      .reduce((total: number, item: any) => total + (item.quantity || 1), 0);
 
-  const hasDeletedItems = validatedItems.some(item => item.isDeleted);
+  const hasDeletedItems = validatedItems.some((item) => item.isDeleted);
 
   return (
     <div
@@ -209,6 +198,7 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
       onClick={handleBackdropClick}
     >
       <div className="cart-modal-content">
+        {/* ── Close button ── */}
         <button
           className="cart-modal-close-button"
           onClick={onClose}
@@ -218,6 +208,7 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
           &times;
         </button>
 
+        {/* ── Header ── */}
         <div className="cart-modal-header">
           <h2 className="cart-modal-title">{t.shoppingCart}</h2>
           <p className="cart-modal-count">
@@ -225,29 +216,28 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
           </p>
         </div>
 
+        {/* ── Deleted items warning ── */}
         {hasDeletedItems && (
-          <div style={{
-            background: '#fff3cd',
-            border: '1px solid #ffc107',
-            borderRadius: '8px',
-            padding: '12px',
-            margin: '10px 20px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px'
-          }}>
+          <div
+            style={{
+              background: '#fff3cd',
+              border: '1px solid #ffc107',
+              borderRadius: '8px',
+              padding: '12px',
+              margin: '10px 20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+            }}
+          >
             <FaExclamationTriangle color="#856404" size={20} />
             <span style={{ flex: 1, color: '#856404', fontSize: '14px' }}>
               {language === 'ar'
                 ? 'بعض المنتجات تم حذفها ولن يتم تضمينها في الطلب'
-                : 'Some products have been deleted and won\'t be included in the order'}
+                : "Some products have been deleted and won't be included in the order"}
             </span>
             <button
-              onClick={() => {
-                if (cleanupDeletedProducts) {
-                  cleanupDeletedProducts();
-                }
-              }}
+              onClick={() => cleanupDeletedProducts?.()}
               style={{
                 background: '#dc3545',
                 color: 'white',
@@ -256,7 +246,7 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
                 borderRadius: '6px',
                 fontSize: '12px',
                 cursor: 'pointer',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
               }}
             >
               {t.cleanDeletedItems}
@@ -264,6 +254,7 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
           </div>
         )}
 
+        {/* ── Body ── */}
         <div className="cart-modal-body">
           {validatedItems.length === 0 ? (
             <div className="cart-empty">
@@ -281,26 +272,30 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
                   style={{
                     cursor: product.isDeleted ? 'not-allowed' : 'pointer',
                     opacity: product.isDeleted ? 0.6 : 1,
-                    position: 'relative'
+                    position: 'relative',
                   }}
                 >
+                  {/* Deleted badge */}
                   {product.isDeleted && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '10px',
-                      right: '10px',
-                      background: '#dc3545',
-                      color: 'white',
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                      fontSize: '11px',
-                      fontWeight: 'bold',
-                      zIndex: 2
-                    }}>
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '10px',
+                        right: '10px',
+                        background: '#dc3545',
+                        color: 'white',
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        fontSize: '11px',
+                        fontWeight: 'bold',
+                        zIndex: 2,
+                      }}
+                    >
                       {t.productDeleted}
                     </div>
                   )}
 
+                  {/* Image + desktop hover overlay */}
                   <div className="cart-item-image-container">
                     <img
                       src={getImageUrl(product)}
@@ -308,29 +303,113 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
                       className="cart-item-image"
                       style={{ filter: product.isDeleted ? 'grayscale(100%)' : 'none' }}
                     />
-                    <button
-                      className="cart-item-remove"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeFromCart(product.id);
-                      }}
-                      aria-label={t.removeFromCart}
-                    >
-                      <FaTrash size={12} />
-                    </button>
+
+                    {/* Quantity badge — fades on hover */}
+                    {!product.isDeleted && (product.quantity ?? 0) > 0 && (
+                      <div className="cart-item-qty-badge">x{product.quantity}</div>
+                    )}
+
+                    {/* Desktop: hover overlay controls */}
+                    <div className="cart-item-controls-overlay">
+                      <div className="overlay-controls-row">
+                        <div className="quantity-selector">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeFromCart(product.id);
+                            }}
+                            disabled={(product.quantity || 1) <= 1}
+                            type="button"
+                          >
+                            <FaMinus size={10} />
+                          </button>
+                          <span>{product.quantity || 1}</span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              addToCart(product, 1);
+                            }}
+                            type="button"
+                          >
+                            <FaPlus size={10} />
+                          </button>
+                        </div>
+
+                        <button
+                          className="cart-item-remove-entire"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeEntireItem(product.id);
+                          }}
+                          aria-label={t.removeFromCart}
+                          type="button"
+                        >
+                          <FaTrash size={12} />
+                        </button>
+                      </div>
+                    </div>
                   </div>
 
+                  {/* Text info */}
                   <div className="cart-item-info">
-                    <h3 className="cart-item-name">
-                      {getProductName(product)}
-                    </h3>
+                    <h3 className="cart-item-name">{getProductName(product)}</h3>
 
                     <div className="cart-item-details">
-                      <p className="cart-item-price">${product.price?.toLocaleString() || 'N/A'}</p>
-                      {product.quantity && product.quantity > 1 && (
-                        <span className="cart-item-quantity">x{product.quantity}</span>
+                      <p className="cart-item-price">${product.price?.toLocaleString() ?? 'N/A'}</p>
+                      {(product.quantity ?? 0) > 1 && !product.isDeleted && (
+                        <span className="cart-item-subtotal">
+                          ${(product.price * product.quantity).toLocaleString()} total
+                        </span>
                       )}
                     </div>
+
+                    {/* ── Mobile: always-visible inline controls ── */}
+                    {!product.isDeleted && (
+                      <div className="cart-item-mobile-controls">
+                        {/* − qty + pill */}
+                        <div className="mobile-qty-selector">
+                          <button
+                            className="mobile-qty-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeFromCart(product.id);
+                            }}
+                            disabled={(product.quantity || 1) <= 1}
+                            type="button"
+                            aria-label="Decrease quantity"
+                          >
+                            <FaMinus size={12} />
+                          </button>
+
+                          <span className="mobile-qty-count">{product.quantity || 1}</span>
+
+                          <button
+                            className="mobile-qty-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              addToCart(product, 1);
+                            }}
+                            type="button"
+                            aria-label="Increase quantity"
+                          >
+                            <FaPlus size={12} />
+                          </button>
+                        </div>
+
+                        {/* Trash */}
+                        <button
+                          className="mobile-remove-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeEntireItem(product.id);
+                          }}
+                          aria-label={t.removeFromCart}
+                          type="button"
+                        >
+                          <FaTrash size={14} />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -338,19 +417,25 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onProductClick, 
           )}
         </div>
 
-        {validatedItems.filter(item => !item.isDeleted).length > 0 && (
+        {/* ── Footer ── */}
+        {validatedItems.filter((item) => !item.isDeleted).length > 0 && (
           <div className="cart-modal-footer">
-            <div className="cart-total">
-              <span>{t.total}</span>
-              <span className="cart-total-price">
-                ${calculateTotal().toLocaleString()}
+            <div className="cart-footer-total-block">
+              <span className="cart-footer-total-label">{t.total}</span>
+              <span className="cart-total-price">${calculateTotal().toLocaleString()}</span>
+              <span className="cart-footer-items-note">
+                {getTotalQuantity()} {getTotalQuantity() === 1 ? t.item : t.items}
               </span>
             </div>
 
-            <button className="cart-connect-btn" onClick={handleConnectToBuy}>
-              <span>{t.connectToBuy}</span>
-              <FaWhatsapp size={22} />
-            </button>
+            <div className="cart-footer-sep" />
+
+            <div className="cart-footer-actions">
+              <button className="cart-connect-btn" onClick={handleConnectToBuy}>
+                <span>{t.connectToBuy}</span>
+                <FaWhatsapp size={20} />
+              </button>
+            </div>
           </div>
         )}
       </div>

@@ -10,6 +10,7 @@ import ProductModal from '../components/ProductModal';
 import WishlistModal from '../components/WishlistModal';
 import { fetchProducts } from '../utils/api';
 import CartModal from '../components/CartModal';
+import ScrollReveal from '../components/ScrollReveal';
 import './Home.css';
 
 
@@ -27,7 +28,7 @@ const Home = ({ language, onLanguageChange, navigate }) => {
   const SECTION_API_URL = 'https://omarawad9.pythonanywhere.com/api/sections/';
 
 
-    const handleLogout = () => {
+  const handleLogout = () => {
     localStorage.removeItem('isAdminAuthenticated');
     localStorage.removeItem('adminUsername');
     if (navigate) {
@@ -35,12 +36,12 @@ const Home = ({ language, onLanguageChange, navigate }) => {
     }
   };
 
-    const isAdmin = () => {
+  const isAdmin = () => {
     return localStorage.getItem('isAdminAuthenticated') === 'true';
   };
 
-  
-  
+
+
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -130,39 +131,39 @@ const Home = ({ language, onLanguageChange, navigate }) => {
       : (product.name_en || product.name || 'Product');
   };
 
-const handleContactClick = (product) => {
-  const phoneNumber = '201067365567';
+  const handleContactClick = (product) => {
+    const phoneNumber = '201067365567';
 
-  const helloText =
-    language === 'ar'
-      ? 'مرحباً! أنا مهتم بشراء هذا المنتج'
-      : "Hello! I'm interested in purchasing";
+    const helloText =
+      language === 'ar'
+        ? 'مرحباً! أنا مهتم بشراء هذا المنتج'
+        : "Hello! I'm interested in purchasing";
 
-  const productText =
-    language === 'ar'
-      ? 'المنتج'
-      : 'Product';
+    const productText =
+      language === 'ar'
+        ? 'المنتج'
+        : 'Product';
 
-  const priceText =
-    language === 'ar'
-      ? 'السعر'
-      : 'Price';
+    const priceText =
+      language === 'ar'
+        ? 'السعر'
+        : 'Price';
 
-  const moreInfoText =
-    language === 'ar'
-      ? 'هل يمكنك من فضلك تزويدي بمزيد من المعلومات؟'
-      : 'Could you please provide more information?';
+    const moreInfoText =
+      language === 'ar'
+        ? 'هل يمكنك من فضلك تزويدي بمزيد من المعلومات؟'
+        : 'Could you please provide more information?';
 
-  const message = encodeURIComponent(
-    `${helloText}\n\n` +
-    `${productText}: ${getProductName(product)}\n` +
-    `${priceText}: $${product.price?.toLocaleString() || 'غير متوفر'}\n\n` +
-    `${moreInfoText}`
-  );
+    const message = encodeURIComponent(
+      `${helloText}\n\n` +
+      `${productText}: ${getProductName(product)}\n` +
+      `${priceText}: $${product.price?.toLocaleString() || 'غير متوفر'}\n\n` +
+      `${moreInfoText}`
+    );
 
-  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
-  window.open(whatsappUrl, '_blank');
-};
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+    window.open(whatsappUrl, '_blank');
+  };
 
 
   const handleCloseModal = () => {
@@ -199,47 +200,56 @@ const handleContactClick = (product) => {
         onCartClick={() => setIsCartOpen(true)}
         navigate={navigate}
         onLogout={handleLogout}
-        isAdmin={isAdmin()} 
+        isAdmin={isAdmin()}
       />
-      <Hero language={language} onLanguageChange={onLanguageChange} />
+      <ScrollReveal>
+        <Hero language={language} onLanguageChange={onLanguageChange} />
+      </ScrollReveal>
 
       {loading ? (
-        <div className="loading-container">
-          <p>Loading products...</p>
+        <div className="luxury-preloader">
+          <div className="loader-ring"></div>
+          <div className="loader-logo">El-Saudi Jewelry</div>
         </div>
       ) : (
         <>
           {/* ✅ Main Featured Carousel - عرض المنتجات المميزة في carousel كبير */}
           {hasFeaturedSection() && (
-            <ProductCarousel
-              language={language}
-              onLanguageChange={onLanguageChange}
-              products={featuredProducts}
-              onProductClick={handleProductClick}
-              sectionTitle={getFeaturedSection()}
-            />
+            <ScrollReveal delay={100}>
+              <ProductCarousel
+                language={language}
+                onLanguageChange={onLanguageChange}
+                products={featuredProducts}
+                onProductClick={handleProductClick}
+                sectionTitle={getFeaturedSection()}
+              />
+            </ScrollReveal>
           )}
 
           {/* ✅ عرض كل الـ Sections (بدون Featured عشان اتعرض فوق) */}
           {sections.length > 0 ? (
-            <SectionProducts
-              sections={sections.filter(s => s.is_featured !== true)}
-              products={products}
-              onProductClick={handleProductClick}
-              onContactClick={handleContactClick}
-              searchQuery={searchQuery}
-              language={language}
-            />
+            <ScrollReveal delay={200}>
+              <SectionProducts
+                sections={sections.filter(s => s.is_featured !== true)}
+                products={products}
+                onProductClick={handleProductClick}
+                onContactClick={handleContactClick}
+                searchQuery={searchQuery}
+                language={language}
+              />
+            </ScrollReveal>
           ) : (
             // ✅ لو مفيش sections، اعرض الـ Grid العادي
-            <ProductGrid
-              language={language}
-              onLanguageChange={onLanguageChange}
-              products={products}
-              onProductClick={handleProductClick}
-              onContactClick={handleContactClick}
-              searchQuery={searchQuery}
-            />
+            <ScrollReveal delay={200}>
+              <ProductGrid
+                language={language}
+                onLanguageChange={onLanguageChange}
+                products={products}
+                onProductClick={handleProductClick}
+                onContactClick={handleContactClick}
+                searchQuery={searchQuery}
+              />
+            </ScrollReveal>
           )}
         </>
       )}

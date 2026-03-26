@@ -1,4 +1,7 @@
-/* Header Styles */
+/* ═══════════════════════════════════════════════════════════
+   Header Styles
+   ═══════════════════════════════════════════════════════════ */
+
 .header {
   position: fixed;
   top: 0;
@@ -8,171 +11,59 @@
   backdrop-filter: blur(10px);
   z-index: 999;
 }
+
 .header::after {
   content: "";
   position: absolute;
   left: 0;
   bottom: 0;
   width: 100%;
-  height: 45px; /* ارتفاع بسيط */
-
-  background: linear-gradient(
-    to bottom,
-    rgba(26, 26, 26, 0),
-    rgba(26, 26, 26, 0.18) /* شفاف أكتر سنة صغيرة */
-  );
-
+  height: 45px;
+  background: linear-gradient(to bottom, rgba(26, 26, 26, 0), rgba(26, 26, 26, 0.18));
   pointer-events: none;
 }
-
 
 .header-scrolled {
   background: rgba(26, 26, 26, 0.98);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
+/* ── Container ──────────────────────────────────────────── */
 .header-container {
-  /* Removed max-width and margin: 0 auto */
   width: 100%;
   padding: 1rem 7rem;
-  
-  /* Flex settings to distribute items */
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-/* --- 1. LEFT: Logo --- */
+/* ── Logo (left) ────────────────────────────────────────── */
 .header-logo {
   cursor: pointer;
   transition: transform 0.3s ease;
   z-index: 1001;
-  
-  /* Takes up left space */
   flex: 1;
   display: flex;
+  align-items: center;
   justify-content: flex-start;
-}
-
-/* ضيف هذا الكود في نهاية ملف Header.css الموجود عندك */
-
-/* ===================================
-   Language Selector Styles
-   =================================== */
-
-.header-logo {
-  display: flex;
-  align-items: center;
   gap: 15px;
-  cursor: pointer;
-}
-
-.language-selector {
-  position: relative;
-}
-
-.language-toggle {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s ease;
-  border-radius: 50%;
-}
-
-.language-toggle:hover {
-  transform: scale(1.1);
-}
-
-.language-menu {
-  position: absolute;
-  top: calc(100% + 10px);
-  right:5%;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  min-width: 150px;
-  animation: fadeIn 0.2s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-}
-
-.language-option {
-  width: 100%;
-  padding: 10px 15px;
-  background: transparent;
-  border: none;
-  text-align: left;
-  cursor: pointer;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #000000;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.language-option:hover {
-  background: rgba(0, 0, 0, 0.05);
-}
-
-.language-option.active {
-  background: #d4af37;
-  color: white;
-}
-
-/* Mobile Responsive */
-@media (max-width: 768px) {
-  .language-menu {
-    left: auto;
-    right: 0;
-    transform: none;
-  }
-  
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
 }
 
 .header-logo h1 {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #d4af37  ;
+  color: #d4af37;
   margin: 0;
   letter-spacing: 2px;
   white-space: nowrap;
 }
 
-/* --- 2. CENTER: Navigation --- */
+/* ── Nav (center) ───────────────────────────────────────── */
 .header-nav {
   display: flex;
   gap: 2rem;
   align-items: center;
-  justify-content: center; /* Ensures text stays centered */
+  justify-content: center;
 }
 
 .nav-link {
@@ -210,17 +101,17 @@
   width: 80%;
 }
 
-/* --- 3. RIGHT: Icons (Heart) --- */
+/* ── Icons (right) ──────────────────────────────────────── */
 .header-icons {
-  /* Takes up right space */
   flex: 1;
   display: flex;
-  justify-content: flex-end; /* Pushes content to the far right */
+  justify-content: flex-end;
   align-items: center;
   gap: 1rem;
   z-index: 1001;
 }
 
+/* Wishlist / Cart badge wrapper */
 .wishlist-badge {
   position: relative;
   cursor: pointer;
@@ -238,9 +129,9 @@
   justify-content: center;
   transition: transform 0.3s ease;
 }
+
 .wishlist-badge-heart:hover {
   transform: scale(1.2);
-
 }
 
 .wishlist-icon {
@@ -269,15 +160,91 @@
   border: 2px solid #1a1a1a;
 }
 
-/* Mobile Menu Toggle */
+/* ── Desktop language selector (kept for ≥769px) ────────── */
+.language-selector {
+  position: relative;
+}
+
+.language-toggle {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+  border-radius: 50%;
+}
+
+.language-toggle:hover {
+  transform: scale(1.1);
+}
+
+.language-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 5%;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  min-width: 150px;
+  animation: fadeInDesktop 0.2s ease;
+}
+
+@keyframes fadeInDesktop {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.language-option {
+  width: 100%;
+  padding: 10px 15px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #000;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.language-option:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.language-option.active {
+  background: #d4af37;
+  color: #fff;
+}
+
+/* ── Hamburger button ───────────────────────────────────── */
+/* Hidden on desktop, visible on mobile */
 .mobile-menu-toggle {
   display: none;
+  /* desktop: hidden */
   background: transparent;
   border: none;
   cursor: pointer;
   padding: 0.5rem;
-  flex-direction: column;
-  gap: 5px;
+  align-items: center;
+  justify-content: center;
+  z-index: 1002;
 }
 
 .hamburger {
@@ -308,106 +275,235 @@
   transform: rotate(-45deg) translate(7px, -7px);
 }
 
+/* ══════════════════════════════════════════════════════════
+   UNIFIED MOBILE DRAWER
+   Opens when hamburger is tapped.
+   Contains: nav sections + location + language switcher.
+   Cart & Wishlist remain in the header bar as always.
+   ══════════════════════════════════════════════════════════ */
 
+.mobile-drawer {
+  display: none;
+  /* hidden until mobile */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 997;
+  pointer-events: none;
+}
+
+/* Dark overlay behind the drawer panel */
+.mobile-drawer-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0);
+  transition: background 0.3s ease;
+}
+
+.mobile-drawer.open .mobile-drawer-overlay {
+  background: rgba(0, 0, 0, 0.55);
+  pointer-events: auto;
+}
+
+/* The sliding panel itself */
+.mobile-drawer-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 78vw;
+  max-width: 320px;
+  height: 100%;
+  background: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(105%);
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: auto;
+  overflow-y: auto;
+}
+
+/* RTL: slide from left */
+[dir="rtl"] .mobile-drawer-panel,
+body[dir="rtl"] .mobile-drawer-panel {
+  right: auto;
+  left: 0;
+  transform: translateX(-105%);
+}
+
+.mobile-drawer.open .mobile-drawer-panel {
+  transform: translateX(0);
+}
+
+[dir="rtl"] .mobile-drawer.open .mobile-drawer-panel,
+body[dir="rtl"] .mobile-drawer.open .mobile-drawer-panel {
+  transform: translateX(0);
+}
+
+/* Drawer header row */
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem 1.25rem 0.75rem;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+}
+
+.drawer-brand {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #d4af37;
+  letter-spacing: 1.5px;
+}
+
+.drawer-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #aaa;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+}
+
+.drawer-close:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Section label inside drawer */
+.drawer-section-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.3);
+  padding: 1.1rem 1.25rem 0.4rem;
+}
+
+/* Nav links inside drawer */
+.drawer-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 0 0.5rem;
+}
+
+.drawer-nav-link {
+  background: transparent;
+  border: none;
+  color: #f0ead8;
+  font-size: 1rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0.85rem 0.85rem;
+  border-radius: 8px;
+  text-align: left;
+  transition: background 0.18s, color 0.18s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+[dir="rtl"] .drawer-nav-link,
+body[dir="rtl"] .drawer-nav-link {
+  text-align: right;
+}
+
+.drawer-nav-link:hover {
+  background: rgba(212, 175, 55, 0.1);
+  color: #d4af37;
+}
+
+/* Drawer divider */
+.drawer-divider {
+  height: 0.5px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 0.6rem 1.25rem;
+}
+
+/* Location row */
+.drawer-location-btn {
+  background: transparent;
+  border: none;
+  color: #f0ead8;
+  font-size: 1rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0.85rem 1.35rem;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border-radius: 8px;
+  transition: background 0.18s, color 0.18s;
+  margin: 0 0.5rem;
+  width: calc(100% - 1rem);
+}
+
+[dir="rtl"] .drawer-location-btn,
+body[dir="rtl"] .drawer-location-btn {
+  text-align: right;
+}
+
+.drawer-location-btn:hover {
+  background: rgba(212, 175, 55, 0.1);
+  color: #d4af37;
+}
+
+/* Language toggle rows inside drawer */
+.drawer-lang-row {
+  display: flex;
+  gap: 8px;
+  padding: 0.5rem 1rem 1.5rem;
+}
+
+.drawer-lang-btn {
+  flex: 1;
+  padding: 9px 0;
+  border: 0.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.drawer-lang-btn:hover {
+  background: rgba(212, 175, 55, 0.12);
+  color: #d4af37;
+  border-color: rgba(212, 175, 55, 0.3);
+}
+
+.drawer-lang-btn.active {
+  background: #d4af37;
+  color: #1a1a1a;
+  border-color: #d4af37;
+  font-weight: 700;
+}
+
+/* ── Admin mode ─────────────────────────────────────────── */
 .header.admin-mode {
   padding: 0.5rem 2rem;
   min-height: 60px;
 }
 
-/* Admin Mode - Center the language switcher */
 .header.admin-mode .header-container {
-  justify-content:right;
+  justify-content: flex-end;
 }
 
-/* Admin Mode - Only Language Switcher */
 .header-icons.admin-icons-only {
   gap: 0;
-}
-
-/* Admin Mode - Mobile Responsive */
-@media (max-width: 968px) {
-  .header.admin-mode {
-    padding: 0.5rem 1rem;
-    min-height: 50px;
-  }
-}
-
-@media (max-width: 480px) {
-  .header.admin-mode {
-    padding: 0.4rem 0.8rem;
-    min-height: 45px;
-  }
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-  .header-container {
-    padding: 0.75rem 1.5rem;
-  }
-  
-  /* Reset flex growing on mobile so elements don't squash */
-  .header-logo, .header-icons {
-    flex: unset; 
-  }
-
-  .header-logo h1 {
-    font-size: 1.5rem;
-    letter-spacing: 1px;
-  }
-
-  .mobile-menu-toggle {
-    display: flex;
-  }
-
-  .header-nav {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: rgba(26, 26, 26, 0.98);
-    flex-direction: column;
-    gap: 0;
-    padding: 1rem 0;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    
-    transform: translateY(-20px);
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    z-index: 998;
-  }
-
-  .header-nav.mobile-menu-open {
-    transform: translateY(0);
-    opacity: 1;
-    visibility: visible;
-  }
-
-  .nav-link {
-    width: 100%;
-    text-align: center;
-    padding: 1rem 0;
-    border-radius: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  }
-
-  .nav-link:last-child {
-    border-bottom: none;
-  }
-
-  .nav-link::after {
-    display: none;
-  }
-}
-
-@media (max-width: 480px) {
-  .header-container {
-    padding: 0.75rem 1rem;
-  }
-
-  .header-logo h1 {
-    font-size: 1.25rem;
-  }
 }
 
 .logout-btn {
@@ -429,7 +525,6 @@
   margin-right: 30px;
 }
 
-
 .logout-btn:hover {
   background: linear-gradient(135deg, #c82333, #bd2130);
   transform: translateY(-2px);
@@ -440,10 +535,66 @@
   transform: translateY(0);
 }
 
-/* للموبايل */
+/* ── Responsive ─────────────────────────────────────────── */
 @media (max-width: 768px) {
+  .header-container {
+    padding: 0.75rem 1.5rem;
+  }
+
+  .header-logo,
+  .header-icons {
+    flex: unset;
+  }
+
+  .header-logo h1 {
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+  }
+
+  /* Show hamburger on mobile */
+  .mobile-menu-toggle {
+    display: flex;
+  }
+
+  /* Show mobile drawer */
+  .mobile-drawer {
+    display: block;
+  }
+
+  /* Hide desktop nav & language selector on mobile */
+  .header-nav,
+  .language-selector {
+    display: none;
+  }
+
+  /* Hide map icon on mobile (it's in the drawer) */
+  .wishlist-badge.location-badge {
+    display: none;
+  }
+
+  /* Admin responsive */
+  .header.admin-mode {
+    padding: 0.5rem 1rem;
+    min-height: 50px;
+  }
+
   .logout-btn {
     padding: 6px 12px;
     font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-container {
+    padding: 0.75rem 1rem;
+  }
+
+  .header-logo h1 {
+    font-size: 1.25rem;
+  }
+
+  .header.admin-mode {
+    padding: 0.4rem 0.8rem;
+    min-height: 45px;
   }
 }
