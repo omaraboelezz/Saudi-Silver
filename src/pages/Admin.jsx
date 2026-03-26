@@ -1054,7 +1054,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
         try {
           const data = await response.json();
           Modal.error({ title: language === 'ar' ? '❌ خطأ' : '❌ Error', content: data.error || 'Failed to delete badge', centered: true });
-        } catch (e) { /* IGNORE PARSE ERROR */ }
+        } catch { /* IGNORE PARSE ERROR */ }
       }
     } catch (err) {
       Modal.error({ title: '❌ Network Error', content: err.message, centered: true });
