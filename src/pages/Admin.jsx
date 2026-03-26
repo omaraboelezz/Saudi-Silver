@@ -2083,7 +2083,11 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                       </select>
                       <button
                         type="button"
-                        onClick={() => setShowBadgeModal(true)}
+                        disabled={showBadgeModal}
+                        onClick={() => {
+                          setBadgeModalView('list');
+                          setShowBadgeModal(true);
+                        }}
                         title={language === 'ar' ? 'إضافة بادج جديد' : 'Add new badge'}
                         style={{
                           width: '36px', height: '36px',
@@ -2279,7 +2283,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                                   {language === 'ar' ? 'معاينة:' : 'Preview:'}
                                 </span>
                                 <span style={{
-                                  display: 'inline-block', color: newBadgeColor, backgroundColor: '#fff', border: `1px solid ${newBadgeColor}`,
+                                  display: 'inline-block', color: '#fff', backgroundColor: newBadgeColor, border: `1px solid ${newBadgeColor}`,
                                   padding: '4px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: '600',
                                 }}>
                                   {language === 'ar' ? (newBadgeNameAr || 'اسم البادج') : (newBadgeNameEn || 'Badge Name')}
