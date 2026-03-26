@@ -101,6 +101,14 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
     return 'https://via.placeholder.com/800x800?text=No+Image';
   };
 
+  const getBadgeClass = (badge) => {
+  if (customBadgeColor) return 'badge-custom';
+  if (badge === 'New Arrival') return 'badge-new';
+  if (badge === 'Best Seller') return 'badge-bestseller';
+  if (badge === 'Limited Edition') return 'badge-limited';
+  return 'badge-default';
+};
+
   const translateBadge = (badge) => {
     if (badge === 'New Arrival') return t.newArrival;
     if (badge === 'Best Seller') return t.bestSeller;
@@ -308,6 +316,8 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
     } else setIsZoomed(false);
   };
 
+  
+
 
   return (
     <div className={`modal-backdrop ${isOpen ? 'modal-open' : ''}`} onClick={handleBackdropClick}>
@@ -350,7 +360,7 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
               <div className="badge-stock-row">
                 {product.badge && (
                   <div
-                    className={`modal-badge badge-${product.badge.toLowerCase().replace(' ', '-')}`}
+                    className={`modal-badge ${getBadgeClass(product.badge)}`}
                     style={customBadgeColor ? { backgroundColor: customBadgeColor, color: '#fff', border: 'none' } : {}}
                   >
                     {translateBadge(product.badge)}
