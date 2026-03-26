@@ -240,7 +240,7 @@
 .product-collection-short-description {
   font-size: 0.9rem;
   line-height: 1.4;
-  color: #4a4a4a;
+  color: #4a4a4ab6;
   margin: 0;
   flex-grow: 1;
   display: -webkit-box;
@@ -401,11 +401,11 @@
   }
 
   .product-collection-name {
-    font-size: 0.9rem;
+    font-size: 1.2rem;
   }
 
   .product-collection-short-description {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
   }
 
   .product-collection-price {
