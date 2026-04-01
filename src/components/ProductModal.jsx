@@ -321,7 +321,7 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
   const formatted = price.toLocaleString();
   return language === 'ar'
     ? `${formatted} ج.م`
-    : `EGP ${formatted}`;
+    : `EGP ${formatted}`; // add `EGP` prefix for English
 };
 
 
