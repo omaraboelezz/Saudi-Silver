@@ -3,6 +3,7 @@ import './Hero.css';
 
 interface LanguageTexts {
   tagline: string;
+  cta: string;
 }
 
 interface Texts {
@@ -23,13 +24,15 @@ const Hero = ({ language = 'ar' }: HeroProps) => {
   const userScrolledRef = useRef(false);
 
   const texts: Texts = {
-    ar: {
-      tagline: 'أناقة خالدة في كل قطعة'
-    },
-    en: {
-      tagline: 'Timeless Elegance in Every Piece'
-    }
-  };
+  ar: {
+    tagline: 'أناقة خالدة في كل قطعة',
+    cta: 'تسوق الآن'
+  },
+  en: {
+    tagline: 'Timeless Elegance in Every Piece',
+    cta: 'Shop Now'
+  }
+};
 
   const t: LanguageTexts = texts[language] || texts.en;
 
@@ -126,6 +129,18 @@ const Hero = ({ language = 'ar' }: HeroProps) => {
         <div className="hero-content-inner">
           <h1 className="hero-title">El-Saudi jewelry</h1>
           <p className="hero-tagline">{t.tagline}</p>
+          <button
+  className="hero-cta-btn"
+  onClick={() => {
+    const el = document.getElementById('featured-collection') || document.querySelector('.section-products');
+    if (el) {
+      const top = el.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+  }}
+>
+  {t.cta}
+</button>
         </div>
       </div>
     </section>

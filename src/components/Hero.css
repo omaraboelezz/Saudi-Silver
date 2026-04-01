@@ -141,6 +141,27 @@
   transform: translateY(-2px);
 }
 
+
+.hero-cta-btn {
+  margin-top: 2rem;
+  padding: 14px 40px;
+  background: linear-gradient(135deg, #d4af37, #f5e6c0);
+  color: #1a1a1a;
+  border: none;
+  border-radius: 30px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(212, 175, 55, 0.4);
+}
+
+.hero-cta-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(212, 175, 55, 0.6);
+}
+
 /* أنيميشن */
 @keyframes shareFadeUp {
   from {

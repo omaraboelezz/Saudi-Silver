@@ -316,7 +316,13 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
     } else setIsZoomed(false);
   };
 
-  
+  const formatPrice = (price) => {
+  if (!price) return language === 'ar' ? 'غير متاح' : 'N/A';
+  const formatted = price.toLocaleString();
+  return language === 'ar'
+    ? `${formatted} ج.م`
+    : `EGP ${formatted}`;
+};
 
 
   return (
@@ -435,7 +441,8 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
                   <FaPlus size={10} />
                 </button>
               </div>
-              <p className="modal-price">${product.price?.toLocaleString() || 'N/A'}</p>
+              <p className="modal-price">{formatPrice(product.price)}</p>
+
 
             </div>
 
