@@ -126,10 +126,10 @@ const ProductCollectionCard = ({
             style={
               customBadgeColor
                 ? {
-                    backgroundColor: customBadgeColor,
-                    color: "#fff",
-                    border: "none",
-                  }
+                  backgroundColor: customBadgeColor,
+                  color: "#fff",
+                  border: "none",
+                }
                 : {}
             }
           >
@@ -151,13 +151,12 @@ const ProductCollectionCard = ({
 
         {product.stock && (
           <div
-            className={`stock-indicator ${
-              product.stock === "Limited Stock"
-                ? "stock-limited"
-                : product.stock === "Out of Stock"
-                  ? "stock-out"
-                  : "stock-in"
-            }`}
+            className={`stock-indicator ${product.stock === "Limited Stock"
+              ? "stock-limited"
+              : product.stock === "Out of Stock"
+                ? "stock-out"
+                : "stock-in"
+              }`}
           >
             {translateStock(product.stock)}
           </div>
@@ -183,17 +182,22 @@ const ProductCollectionCard = ({
         <p className="product-collection-short-description">
           {language === "ar"
             ? product.shortDescription_ar ||
-              product.shortDescription ||
-              product.description_ar?.substring(0, 50) + "..." ||
-              product.description?.substring(0, 50) + "..."
+            product.shortDescription ||
+            product.description_ar?.substring(0, 50) + "..." ||
+            product.description?.substring(0, 50) + "..."
             : product.shortDescription_en ||
-              product.shortDescription ||
-              product.description_en?.substring(0, 50) + "..." ||
-              product.description?.substring(0, 50) + "..."}
+            product.shortDescription ||
+            product.description_en?.substring(0, 50) + "..." ||
+            product.description?.substring(0, 50) + "..."}
         </p>
         {product.price && (
           <p className="product-collection-price">
-            {formatPrice(product.price)}
+            {formatPrice(Math.ceil(product.price))}
+          </p>
+        )}
+        {product.show_weight !== false && product.weight && parseFloat(product.weight) > 0 && (
+          <p className="product-collection-weight" style={{ fontSize: '0.9rem', color: '#666', margin: '4px 0 0 0', fontWeight: '500' }}>
+            {language === 'ar' ? `الوزن: ${product.weight} جرام` : `Weight: ${product.weight}g`}
           </p>
         )}
 

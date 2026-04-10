@@ -278,7 +278,7 @@ const InvoiceDocument = ({
                   </Text>
                 </View>
                 <Text style={styles.itemQty}>{qty}</Text>
-                <Text style={styles.itemPrice}>{fmt(item.price)}</Text>
+                <Text style={styles.itemPrice}>{fmt(Math.ceil(item.price))}</Text>
                 <Text style={styles.itemTotal}>{fmt(lineTotal)}</Text>
               </View>
             );

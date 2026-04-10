@@ -64,7 +64,6 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // ✅ لو في منتجات اتمسحت، حدث الـ Cart
       if (validCartItems.length !== cartItems.length) {
         const removedCount = cartItems.length - validCartItems.length;
-        console.log(`🗑️ Removed ${removedCount} deleted product(s) from cart`);
         setCartItems(validCartItems);
       }
     } catch (error) {

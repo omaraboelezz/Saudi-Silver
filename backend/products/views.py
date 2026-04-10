@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.response import Response
 from .models import Badge, Product, Section, AdminUser, AdminSession, LoginAttempt, MetalPrice
-from .serializers import BadgeSerializer, ProductSerializer, SectionSerializer
+from .serializers import BadgeSerializer, ProductSerializer, SectionSerializer, MetalPriceSerializer
 from rest_framework.parsers import MultiPartParser, FormParser
 import json
 
@@ -21,30 +21,37 @@ def get_client_ip(request):
 
 
 def verify_admin_token(request):
-    """
-    🔐 Middleware function to verify admin token
-    Returns session if valid, None otherwise
-    """
     auth_header = request.headers.get('Authorization', '')
-    
     if not auth_header.startswith('Bearer '):
         return None
     
     token = auth_header[7:]
     
+    # 1. جرب البحث في الجلسات (AdminSession)
     try:
         session = AdminSession.objects.select_related('admin_user').get(token=token)
-        
-        # Check if session is still valid
         if session.is_valid():
             return session
-        else:
-            # Session expired, delete it
-            session.delete()
-            return None
-            
     except AdminSession.DoesNotExist:
+        pass
+
+    # 2. جرب التحقق كـ JWT (لأنك تستخدم SimpleJWT في الواجهة)
+    try:
+        from rest_framework_simplejwt.authentication import JWTAuthentication
+        jwt_authenticator = JWTAuthentication()
+        validated_token = jwt_authenticator.get_validated_token(token)
+        user = jwt_authenticator.get_user(validated_token)
+        
+        if user:
+            # ننشئ كائن وهمي (Mock) لكي لا يتعطل الكود في ملف views.py
+            class MockSession:
+                def __init__(self, user):
+                    self.admin_user = user
+            return MockSession(user)
+    except:
         return None
+
+    return None
 
 
 # ==================== ADMIN AUTHENTICATION VIEWS ====================
@@ -475,11 +482,6 @@ def product_detail(request, pk):
             }, status=status.HTTP_401_UNAUTHORIZED)
 
         product.delete()
-        return Response(
-            {'message': 'Product deleted successfully'},
-            status=status.HTTP_204_NO_CONTENT
-        )
-
     elif request.method in ['PUT', 'PATCH']:
         # 🔐 Verify admin authentication
         session = verify_admin_token(request)
@@ -507,46 +509,89 @@ def product_detail(request, pk):
 @api_view(['GET', 'PUT'])
 def metal_prices(request):
     """
-    GET: جلب أسعار الذهب والفضة الحالية
-    PUT: تحديث أسعار الذهب والفضة (requires authentication)
+    GET: List current prices for all 6 karats
+    PUT: Update prices for a metal (gold or silver)
+         Expects: { "metal": "gold"|"silver", "base_buy_price": int, "spread": int }
     """
     try:
         price_obj = MetalPrice.get_current_prices()
 
         if request.method == 'GET':
-            return Response({
-                'gold_price_per_gram': float(price_obj.gold_price_per_gram),
-                'silver_price_per_gram': float(price_obj.silver_price_per_gram),
-                'updated_at': price_obj.updated_at
-            })
+            serializer = MetalPriceSerializer(price_obj)
+            return Response(serializer.data)
 
         elif request.method == 'PUT':
+            # 🔐 Verify admin authentication
+            session = verify_admin_token(request)
+            if not session:
+                return Response({
+                    'success': False,
+                    'message': 'Unauthorized - Please login'
+                }, status=status.HTTP_401_UNAUTHORIZED)
+
             data = request.data
+            metal = data.get('metal')
+            base_buy = data.get('base_buy_price')
+            spread = data.get('spread')
 
-            if 'gold_price_per_gram' in data:
-                price_obj.gold_price_per_gram = data['gold_price_per_gram']
+            if metal not in ['gold', 'silver'] or base_buy is None or spread is None:
+                return Response({
+                    'success': False,
+                    'message': 'Missing or invalid data. Requires metal, base_buy_price, and spread.'
+                }, status=status.HTTP_400_BAD_REQUEST)
 
-            if 'silver_price_per_gram' in data:
-                price_obj.silver_price_per_gram = data['silver_price_per_gram']
+            try:
+                base_buy = int(base_buy)
+                spread = int(spread)
+            except (ValueError, TypeError):
+                return Response({
+                    'success': False,
+                    'message': 'Prices and spread must be integers.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            if metal == 'gold':
+                # Base is 21K
+                price_obj.karat_21_buy = base_buy
+                price_obj.karat_21_sell = base_buy + spread
+                
+                # Derive 24K and 18K
+                price_obj.karat_24_buy = int(round(base_buy * (24 / 21)))
+                price_obj.karat_24_sell = price_obj.karat_24_buy + spread
+                
+                price_obj.karat_18_buy = int(round(base_buy * (18 / 21)))
+                price_obj.karat_18_sell = price_obj.karat_18_buy + spread
+            
+            else:  # silver
+                # Base is 999
+                price_obj.fine_999_buy = base_buy
+                price_obj.fine_999_sell = base_buy + spread
+                
+                # Derive 925 and 800
+                price_obj.fine_925_buy = int(round(base_buy * (925 / 999)))
+                price_obj.fine_925_sell = price_obj.fine_925_buy + spread
+                
+                price_obj.fine_800_buy = int(round(base_buy * (800 / 999)))
+                price_obj.fine_800_sell = price_obj.fine_800_buy + spread
 
             price_obj.save()
 
-            updated_counts = price_obj.update_all_products()
+            # 🔄 Update all products prices after price change
+            try:
+                update_stats = price_obj.update_all_products()
+            except Exception as e:
+                print(f"⚠️ Error updating products: {str(e)}")
+                update_stats = {'error': str(e)}
 
+            serializer = MetalPriceSerializer(price_obj)
             return Response({
                 'success': True,
-                'message': 'Prices updated successfully',
-                'message_ar': 'تم تحديث الأسعار بنجاح',
-                'message_en': 'Prices updated successfully',
-                'gold_price_per_gram': float(price_obj.gold_price_per_gram),
-                'silver_price_per_gram': float(price_obj.silver_price_per_gram),
-                'gold_products_updated': updated_counts['gold_updated'],
-                'silver_products_updated': updated_counts['silver_updated'],
-                'total_products_updated': updated_counts['gold_updated'] + updated_counts['silver_updated']
+                'message': f'{metal.capitalize()} prices updated successfully',
+                'prices': serializer.data,
+                'updated_products': update_stats
             })
 
     except Exception as e:
-        return Response({'error': str(e)}, status=500)
+        return Response({'success': False, 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 
 

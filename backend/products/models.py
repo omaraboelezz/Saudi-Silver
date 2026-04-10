@@ -63,6 +63,11 @@ class Product(models.Model):
         verbose_name="Weight in grams"
     )
 
+    show_weight = models.BooleanField(
+        default=True,
+        verbose_name="Show Weight"
+    )
+
     manufacturing_cost = models.DecimalField(
         max_digits=10, 
         decimal_places=2, 

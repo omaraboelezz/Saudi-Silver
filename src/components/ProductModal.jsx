@@ -441,7 +441,7 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
                   <FaPlus size={10} />
                 </button>
               </div>
-              <p className="modal-price">{formatPrice(product.price)}</p>
+              <p className="modal-price">{formatPrice(Math.ceil(product.price))}</p>
 
 
             </div>

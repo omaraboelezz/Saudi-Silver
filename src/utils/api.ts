@@ -8,8 +8,11 @@ const API_BASE_URL = 'https://omarawad9.pythonanywhere.com/api';
 /**
  * Helper function to make authenticated API calls (for admin only)
  */
-const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
-  const token = localStorage.getItem('accessToken');
+export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
+    const token = 
+    localStorage.getItem('accessToken') || 
+    localStorage.getItem('adminToken') || 
+    localStorage.getItem('token');
 
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string>),
@@ -28,6 +31,7 @@ const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
     // إذا كان 401 - جرب تجديد الـ Token
     if (response.status === 401) {
       const refreshToken = localStorage.getItem('refreshToken');
+      
 
       if (refreshToken) {
         try {
@@ -37,7 +41,6 @@ const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ refresh: refreshToken }),
           });
-
           if (refreshResponse.ok) {
             const data = await refreshResponse.json();
             localStorage.setItem('accessToken', data.access);

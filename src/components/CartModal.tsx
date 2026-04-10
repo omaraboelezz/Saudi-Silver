@@ -355,10 +355,10 @@ const CartModal: React.FC<CartModalProps> = ({
                     <h3 className="cart-item-name">{getProductName(product)}</h3>
 
                     <div className="cart-item-details">
-                      <p className="cart-item-price">${product.price?.toLocaleString() ?? 'N/A'}</p>
+                              <p className="cart-item-price">${Math.ceil(product.price || 0).toLocaleString() ?? 'N/A'}</p>
                       {(product.quantity ?? 0) > 1 && !product.isDeleted && (
                         <span className="cart-item-subtotal">
-                          ${(product.price * product.quantity).toLocaleString()} total
+                          ${Math.ceil(product.price || 0 * product.quantity || 0).toLocaleString()} total
                         </span>
                       )}
                     </div>
@@ -422,7 +422,7 @@ const CartModal: React.FC<CartModalProps> = ({
           <div className="cart-modal-footer">
             <div className="cart-footer-total-block">
               <span className="cart-footer-total-label">{t.total}</span>
-              <span className="cart-total-price">${calculateTotal().toLocaleString()}</span>
+              <span className="cart-total-price">${Math.ceil(calculateTotal()).toLocaleString()}</span>
               <span className="cart-footer-items-note">
                 {getTotalQuantity()} {getTotalQuantity() === 1 ? t.item : t.items}
               </span>

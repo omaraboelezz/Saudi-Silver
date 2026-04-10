@@ -6,13 +6,16 @@ import Header from "../components/Header";
 import "./Admin.css";
 import { pdf } from '@react-pdf/renderer';
 import InvoiceDocument from '../components/InvoiceDocument';
+import { fetchWithAuth } from '../utils/api';
 
 const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
   const [formData, setFormData] = useState({
     name_ar: "",
     name_en: "",
     type: "silver",
+    karat: "999",
     weight: "",
+    show_weight: true,
     manufacturing_cost: "",
     price: "",
     badge: "",
@@ -40,7 +43,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
   const [showEditOrderModal, setShowEditOrderModal] = useState(false);
   const [editOrderValue, setEditOrderValue] = useState(0);
   const [pageSize, setPageSize] = useState(5);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [refreshKey, _setRefreshKey] = useState(0);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [manualItem, setManualItem] = useState({ name: '', price: '' });
   const [invoiceItems, setInvoiceItems] = useState([]);
@@ -321,7 +324,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
           });
 
           if (createResponse.ok) {
-            console.log("✅ Featured Section created automatically");
             fetchSections(); // تحديث القائمة
           }
         }
@@ -352,7 +354,9 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
             name_ar: "",
             name_en: "",
             type: "silver",
+            karat: "999",
             weight: "",
+            show_weight: true,
             manufacturing_cost: "",
             price: "",
             badge: "",
@@ -413,7 +417,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
     try {
       const response = await fetch(SECTION_API_URL);
       const data = await response.json();
-      console.log("📦 Fetched Sections:", data);
       if (Array.isArray(data)) {
         setSections(data);
       }
@@ -532,8 +535,8 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
             }}
           >
             {language === "ar"
-              ? `⚠️ تحذير: سيتم حذف ${productsCount} منتج مع هذا القسم!`
-              : `⚠️ Warning: ${productsCount} product${productsCount !== 1 ? "s" : ""} will be deleted with this section!`}
+              ? `⚠️ تحذير: سيتم نقل ${productsCount} منتج إلى القسم المميز قبل حذف القسم!`
+              : `⚠️ Warning: ${productsCount} product${productsCount !== 1 ? "s" : ""} will be reassigned to the Featured section!`}
           </p>
           <p style={{ color: "#8c8c8c", marginTop: "5px", fontSize: "13px" }}>
             {language === "ar"
@@ -544,13 +547,27 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
       ),
       okText:
         language === "ar"
-          ? "نعم، احذف القسم والمنتجات"
-          : "Yes, Delete Section & Products",
+          ? "نعم، احذف القسم وانقل المنتجات"
+          : "Yes, Delete Section & Reassign Products",
       okType: "danger",
       cancelText: language === "ar" ? "إلغاء" : "Cancel",
       centered: true,
       onOk: async () => {
         try {
+          const featuredSection = sections.find((s) => s.is_featured);
+          if (featuredSection && sectionProducts.length > 0) {
+            await Promise.all(
+              sectionProducts.map((p) => {
+                const patchData = new FormData();
+                patchData.append("section", featuredSection.id);
+                return fetch(`${API_URL}${p.id || p._id}/`, {
+                  method: "PATCH",
+                  body: patchData,
+                });
+              })
+            );
+          }
+
           const response = await fetch(`${SECTION_API_URL}${id}/`, {
             method: "DELETE",
           });
@@ -561,8 +578,8 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
             );
             const successMsg =
               language === "ar"
-                ? `✅ تم حذف القسم و ${productsCount} منتج بنجاح`
-                : `✅ Section and ${productsCount} product${productsCount !== 1 ? "s" : ""} deleted successfully`;
+                ? `✅ تم حذف القسم ونقل ${productsCount} منتج بنجاح`
+                : `✅ Section deleted and ${productsCount} product${productsCount !== 1 ? "s" : ""} reassigned successfully`;
 
             Modal.success({
               title: language === "ar" ? "🎉 تم الحذف!" : "🎉 Deleted!",
@@ -676,26 +693,76 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    if (name === "type") {
+      setFormData((prev) => ({
+        ...prev,
+        type: value,
+        karat: value === "gold" ? "21K" : value === "silver" ? "999" : "",
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const handleDelete = async (id) => {
+    const productToDelete = products.find((p) => (p._id || p.id) === id);
+    const featuredSection = sections.find((s) => s.is_featured);
+    const isFeatured = productToDelete && featuredSection && String(productToDelete.section) === String(featuredSection.id);
+
     Modal.confirm({
-      title: language === "ar" ? "تأكيد الحذف" : "Confirm Delete",
+      title: language === "ar" ? "تأكيد الإزالة" : "Confirm Removal",
       icon: <ExclamationCircleOutlined />,
       content:
         language === "ar"
-          ? "هل أنت متأكد من حذف هذا المنتج؟ لا يمكن التراجع عن هذا الإجراء."
-          : "Are you sure you want to delete this product? This action cannot be undone.",
-      okText: language === "ar" ? "نعم، احذف" : "Yes, Delete",
+          ? (isFeatured ? "هل أنت متأكد من حذف هذا المنتج نهائياً من قاعدة البيانات؟ لا يمكن التراجع." : "سيتم إزالة هذا المنتج من القسم الحالي ونقله تلقائياً إلى القسم المميز، ولن يتم حذفه نهائياً.")
+          : (isFeatured ? "Are you sure you want to permanently delete this product? This action cannot be undone." : "This product will be removed from its current section and moved to the Featured Products section. It will not be permanently deleted."),
+      okText: language === "ar" 
+          ? (isFeatured ? "نعم، احذف نهائياً" : "نعم، انقله للقسم المميز") 
+          : (isFeatured ? "Yes, Delete Permanently" : "Yes, Move to Featured"),
       okType: "danger",
       cancelText: language === "ar" ? "إلغاء" : "Cancel",
       centered: true,
       onOk: async () => {
         try {
+          if (!isFeatured && featuredSection) {
+            const patchUrl = `${API_URL}${id}/`;
+            
+            const patchData = new FormData();
+            patchData.append("section", featuredSection.id);
+
+            const response = await fetch(patchUrl, {
+              method: "PATCH",
+              body: patchData,
+            });
+
+            if (response.ok) {
+              const successMsg = language === "ar"
+                ? "✅ تم نقل المنتج إلى القسم المميز بنجاح"
+                : "✅ Product successfully moved to the Featured section";
+
+              Modal.success({
+                title: language === "ar" ? "ℹ️ تم النقل!" : "ℹ️ Moved!",
+                content: successMsg,
+                centered: true,
+                okText: language === "ar" ? "حسناً" : "OK",
+              });
+              
+              fetchProducts();
+            } else {
+               const data = await response.json();
+               Modal.error({
+                 title: language === "ar" ? "❌ فشل النقل" : "❌ Move Failed",
+                 content: data.message || "Error",
+                 centered: true,
+                 okText: language === "ar" ? "حسناً" : "OK",
+               });
+            }
+            return;
+          }
+
           const deleteUrl = `${API_URL}${id}/`;
           const response = await fetch(deleteUrl, {
             method: "DELETE",
@@ -764,7 +831,9 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
       form.append("name_ar", formData.name_ar);
       form.append("name_en", formData.name_en);
       form.append("type", formData.type);
+      form.append("karat", formData.karat || "");
       form.append("weight", Number(formData.weight));
+      form.append("show_weight", formData.show_weight);
       form.append("manufacturing_cost", Number(formData.manufacturing_cost));
       form.append("price", Number(formData.price));
       form.append("badge", formData.badge || "");
@@ -898,21 +967,23 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
     }
   };
 
-  const [metalPrices, setMetalPrices] = useState({
-    gold_price_per_gram: 0,
-    silver_price_per_gram: 0,
+  const PRICES_API_URL = "https://omarawad9.pythonanywhere.com/api/metal-prices/";
+
+  const [allPrices, setAllPrices] = useState(null);
+  const [showPriceModal, setShowPriceModal] = useState(false);
+  const [priceEditData, setPriceEditData] = useState({
+    metal: "gold",
+    base_buy_price: 0,
+    spread: 0,
   });
 
-  const METAL_PRICES_URL =
-    "https://omarawad9.pythonanywhere.com/api/metal-prices/";
-
-  const fetchMetalPrices = async () => {
+  const fetchPrices = async () => {
     try {
-      const response = await fetch(METAL_PRICES_URL);
+      const response = await fetch(PRICES_API_URL);
       const data = await response.json();
-      setMetalPrices(data);
+      setAllPrices(data);
     } catch (error) {
-      console.error("Error fetching metal prices:", error);
+      console.error("Error fetching prices:", error);
     }
   };
 
@@ -1063,98 +1134,38 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
     }
   };
 
-  // في useEffect
   useEffect(() => {
     fetchProducts();
     fetchSections();
-    fetchMetalPrices(); // ✅ إضافة هنا
-    fetchBadges(); // ✅ إضافة هنا
+    fetchPrices();
+    fetchBadges();
   }, []);
 
-  const handleUpdateMetalPrices = async () => {
+  const handleUpdatePrices = async () => {
     try {
-      const dataToSend = {
-        gold_price_per_gram: parseFloat(metalPrices.gold_price_per_gram),
-        silver_price_per_gram: parseFloat(metalPrices.silver_price_per_gram),
-      };
-
-      console.log("📤 Sending metal prices:", dataToSend);
-
-      const response = await fetch(METAL_PRICES_URL, {
+      const response = await fetchWithAuth(PRICES_API_URL, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(dataToSend),
+        body: JSON.stringify(priceEditData),
       });
 
-      console.log("📥 Response status:", response.status);
+
+      // ⚠️ تعريف data بعد ما response جاهز
       const data = await response.json();
-      console.log("📥 Response data:", data);
 
       if (response.ok) {
-        // ✅ تحديث المنتجات
-        console.log("🔄 Refreshing products...");
-        await fetchProducts();
-        console.log("✅ Products refreshed!");
-
-        // ✅ تحديث الـ refreshKey عشان الـ products تتعرض من جديد
-        setRefreshKey((prev) => prev + 1);
-
         Modal.success({
           title: language === "ar" ? "✅ تم التحديث!" : "✅ Updated!",
-          content: (
-            <div>
-              <p>
-                {language === "ar"
-                  ? "تم تحديث الأسعار بنجاح"
-                  : "Prices updated successfully"}
-              </p>
-              <p
-                style={{
-                  marginTop: "10px",
-                  fontSize: "14px",
-                  color: "#28a745",
-                }}
-              >
-                {language === "ar"
-                  ? `✅ تم تحديث ${data.total_products_updated || 0} منتج`
-                  : `✅ ${data.total_products_updated || 0} products updated`}
-              </p>
-              <div
-                style={{ marginTop: "10px", fontSize: "13px", color: "#666" }}
-              >
-                {data.gold_products_updated > 0 && (
-                  <p>
-                    💰 {language === "ar" ? "منتجات الذهب:" : "Gold products:"}{" "}
-                    {data.gold_products_updated}
-                  </p>
-                )}
-                {data.silver_products_updated > 0 && (
-                  <p>
-                    ⚪{" "}
-                    {language === "ar" ? "منتجات الفضة:" : "Silver products:"}{" "}
-                    {data.silver_products_updated}
-                  </p>
-                )}
-              </div>
-            </div>
-          ),
+          content: language === "ar" ? "تم تحديث الأسعار بنجاح" : "Prices updated successfully",
           centered: true,
-          okText: language === "ar" ? "حسناً" : "OK",
         });
-
-        // ✅ تحديث الأسعار المعروضة
-        fetchMetalPrices();
+        setShowPriceModal(false);
+        fetchPrices();
+        fetchProducts(); // Refresh products if needed
       } else {
         Modal.error({
           title: language === "ar" ? "❌ خطأ" : "❌ Error",
-          content:
-            data.message ||
-            data.error ||
-            (language === "ar" ? "فشل التحديث" : "Update failed"),
+          content: data.message || (language === "ar" ? "فشل التحديث" : "Update failed"),
           centered: true,
-          okText: language === "ar" ? "حسناً" : "OK",
         });
       }
     } catch (error) {
@@ -1163,8 +1174,26 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
         title: language === "ar" ? "❌ خطأ في الاتصال" : "❌ Network Error",
         content: error.message,
         centered: true,
-        okText: language === "ar" ? "حسناً" : "OK",
       });
+    }
+  };
+
+  const getLivePreview = () => {
+    const { metal, base_buy_price } = priceEditData;
+    const bb = parseInt(base_buy_price) || 0;
+
+    if (metal === 'gold') {
+      return [
+        { label: '24K', price: Math.round(bb * (24 / 21)) },
+        { label: '21K', price: bb },
+        { label: '18K', price: Math.round(bb * (18 / 21)) },
+      ];
+    } else {
+      return [
+        { label: '999', price: bb },
+        { label: '925', price: Math.round(bb * (925 / 999)) },
+        { label: '800', price: Math.round(bb * (800 / 999)) },
+      ];
     }
   };
 
@@ -1294,19 +1323,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
     },
   ];
 
-  const [metalPriceInputs, setMetalPriceInputs] = useState({
-    gold: String(metalPrices.gold_price_per_gram),
-    silver: String(metalPrices.silver_price_per_gram),
-  });
-
-  // ✅ 2. Sync if metalPrices changes from outside (e.g. after fetch)
-  useEffect(() => {
-    setMetalPriceInputs({
-      gold: String(metalPrices.gold_price_per_gram),
-      silver: String(metalPrices.silver_price_per_gram),
-    });
-  }, [metalPrices.gold_price_per_gram, metalPrices.silver_price_per_gram]);
-
   const urlToBase64 = async (url) => {
     try {
       const response = await fetch(url);
@@ -1344,6 +1360,83 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
           <h1>{t.title}</h1>
           <p>{t.subtitle}</p>
         </header>
+
+        {/* 📈 Price Management Dashboard */}
+        <section className="price-dashboard" style={{ marginBottom: '40px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h2 style={{ fontSize: '1.5rem', color: '#1a1a1a', margin: 0 }}>
+              💰 {language === 'ar' ? 'إدارة الأسعار' : 'Price Management'}
+            </h2>
+            <Button
+              type="primary"
+              onClick={() => {
+                setPriceEditData({
+                  metal: 'gold',
+                  base_buy_price: allPrices?.karat_21_buy || 0,
+                  spread: (allPrices?.karat_21_sell - allPrices?.karat_21_buy) || 0
+                });
+                setShowPriceModal(true);
+              }}
+              style={{ background: '#d4af37', borderColor: '#d4af37', color: '#1a1a1a', fontWeight: 'bold' }}
+            >
+              {language === 'ar' ? 'تعديل الأسعار' : 'Edit Prices'}
+            </Button>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+            {/* Gold Column */}
+            <div className="price-column">
+              <h3 style={{ color: '#d4af37', borderBottom: '2px solid #d4af37', paddingBottom: '10px' }}>
+                {language === 'ar' ? 'الذهب' : 'Gold'}
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                {[
+                  { label: '24K', price: allPrices?.karat_24_buy },
+                  { label: '21K', price: allPrices?.karat_21_buy },
+                  { label: '18K', price: allPrices?.karat_18_buy },
+                ].map(item => (
+                  <div key={item.label} className="price-card-mini" style={{ background: '#fffcf0', border: '1px solid #f0e2b6', borderRadius: '8px', padding: '10px', textAlign: 'center' }}>
+                    <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '8px', color: '#d4af37' }}>
+                      {item.label}
+                    </div>
+                    <div style={{ fontWeight: '600', fontSize: '1rem', color: '#2c3e50' }}>
+                      {item.price || 0}
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#999', marginTop: '4px' }}>
+                      {language === 'ar' ? 'جنيه' : 'EGP'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Silver Column */}
+            <div className="price-column">
+              <h3 style={{ color: '#555', borderBottom: '2px solid #ccc', paddingBottom: '10px' }}>
+                {language === 'ar' ? 'الفضة' : 'Silver'}
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                {[
+                  { label: '999', price: allPrices?.fine_999_buy },
+                  { label: '925', price: allPrices?.fine_925_buy },
+                  { label: '800', price: allPrices?.fine_800_buy },
+                ].map(item => (
+                  <div key={item.label} className="price-card-mini" style={{ background: '#f8f9fa', border: '1px solid #e0e0e0', borderRadius: '8px', padding: '10px', textAlign: 'center' }}>
+                    <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '8px', color: '#555' }}>
+                      {item.label}
+                    </div>
+                    <div style={{ fontWeight: '600', fontSize: '1rem', color: '#2c3e50' }}>
+                      {item.price || 0}
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#999', marginTop: '4px' }}>
+                      {language === 'ar' ? 'جنيه' : 'EGP'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* ✅ Section Selection & Creation */}
         <div
@@ -1612,167 +1705,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
           </div>
         )}
 
-        {/* ✅ Metal Prices Section */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column", // stack on mobile by default
-            gap: "16px",
-            marginTop: "20px",
-            padding: "20px",
-            background: "#f8f9fa",
-            borderRadius: "12px",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-          }}
-        >
-          {/* Row: Gold + Silver inputs side by side on tablet/desktop */}
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap", // wraps to second line on small screens
-              gap: "16px",
-            }}
-          >
-            {/* Gold Price */}
-            <div style={{ flex: "1 1 200px", minWidth: "0" }}>
-              <label
-                style={{
-                  display: "block",
-                  marginBottom: "8px",
-                  fontWeight: "600",
-                  color: "#856404",
-                  fontSize: "14px",
-                }}
-              >
-                💰{" "}
-                {language === "ar"
-                  ? "سعر الذهب (للجرام)"
-                  : "Gold Price (per gram)"}
-              </label>
-              <input
-                type="number"
-                inputMode="decimal" // ✅ shows numeric keyboard on mobile
-                value={metalPriceInputs.gold}
-                onChange={(e) => {
-                  // ✅ store raw string — no parseFloat during typing
-                  setMetalPriceInputs((prev) => ({
-                    ...prev,
-                    gold: e.target.value,
-                  }));
-                }}
-                onBlur={(e) => {
-                  // ✅ only parse & commit to real state when user leaves the field
-                  const parsed = parseFloat(e.target.value);
-                  const value = isNaN(parsed) ? 0 : parsed;
-                  setMetalPriceInputs((prev) => ({
-                    ...prev,
-                    gold: String(value),
-                  }));
-                  setMetalPrices((prev) => ({
-                    ...prev,
-                    gold_price_per_gram: value,
-                  }));
-                }}
-                step="0.01"
-                min="0"
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  borderRadius: "8px",
-                  border: "2px solid #ffd700",
-                  fontSize: "16px", // ✅ prevents iOS zoom
-                  fontWeight: "600",
-                  boxSizing: "border-box",
-                }}
-              />
-            </div>
-
-            {/* Silver Price */}
-            <div style={{ flex: "1 1 200px", minWidth: "0" }}>
-              <label
-                style={{
-                  display: "block",
-                  marginBottom: "8px",
-                  fontWeight: "600",
-                  color: "#495057",
-                  fontSize: "14px",
-                }}
-              >
-                ⚪{" "}
-                {language === "ar"
-                  ? "سعر الفضة (للجرام)"
-                  : "Silver Price (per gram)"}
-              </label>
-              <input
-                type="number"
-                inputMode="decimal" // ✅ shows numeric keyboard on mobile
-                value={metalPriceInputs.silver}
-                onChange={(e) => {
-                  // ✅ store raw string — no parseFloat during typing
-                  setMetalPriceInputs((prev) => ({
-                    ...prev,
-                    silver: e.target.value,
-                  }));
-                }}
-                onBlur={(e) => {
-                  // ✅ only parse & commit to real state when user leaves the field
-                  const parsed = parseFloat(e.target.value);
-                  const value = isNaN(parsed) ? 0 : parsed;
-                  setMetalPriceInputs((prev) => ({
-                    ...prev,
-                    silver: String(value),
-                  }));
-                  setMetalPrices((prev) => ({
-                    ...prev,
-                    silver_price_per_gram: value,
-                  }));
-                }}
-                step="0.01"
-                min="0"
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  borderRadius: "8px",
-                  border: "2px solid #c0c0c0",
-                  fontSize: "16px", // ✅ prevents iOS zoom
-                  fontWeight: "600",
-                  boxSizing: "border-box",
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Save Button — full width on mobile */}
-          <button
-            onClick={() => {
-              // ✅ commit any un-blurred values before saving
-              const gold = parseFloat(metalPriceInputs.gold) || 0;
-              const silver = parseFloat(metalPriceInputs.silver) || 0;
-              setMetalPrices((prev) => ({
-                ...prev,
-                gold_price_per_gram: gold,
-                silver_price_per_gram: silver,
-              }));
-              handleUpdateMetalPrices();
-            }}
-            style={{
-              width: "100%", // ✅ full width on mobile, looks clean on desktop too
-              background: "#007bff",
-              color: "white",
-              border: "none",
-              padding: "12px 24px",
-              borderRadius: "8px",
-              cursor: "pointer",
-              fontWeight: "600",
-              fontSize: "16px",
-              transition: "background 0.2s",
-            }}
-            onMouseOver={(e) => (e.currentTarget.style.background = "#0056b3")}
-            onMouseOut={(e) => (e.currentTarget.style.background = "#007bff")}
-          >
-            {language === "ar" ? "💾 حفظ الأسعار" : "💾 Save Prices"}
-          </button>
-        </div>
 
         {/* ✅ Product Creation Modal */}
         {showProductModal && (
@@ -1865,7 +1797,9 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                     <option value="" disabled>
                       {t.noSection}
                     </option>
-                    {sections.map((section) => (
+                    {sections
+                      .filter((s) => !s.is_featured)
+                      .map((section) => (
                       <option key={section.id} value={section.id}>
                         {language === "ar"
                           ? section.title_ar
@@ -1974,6 +1908,60 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                   </select>
                 </div>
 
+                {/* Karat Selection for Gold/Silver */}
+                {(formData.type === "gold" || formData.type === "silver") && (
+                  <div className="form-group">
+                    <label
+                      htmlFor="karat"
+                      style={{
+                        display: "block",
+                        marginBottom: "8px",
+                        fontWeight: "600",
+                        color: "#2c3e50",
+                        fontSize: "16px",
+                      }}
+                    >
+                      {language === "ar" ? "العيار" : "Karat / Fineness"}
+                      <span style={{ marginLeft: "4px", color: "#e74c3c" }}>
+                        *
+                      </span>
+                    </label>
+                    <select
+                      id="karat"
+                      name="karat"
+                      value={formData.karat}
+                      onChange={handleChange}
+                      required
+                      style={{
+                        width: "100%",
+                        padding: "14px 18px",
+                        borderRadius: "10px",
+                        border: "2px solid #e0e0e0",
+                        fontSize: "16px",
+                        background: "white",
+                        cursor: "pointer",
+                        transition: "all 0.3s ease",
+                        fontWeight: "500",
+                        color: "#2c3e50",
+                      }}
+                    >
+                      {formData.type === "gold" ? (
+                        <>
+                          <option value="24K">24K</option>
+                          <option value="21K">21K</option>
+                          <option value="18K">18K</option>
+                        </>
+                      ) : (
+                        <>
+                          <option value="999">999</option>
+                          <option value="925">925</option>
+                          <option value="800">800</option>
+                        </>
+                      )}
+                    </select>
+                  </div>
+                )}
+
                 {/* Price Input for Accessories */}
                 {formData.type === "accessories" && (
                   <div className="form-group">
@@ -2026,6 +2014,21 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                         }
                       </small>
                     )}
+                    
+                    <div style={{ marginTop: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
+                      <input
+                        type="checkbox"
+                        id="show_weight"
+                        name="show_weight"
+                        checked={formData.show_weight}
+                        onChange={(e) => setFormData(prev => ({...prev, show_weight: e.target.checked}))}
+                        style={{ width: "16px", height: "16px", cursor: "pointer" }}
+                      />
+                      <label htmlFor="show_weight" style={{ margin: 0, cursor: "pointer", fontWeight: "normal", fontSize: "14px", color: "#555" }}>
+                        {language === "ar" ? "إظهار الوزن في بطاقة المنتج" : "Show weight on product card"}
+                      </label>
+                    </div>
+
                   </div>
                 )}
 
@@ -3084,15 +3087,15 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                             >
                               {product.type === "gold"
                                 ? language === "ar"
-                                  ? "ذهب"
-                                  : "Gold"
+                                  ? `ذهب ${product.karat || "21K"}`
+                                  : `Gold ${product.karat || "21K"}`
                                 : product.type === "accessories"
                                   ? language === "ar"
                                     ? "إكسسوارات"
                                     : "Accessories"
                                   : language === "ar"
-                                    ? "فضة"
-                                    : "Silver"}
+                                    ? `فضة ${product.karat || "999"}`
+                                    : `Silver ${product.karat || "999"}`}
                             </span>
 
                             <span
@@ -3121,6 +3124,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                                     name_en:
                                       product.name_en || product.name || "",
                                     type: product.type || "silver",
+                                    karat: product.karat || (product.type === "gold" ? "21K" : "999"),
                                     weight: product.weight || "",
                                     manufacturing_cost:
                                       product.manufacturing_cost || "",
@@ -3606,6 +3610,22 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                         >
                           ${product.price}
                         </span>
+                        {(product.type === "gold" || product.type === "silver") && (
+                          <span
+                            style={{
+                              background:
+                                product.type === "gold" ? "#ffd700" : "#c0c0c0",
+                              color:
+                                product.type === "gold" ? "#856404" : "#393939",
+                              padding: "2px 8px",
+                              borderRadius: "4px",
+                              fontSize: "11px",
+                              fontWeight: "700",
+                            }}
+                          >
+                            {product.karat}
+                          </span>
+                        )}
                       </div>
 
                       <span
@@ -3632,6 +3652,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                               name_ar: product.name_ar || product.name || "",
                               name_en: product.name_en || product.name || "",
                               type: product.type || "silver",
+                              karat: product.karat || (product.type === "gold" ? "21K" : "999"),
                               weight: product.weight || "",
                               manufacturing_cost: product.manufacturing_cost || "",
                               price: product.price,
@@ -3692,6 +3713,83 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
           );
         })()}
       </div>
+      {/* 💰 Edit Price Modal */}
+      <Modal
+        title={language === 'ar' ? '📊 تعديل الأسعار اليومية' : '📊 Edit Daily Prices'}
+        open={showPriceModal}
+        onCancel={() => setShowPriceModal(false)}
+        onOk={handleUpdatePrices}
+        okText={language === 'ar' ? 'حفظ الأسعار' : 'Save Prices'}
+        cancelText={language === 'ar' ? 'إلغاء' : 'Cancel'}
+        width={600}
+        centered
+      >
+        <div style={{ padding: '10px 0' }}>
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
+              {language === 'ar' ? 'نوع المعدن' : 'Metal Type'}
+            </label>
+            <select
+              value={priceEditData.metal}
+              onChange={(e) => setPriceEditData(prev => ({
+                ...prev,
+                metal: e.target.value,
+                base_buy_price: e.target.value === 'gold'
+                  ? (allPrices?.karat_21_buy || 0)
+                  : (allPrices?.fine_999_buy || 0),
+                spread: e.target.value === 'gold'
+                  ? ((allPrices?.karat_21_sell - allPrices?.karat_21_buy) || 0)
+                  : ((allPrices?.fine_999_sell - allPrices?.fine_999_buy) || 0)
+              }))}
+
+              style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #d9d9d9' }}
+            >
+              <option value="gold">{language === 'ar' ? 'الذهب' : 'Gold'}</option>
+              <option value="silver">{language === 'ar' ? 'الفضة' : 'Silver'}</option>
+            </select>
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
+                {priceEditData.metal === 'gold'
+                  ? (language === 'ar' ? 'سعر شراء 21K الأساسي' : 'Base 21K Buy Price')
+                  : (language === 'ar' ? 'سعر شراء 999 الأساسي' : 'Base 999 Buy Price')}
+              </label>
+              <Input
+                type="number"
+                value={priceEditData.base_buy_price}
+                onChange={(e) => setPriceEditData(prev => ({ ...prev, base_buy_price: e.target.value }))}
+                placeholder="0"
+              />
+            </div>
+          </div>
+
+          <div style={{ marginTop: '30px' }}>
+            <h4 style={{ marginBottom: '15px', color: '#666', fontSize: '14px', textTransform: 'uppercase' }}>
+              🔍 {language === 'ar' ? 'معاينة الأسعار' : 'Live Preview'}
+            </h4>
+            <div style={{ background: '#f8f9fa', borderRadius: '8px', overflow: 'hidden' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px', background: '#e0e0e0' }}>
+                {getLivePreview().map((item, idx) => (
+                  <div key={idx} style={{ background: 'white', padding: '16px', textAlign: 'center' }}>
+                    <div style={{ fontWeight: '700', fontSize: '16px', marginBottom: '8px', color: priceEditData.metal === 'gold' ? '#d4af37' : '#555' }}>
+                      {item.label}
+                    </div>
+                    <div style={{ fontWeight: '600', fontSize: '18px', color: '#2c3e50' }}>
+                      {item.price}
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#999', marginTop: '4px' }}>
+                      {language === 'ar' ? 'جنيه' : 'EGP'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

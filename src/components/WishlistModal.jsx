@@ -159,7 +159,7 @@ const WishlistModal = ({ isOpen, onClose, onProductClick, onContactClick, langua
                   <div className="wishlist-item-info">
                     {/* ✅ عرض الاسم حسب اللغة */}
                     <h3 className="wishlist-item-name">{getProductName(product)}</h3>
-                    <p className="wishlist-item-price">${product.price?.toLocaleString() || 'N/A'}</p>
+                    <p className="wishlist-item-price">${Math.ceil(product.price || 0).toLocaleString() || 'N/A'}</p>
                     <button 
                       className="wishlist-item-contact"
                       onClick={(e) => handleContactClick(product, e)}

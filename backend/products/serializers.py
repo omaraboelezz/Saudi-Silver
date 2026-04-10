@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Badge, Product, Section
+from .models import Badge, Product, Section, MetalPrice
 
 
 class SectionSerializer(serializers.ModelSerializer):
@@ -40,8 +40,8 @@ class ProductSerializer(serializers.ModelSerializer):
             'id', 
             'section', 'section_details',  # ✅ إضافة section
             'name_ar', 'name_en',
-            'type',
-            'weight', 'manufacturing_cost',
+            'type', 'karat',
+            'weight', 'show_weight', 'manufacturing_cost',
             'price', 'badge', 'stock',
             'image_file', 'image_url',
             'description_ar', 'description_en',
@@ -78,3 +78,18 @@ class BadgeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Badge
         fields = ['id', 'name', 'created_at']
+
+
+class MetalPriceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MetalPrice
+        # Use explicit list to ensure order and completeness
+        fields = [
+            'karat_24_buy', 'karat_24_sell',
+            'karat_21_buy', 'karat_21_sell',
+            'karat_18_buy', 'karat_18_sell',
+            'fine_999_buy', 'fine_999_sell',
+            'fine_925_buy', 'fine_925_sell',
+            'fine_800_buy', 'fine_800_sell',
+            'updated_at'
+        ]

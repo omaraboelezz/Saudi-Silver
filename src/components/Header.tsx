@@ -48,6 +48,9 @@ interface HeaderProps {
   adminMode?: boolean;
   onLogout?: () => void;
   isAdmin?: boolean;
+  // في الـ interface HeaderProps ضيف:
+  activeFilter?: 'gold' | 'silver' | 'accessories' | null;
+  onFilterChange?: (filter: 'gold' | 'silver' | 'accessories' | null) => void;
 }
 
 const Header = ({
@@ -58,6 +61,8 @@ const Header = ({
   adminMode = false,
   onLogout,
   isAdmin = false,
+  activeFilter = null,
+  onFilterChange,
 }: HeaderProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -70,6 +75,23 @@ const Header = ({
 
   const SECTION_API_URL = 'https://omarawad9.pythonanywhere.com/api/sections/';
   const PRODUCTS_API_URL = 'https://omarawad9.pythonanywhere.com/api/products/';
+
+  // في الـ state:
+  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
+
+  // Close on outside click (زي language):
+// ✅ useEffect مخصص للـ filter
+useEffect(() => {
+  const handler = (e: MouseEvent) => {
+    if (!(e.target as HTMLElement).closest('.filter-selector')) {
+      setIsFilterMenuOpen(false);
+    }
+  };
+  if (isFilterMenuOpen) document.addEventListener('click', handler);
+  return () => document.removeEventListener('click', handler);
+}, [isFilterMenuOpen]);
+
+  
 
   /* ── Fetch sections & products ── */
   useEffect(() => {
@@ -228,8 +250,62 @@ const Header = ({
             </nav>
           )}
 
+
           {/* ── Right icons ── */}
           <div className={`header-icons ${adminMode ? 'admin-icons-only' : ''}`}>
+
+            {!adminMode && (
+              <div className="filter-selector language-selector">
+                <button
+                  className="language-toggle"
+                  style={{
+                    fontSize: '13px',
+                    fontWeight: '700',
+                    color: '#fff',
+                    letterSpacing: '0.5px',
+                    minWidth: '52px',
+                    padding: '0 8px',
+                    background: 'rgba(255, 255, 255, 0.15)',
+                    borderRadius: '6px',
+                    backdropFilter: 'blur(4px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsFilterMenuOpen(!isFilterMenuOpen);
+                  }}
+                  aria-label="Filter by type"
+                  title={activeFilter ?? 'gold'}
+                >
+                  {/* أيقونة حسب الفلتر الحالي */}
+                  {(activeFilter ?? 'gold') === 'gold' && <span style={{ fontSize: 13, color: '#fff', fontWeight: '600' }}>{language === 'ar' ? 'ذهب' : 'Gold'}</span>}
+                  {activeFilter === 'silver' && <span style={{ fontSize: 13, color: '#fff', fontWeight: '600' }}>{language === 'ar' ? 'فضة' : 'Silver'}</span>}
+                  {activeFilter === 'accessories' && <span style={{ fontSize: 13, color: '#fff', fontWeight: '600' }}>{language === 'ar' ? 'إكسسوارات' : 'Accessories'}</span>}
+                </button>
+
+                {isFilterMenuOpen && (
+                  <div className="language-menu">
+                    <button
+                      className={`language-option ${(activeFilter ?? 'gold') === 'gold' ? 'active' : ''}`}
+                      onClick={() => { onFilterChange?.(null); setIsFilterMenuOpen(false); }}
+                    >
+                      {language === 'ar' ? 'ذهب' : 'Gold'}
+                    </button>
+                    <button
+                      className={`language-option ${activeFilter === 'silver' ? 'active' : ''}`}
+                      onClick={() => { onFilterChange?.('silver'); setIsFilterMenuOpen(false); }}
+                    >
+                      {language === 'ar' ? 'فضة' : 'Silver'}
+                    </button>
+                    <button
+                      className={`language-option ${activeFilter === 'accessories' ? 'active' : ''}`}
+                      onClick={() => { onFilterChange?.('accessories'); setIsFilterMenuOpen(false); }}
+                    >
+                      {language === 'ar' ? 'إكسسوارات' : 'Accessories'}        </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Desktop language selector */}
             <div className="language-selector">
@@ -427,6 +503,31 @@ const Header = ({
                 onClick={() => handleLanguageChange('en')}
               >
                 English
+              </button>
+            </div>
+             {/* ── Filter ── */}
+            <p className="drawer-section-label">
+              {language === 'ar' ? 'تصفية حسب النوع :' : 'Filter by Type :'}
+            </p>
+
+            <div className="drawer-lang-row">
+              <button
+                className={`drawer-lang-btn ${(activeFilter ?? 'gold') === 'gold' ? 'active' : ''}`}
+                onClick={() => { onFilterChange?.(null); closeDrawer(); }}
+              >
+                {language === 'ar' ? 'ذهب' : 'Gold'}
+              </button>
+              <button
+                className={`drawer-lang-btn ${activeFilter === 'silver' ? 'active' : ''}`}
+                onClick={() => { onFilterChange?.('silver'); closeDrawer(); }}
+              >
+                {language === 'ar' ? 'فضة' : 'Silver'}
+              </button>
+              <button
+                className={`drawer-lang-btn ${activeFilter === 'accessories' ? 'active' : ''}`}
+                onClick={() => { onFilterChange?.('accessories'); closeDrawer(); }}
+              >
+                {language === 'ar' ? 'إكسسوارات' : 'Accessories'}
               </button>
             </div>
 

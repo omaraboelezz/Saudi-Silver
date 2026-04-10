@@ -24,6 +24,9 @@ const Home = ({ language, onLanguageChange, navigate }) => {
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState(null);
+
+
 
   const SECTION_API_URL = 'https://omarawad9.pythonanywhere.com/api/sections/';
 
@@ -48,13 +51,11 @@ const Home = ({ language, onLanguageChange, navigate }) => {
       try {
         // Fetch products
         const fetchedProducts = await fetchProducts();
-        console.log('📦 Fetched Products:', fetchedProducts);
         setProducts(fetchedProducts);
 
         // Fetch sections
         const sectionsResponse = await fetch(SECTION_API_URL);
         const sectionsData = await sectionsResponse.json();
-        console.log('📂 Fetched Sections:', sectionsData);
 
         if (Array.isArray(sectionsData)) {
           setSections(sectionsData);
@@ -85,34 +86,16 @@ const Home = ({ language, onLanguageChange, navigate }) => {
     }
   }, [products]);
 
-  // ✅ Get Featured Section
   const getFeaturedSection = () => {
     return sections.find(s => s.is_featured === true);
   };
 
-  // ✅ Get Featured Section Products for Main Carousel ONLY
   const getFeaturedProducts = () => {
-    const featuredSection = getFeaturedSection();
-
-    if (!featuredSection) {
-      console.log('❌ No Featured Section found!');
-      return [];
-    }
-
-    // Filter products that belong to Featured Section
-    const featuredProducts = products.filter(p => p.section === featuredSection.id);
-    console.log(`✅ Found ${featuredProducts.length} products in Featured Section (ID: ${featuredSection.id})`);
-
-    return featuredProducts;
+    return products;
   };
 
-  // ✅ Check if Featured Section exists and has products
   const hasFeaturedSection = () => {
-    const featuredSection = getFeaturedSection();
-    if (!featuredSection) return false;
-
-    const featuredProducts = products.filter(p => p.section === featuredSection.id);
-    return featuredProducts.length > 0;
+    return products.length > 0;
   };
 
   useEffect(() => {
@@ -201,6 +184,8 @@ const Home = ({ language, onLanguageChange, navigate }) => {
         navigate={navigate}
         onLogout={handleLogout}
         isAdmin={isAdmin()}
+        activeFilter={activeFilter}
+        onFilterChange={setActiveFilter}
       />
       <ScrollReveal>
         <Hero language={language} onLanguageChange={onLanguageChange} />
@@ -219,7 +204,10 @@ const Home = ({ language, onLanguageChange, navigate }) => {
               <ProductCarousel
                 language={language}
                 onLanguageChange={onLanguageChange}
-                products={featuredProducts}
+                products={featuredProducts.filter(p =>
+                  activeFilter === null ? p.type === 'gold' : p.type === activeFilter
+                )}
+
                 onProductClick={handleProductClick}
                 sectionTitle={getFeaturedSection()}
               />
@@ -234,6 +222,7 @@ const Home = ({ language, onLanguageChange, navigate }) => {
                 products={products}
                 onProductClick={handleProductClick}
                 onContactClick={handleContactClick}
+                activeFilter={activeFilter ?? 'gold'}
                 searchQuery={searchQuery}
                 language={language}
               />

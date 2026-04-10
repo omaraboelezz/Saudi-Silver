@@ -6,13 +6,14 @@ import './Sectionproducts.css';
  * Displays products organized by sections
  */
 
-const SectionProducts = ({ 
-  sections, 
-  products, 
-  onProductClick, 
-  onContactClick, 
-  searchQuery = '', 
-  language = 'ar' 
+const SectionProducts = ({
+  sections,
+  products,
+  onProductClick,
+  onContactClick,
+  searchQuery = '',
+  language = 'ar',
+  activeFilter = null
 }) => {
   const texts = {
     ar: {
@@ -32,16 +33,16 @@ const SectionProducts = ({
   // Filter products by search query
   const filterProducts = (productsArray) => {
     if (!searchQuery) return productsArray;
-    
+
     return productsArray.filter(product => {
-      const name = language === 'ar' 
+      const name = language === 'ar'
         ? (product.name_ar || product.name || '')
         : (product.name_en || product.name || '');
-      
+
       const description = language === 'ar'
         ? (product.description_ar || product.description || '')
         : (product.description_en || product.description || '');
-      
+
       const shortDescription = language === 'ar'
         ? (product.shortDescription_ar || product.shortDescription || '')
         : (product.shortDescription_en || product.shortDescription || '');
@@ -54,14 +55,21 @@ const SectionProducts = ({
     });
   };
 
+
+
   // Group products by section
   const getProductsBySection = (sectionId) => {
     const sectionProducts = products.filter(
       product => product.section === sectionId
     );
-    return filterProducts(sectionProducts);
-  };
 
+    // ✅ ضيف الفلتر بالـ type
+    const typeFiltered = sectionProducts.filter(p =>
+      activeFilter === null ? p.type === 'gold' : p.type === activeFilter
+    );
+
+    return filterProducts(typeFiltered);
+  };
   // Get products without section
   const getProductsWithoutSection = () => {
     const noSectionProducts = products.filter(
@@ -86,11 +94,11 @@ const SectionProducts = ({
       {/* Render each section */}
       {sections.map((section) => {
         const sectionProducts = getProductsBySection(section.id);
-        
+
         // Skip section if no products (and there's a search query)
-        if (sectionProducts.length === 0 && searchQuery) {
-          return null;
-        }
+if (sectionProducts.length === 0) {
+  return null;
+}
 
         return (
           <section key={section.id} className="product-section" id={`section-${section.id}`}>
