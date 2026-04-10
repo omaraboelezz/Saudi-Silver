@@ -707,3 +707,40 @@ img {
   align-items: center;
   gap: 10px;
 }
+
+.price-management-grid {
+  display: flex;
+  flex-direction: row;
+  gap: 30px;
+}
+.price-column {
+  flex: 1;
+}
+
+.price-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+/* Tablet / Mobile adjustments */
+@media (max-width: 768px) {
+  .price-management-grid {
+    flex-direction: column;
+    gap: 20px;
+  }
+}
+@media (max-width: 480px) {
+  .price-cards-grid {
+    gap: 8px;
+  }
+  .price-card-mini {
+    padding: 8px;
+  }
+  .price-card-mini > div:first-child {
+    font-size: 0.95rem !important;
+  }
+  .price-card-mini > div:nth-child(2) {
+    font-size: 0.85rem !important;
+  }
+}

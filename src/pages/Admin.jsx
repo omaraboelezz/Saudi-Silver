@@ -719,9 +719,9 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
         language === "ar"
           ? (isFeatured ? "هل أنت متأكد من حذف هذا المنتج نهائياً من قاعدة البيانات؟ لا يمكن التراجع." : "سيتم إزالة هذا المنتج من القسم الحالي ونقله تلقائياً إلى القسم المميز، ولن يتم حذفه نهائياً.")
           : (isFeatured ? "Are you sure you want to permanently delete this product? This action cannot be undone." : "This product will be removed from its current section and moved to the Featured Products section. It will not be permanently deleted."),
-      okText: language === "ar" 
-          ? (isFeatured ? "نعم، احذف نهائياً" : "نعم، انقله للقسم المميز") 
-          : (isFeatured ? "Yes, Delete Permanently" : "Yes, Move to Featured"),
+      okText: language === "ar"
+        ? (isFeatured ? "نعم، احذف نهائياً" : "نعم، انقله للقسم المميز")
+        : (isFeatured ? "Yes, Delete Permanently" : "Yes, Move to Featured"),
       okType: "danger",
       cancelText: language === "ar" ? "إلغاء" : "Cancel",
       centered: true,
@@ -729,7 +729,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
         try {
           if (!isFeatured && featuredSection) {
             const patchUrl = `${API_URL}${id}/`;
-            
+
             const patchData = new FormData();
             patchData.append("section", featuredSection.id);
 
@@ -749,16 +749,16 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                 centered: true,
                 okText: language === "ar" ? "حسناً" : "OK",
               });
-              
+
               fetchProducts();
             } else {
-               const data = await response.json();
-               Modal.error({
-                 title: language === "ar" ? "❌ فشل النقل" : "❌ Move Failed",
-                 content: data.message || "Error",
-                 centered: true,
-                 okText: language === "ar" ? "حسناً" : "OK",
-               });
+              const data = await response.json();
+              Modal.error({
+                title: language === "ar" ? "❌ فشل النقل" : "❌ Move Failed",
+                content: data.message || "Error",
+                centered: true,
+                okText: language === "ar" ? "حسناً" : "OK",
+              });
             }
             return;
           }
@@ -1383,13 +1383,13 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
             </Button>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+          <div className="price-management-grid">
             {/* Gold Column */}
             <div className="price-column">
               <h3 style={{ color: '#d4af37', borderBottom: '2px solid #d4af37', paddingBottom: '10px' }}>
                 {language === 'ar' ? 'الذهب' : 'Gold'}
               </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+              <div className="price-cards-grid">
                 {[
                   { label: '24K', price: allPrices?.karat_24_buy },
                   { label: '21K', price: allPrices?.karat_21_buy },
@@ -1415,7 +1415,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
               <h3 style={{ color: '#555', borderBottom: '2px solid #ccc', paddingBottom: '10px' }}>
                 {language === 'ar' ? 'الفضة' : 'Silver'}
               </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+              <div className="price-cards-grid">
                 {[
                   { label: '999', price: allPrices?.fine_999_buy },
                   { label: '925', price: allPrices?.fine_925_buy },
@@ -1800,12 +1800,12 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                     {sections
                       .filter((s) => !s.is_featured)
                       .map((section) => (
-                      <option key={section.id} value={section.id}>
-                        {language === "ar"
-                          ? section.title_ar
-                          : section.title_en}
-                      </option>
-                    ))}
+                        <option key={section.id} value={section.id}>
+                          {language === "ar"
+                            ? section.title_ar
+                            : section.title_en}
+                        </option>
+                      ))}
                   </select>
                   {sectionError && (
                     <span
@@ -2014,14 +2014,14 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                         }
                       </small>
                     )}
-                    
+
                     <div style={{ marginTop: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
                       <input
                         type="checkbox"
                         id="show_weight"
                         name="show_weight"
                         checked={formData.show_weight}
-                        onChange={(e) => setFormData(prev => ({...prev, show_weight: e.target.checked}))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, show_weight: e.target.checked }))}
                         style={{ width: "16px", height: "16px", cursor: "pointer" }}
                       />
                       <label htmlFor="show_weight" style={{ margin: 0, cursor: "pointer", fontWeight: "normal", fontSize: "14px", color: "#555" }}>
