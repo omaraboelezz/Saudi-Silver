@@ -441,7 +441,14 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
                   <FaPlus size={10} />
                 </button>
               </div>
-              <p className="modal-price">{formatPrice(Math.ceil(product.price))}</p>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center' }}>
+                <p className="modal-price" style={{ margin: 0 }}>{formatPrice(Math.ceil(product.price))}</p>
+                {product.show_weight !== false && product.weight && parseFloat(product.weight) > 0 && (
+                  <p className="modal-weight" style={{ fontSize: '1rem', color: '#666', margin: '4px 0 0 0', fontWeight: '500' }}>
+                    {language === 'ar' ? `الوزن: ${product.weight} جرام` : `Weight: ${product.weight}g`}
+                  </p>
+                )}
+              </div>
 
 
             </div>
