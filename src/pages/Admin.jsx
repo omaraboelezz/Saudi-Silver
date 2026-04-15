@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import React from "react";
 import { Table, Input, Button, Space, Modal } from "antd";
-import { SearchOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import { SearchOutlined, ExclamationCircleOutlined, DeleteFilled } from "@ant-design/icons";
 import Header from "../components/Header";
 import "./Admin.css";
 import { pdf } from '@react-pdf/renderer';
@@ -45,9 +45,11 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
   const [pageSize, setPageSize] = useState(5);
   const [refreshKey, _setRefreshKey] = useState(0);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
-  const [manualItem, setManualItem] = useState({ name: '', price: '' });
   const [invoiceItems, setInvoiceItems] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [customerName, setCustomerName] = useState('');
+  const [invoiceLanguage, setInvoiceLanguage] = useState(language);
+  const [detailModalState, setDetailModalState] = useState({ visible: false, itemId: null, weight: '', karat: '', notes: '', customPrice: '' });
   const [showBadgeModal, setShowBadgeModal] = useState(false);
   const [newBadgeNameAr, setNewBadgeNameAr] = useState('');
   const [newBadgeNameEn, setNewBadgeNameEn] = useState('');
@@ -1487,7 +1489,11 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
           {/* ✅ زرار الفاتورة الجديد */}
           <button
             type="button"
-            onClick={() => setShowInvoiceModal(true)}
+            onClick={() => {
+              setShowInvoiceModal(true);
+              setInvoiceLanguage(language);
+              setCustomerName('');
+            }}
             style={{
               background:
                 "linear-gradient(135deg, #C9A84C 0%, #f5e6c0 50%, #C9A84C 100%)",
@@ -1514,8 +1520,9 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
             zIndex: 1000, padding: '20px'
           }}>
             <div style={{
+              position: 'relative',
               background: 'white', padding: '30px', borderRadius: '12px',
-              maxWidth: '650px', width: '100%', maxHeight: '90vh', overflow: 'auto',
+              maxWidth: '900px', width: '100%', maxHeight: '140vh', overflow: 'auto',
               boxShadow: '0 10px 40px rgba(0,0,0,0.2)'
             }}>
               <h3 style={{ marginBottom: '20px', color: '#1a1208', fontSize: '22px', fontWeight: '700' }}>
@@ -1541,6 +1548,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                             id: product.id,
                             name: language === 'ar' ? (product.name_ar || product.name) : (product.name_en || product.name),
                             price: product.price,
+                            originalPrice: product.price,
                             image_url: product.image_url,
                             quantity: 1,
                             fromDB: true
@@ -1559,50 +1567,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                       </option>
                     ))}
                   </select>
-                </div>
-
-                {/* فاصل */}
-                <div style={{ display: 'flex', alignItems: 'center', fontWeight: '700', color: '#999', paddingTop: '24px' }}>
-                  {language === 'ar' ? 'أو' : 'OR'}
-                </div>
-
-                {/* إدخال يدوي */}
-                <div style={{ flex: '1 1 200px' }}>
-                  <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '14px' }}>
-                    {language === 'ar' ? 'أضف يدوياً' : 'Add manually'}
-                  </label>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    <input
-                      type="text"
-                      placeholder={language === 'ar' ? 'اسم المنتج' : 'Product name'}
-                      value={manualItem.name}
-                      onChange={e => setManualItem(prev => ({ ...prev, name: e.target.value }))}
-                      style={{ flex: 2, padding: '10px', borderRadius: '8px', border: '2px solid #e0e0e0', fontSize: '14px' }}
-                    />
-                    <input
-                      type="number"
-                      placeholder={language === 'ar' ? 'السعر' : 'Price'}
-                      value={manualItem.price}
-                      onChange={e => setManualItem(prev => ({ ...prev, price: e.target.value }))}
-                      style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '2px solid #e0e0e0', fontSize: '14px' }}
-                    />
-                    <button
-                      onClick={() => {
-                        if (!manualItem.name || !manualItem.price) return;
-                        setInvoiceItems(prev => [...prev, {
-                          id: Date.now(),
-                          name: manualItem.name,
-                          price: parseFloat(manualItem.price),
-                          quantity: 1,
-                          fromDB: false
-                        }]);
-                        setManualItem({ name: '', price: '' });
-                      }}
-                      style={{ padding: '10px 14px', background: '#28a745', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '700' }}
-                    >
-                      +
-                    </button>
-                  </div>
                 </div>
               </div>
 
@@ -1628,8 +1592,25 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                       <span style={{ fontWeight: '700', color: '#C9A84C', minWidth: '60px', textAlign: 'right' }}>
                         ${(item.price * item.quantity).toLocaleString()}
                       </span>
+                      <button
+                        onClick={() => {
+                          setDetailModalState({
+                            visible: true,
+                            itemId: item.id,
+                            weight: item.weight || '',
+                            karat: item.karat || '',
+                            notes: item.notes || '',
+                            customPrice: item.customPrice || ''
+                          });
+                        }}
+                        style={{ background: '#17a2b8', color: 'white', border: 'none', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
+                      >
+                        {language === 'ar' ? 'تفاصيل' : 'Details'}
+                      </button>
                       <button onClick={() => setInvoiceItems(prev => prev.filter(i => i.id !== item.id))}
-                        style={{ background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', width: '28px', height: '28px', cursor: 'pointer', fontWeight: '700' }}>×</button>
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', width: '28px', height: '28px', cursor: 'pointer', fontWeight: '700' }}>
+                        <DeleteFilled />
+                      </button>
                     </div>
                   ))}
 
@@ -1641,16 +1622,137 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                 </div>
               )}
 
+              {/* Customer Name and Language */}
+              <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, minWidth: '200px' }}>
+                  <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '14px' }}>
+                    {language === 'ar' ? 'اسم العميل' : 'Customer Name'} <span style={{ color: 'red' }}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={customerName}
+                    onChange={e => setCustomerName(e.target.value)}
+                    placeholder={language === 'ar' ? 'الاسم' : 'Name'}
+                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '2px solid #e0e0e0', fontSize: '14px' }}
+                  />
+                </div>
+                <div style={{ flex: 1, minWidth: '200px' }}>
+                  <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '14px' }}>
+                    {language === 'ar' ? 'لغة الفاتورة' : 'Invoice Language'}
+                  </label>
+                  <div style={{ display: 'flex', gap: '5px' }}>
+                    <button
+                      onClick={() => setInvoiceLanguage('ar')}
+                      style={{ flex: 1, padding: '10px', borderRadius: '8px', border: invoiceLanguage === 'ar' ? '2px solid #C9A84C' : '1px solid #e0e0e0', background: invoiceLanguage === 'ar' ? '#fcf9f2' : 'white', cursor: 'pointer', fontWeight: '600' }}
+                    >
+                      عربي
+                    </button>
+                    <button
+                      onClick={() => setInvoiceLanguage('en')}
+                      style={{ flex: 1, padding: '10px', borderRadius: '8px', border: invoiceLanguage === 'en' ? '2px solid #C9A84C' : '1px solid #e0e0e0', background: invoiceLanguage === 'en' ? '#fcf9f2' : 'white', cursor: 'pointer', fontWeight: '600' }}
+                    >
+                      English
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Detail Modal Overlay */}
+              {detailModalState.visible && (
+                <div style={{
+                  position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                  background: 'rgba(0,0,0,0.7)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  zIndex: 2000, borderRadius: '0'
+                }}>
+                  <div style={{
+                    background: 'white', padding: '20px', borderRadius: '8px',
+                    width: '90%', maxWidth: '400px', border: '1px solid #e0e0e0',
+                    boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
+                  }}>
+                    <h4 style={{ marginBottom: '15px', color: '#1a1208', fontWeight: '700', fontSize: '18px' }}>
+                      {language === 'ar' ? 'تفاصيل العنصر' : 'Item Details'}
+                    </h4>
+
+                    <div style={{ marginBottom: '15px' }}>
+                      <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '5px' }}>{language === 'ar' ? 'الوزن (جرام)' : 'Weight (g)'}</label>
+                      <input type="number" min="0" onKeyDown={e => { if (e.key === '-') e.preventDefault(); }}
+                        value={detailModalState.weight}
+                        onChange={e => setDetailModalState(prev => ({ ...prev, weight: e.target.value }))}
+                        style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }}
+                      />
+                    </div>
+
+                    <div style={{ marginBottom: '15px' }}>
+                      <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '5px' }}>{language === 'ar' ? 'العيار ' : 'Karat (k)'}</label>
+                      <input type="text" placeholder={language === 'ar' ? 'مثال: 21K' : 'e.g. 21K'}
+                        value={detailModalState.karat}
+                        onChange={e => setDetailModalState(prev => ({ ...prev, karat: e.target.value }))}
+                        style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }}
+                      />
+                    </div>
+
+                    <div style={{ marginBottom: '15px' }}>
+                      <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '5px' }}>{language === 'ar' ? 'ملاحظات' : 'Notes'}</label>
+                      <input type="text"
+                        value={detailModalState.notes}
+                        onChange={e => setDetailModalState(prev => ({ ...prev, notes: e.target.value }))}
+                        style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }}
+                      />
+                    </div>
+
+                    <div style={{ marginBottom: '20px' }}>
+                      <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '5px' }}>
+                        {language === 'ar' ? 'سعر مخصص' : 'Custom Price'}
+                      </label>
+                      <input type="number" step="0.01" min="0" onKeyDown={e => { if (e.key === '-') e.preventDefault(); }}
+                        placeholder={language === 'ar' ? 'يترك فارغاً لاعتبار السعر الأصلي' : 'Leave empty for original price'}
+                        value={detailModalState.customPrice}
+                        onChange={e => setDetailModalState(prev => ({ ...prev, customPrice: e.target.value }))}
+                        style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc', marginBottom: '6px' }}
+                      />
+                      <span style={{ fontSize: '12px', color: '#666', display: 'block', lineHeight: '1.4' }}>
+                        {language === 'ar'
+                          ? 'ملاحظة: إذا أدخلت هذا السعر فسيكون هو السعر النهائي الخاص بهذا المنتج في الفاتورة. اتركه فارغاً لاستخدام سعر الموقع الأصلي.'
+                          : 'Note: If entered, this will be the final price in the invoice. If empty, the original site price will be used.'}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                      <button onClick={() => setDetailModalState({ visible: false, itemId: null, weight: '', karat: '', notes: '', customPrice: '' })} style={{ padding: '8px 16px', background: '#ccc', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: '600' }}>{language === 'ar' ? 'إلغاء' : 'Cancel'}</button>
+                      <button onClick={() => {
+                        setInvoiceItems(prev => prev.map(i => {
+                          if (i.id === detailModalState.itemId) {
+                            return {
+                              ...i,
+                              weight: detailModalState.weight,
+                              karat: detailModalState.karat,
+                              notes: detailModalState.notes,
+                              customPrice: detailModalState.customPrice,
+                              price: detailModalState.customPrice && !isNaN(parseFloat(detailModalState.customPrice))
+                                ? parseFloat(detailModalState.customPrice)
+                                : i.originalPrice
+                            };
+                          }
+                          return i;
+                        }));
+                        setDetailModalState({ visible: false, itemId: null, weight: '', karat: '', notes: '', customPrice: '' });
+                      }} style={{ padding: '8px 16px', background: '#C9A84C', color: '#1a1208', fontWeight: '700', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>{language === 'ar' ? 'حفظ' : 'Save'}</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* ── الأزرار ── */}
               <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
                 <button
-                  onClick={() => { setShowInvoiceModal(false); setInvoiceItems([]); setManualItem({ name: '', price: '' }); }}
+                  onClick={() => { setShowInvoiceModal(false); setInvoiceItems([]); setCustomerName(''); }}
                   style={{ background: '#6c757d', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}
                 >
                   {language === 'ar' ? 'إلغاء' : 'Cancel'}
                 </button>
                 <button
-                  disabled={invoiceItems.length === 0 || isGenerating}
+                  disabled={invoiceItems.length === 0 || isGenerating || !customerName.trim()}
                   onClick={async () => {
                     setIsGenerating(true);
                     try {
@@ -1665,7 +1767,12 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                       );
 
                       const blob = await pdf(
-                        <InvoiceDocument items={itemsWithBase64} language={language} fallbackImage={logoBase64} />
+                        <InvoiceDocument
+                          items={itemsWithBase64}
+                          language={invoiceLanguage}
+                          customerName={customerName}
+                          fallbackImage={logoBase64}
+                        />
                       ).toBlob();
 
                       const url = URL.createObjectURL(blob);
@@ -1687,10 +1794,10 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                     }
                   }}
                   style={{
-                    background: (invoiceItems.length === 0 || isGenerating) ? '#ccc' : 'linear-gradient(135deg, #C9A84C, #f5e6c0)',
+                    background: (invoiceItems.length === 0 || isGenerating || !customerName.trim()) ? '#ccc' : 'linear-gradient(135deg, #C9A84C, #f5e6c0)',
                     color: '#1a1208', border: 'none', padding: '10px 24px',
                     borderRadius: '8px',
-                    cursor: (invoiceItems.length === 0 || isGenerating) ? 'not-allowed' : 'pointer',
+                    cursor: (invoiceItems.length === 0 || isGenerating || !customerName.trim()) ? 'not-allowed' : 'pointer',
                     fontWeight: '700', fontSize: '16px',
                     opacity: isGenerating ? 0.7 : 1,
                   }}

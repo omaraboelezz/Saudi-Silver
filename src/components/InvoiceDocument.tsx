@@ -18,14 +18,14 @@ Font.register({
 });
 
 // ─── Color Palette ────────────────────────────────────────────────────────────
-const gold      = '#C9A84C';
-const goldDim   = '#8a6a28';
-const darkBg    = '#1a1208';
+const gold = '#C9A84C';
+const goldDim = '#8a6a28';
+const darkBg = '#1a1208';
 const lightGold = '#F5E6C0';
-const white     = '#FFFFFF';
-const gray      = '#888888';
+const white = '#FFFFFF';
+const gray = '#888888';
 const deepBlack = '#0d0a04';
-const rowAlt    = '#1f160a';
+const rowAlt = '#1f160a';
 
 // ─── QR Code via free API (gold on dark) ─────────────────────────────────────
 const QR_URL =
@@ -70,11 +70,11 @@ const styles = StyleSheet.create({
 
   headerCenter: { flex: 1, alignItems: 'center' },
   brandName: { color: gold, fontSize: 22, fontFamily: 'Cairo', letterSpacing: 4 },
-  brandSub:  { color: lightGold, fontSize: 7, letterSpacing: 3, marginTop: 3, opacity: 0.75 },
+  brandSub: { color: lightGold, fontSize: 7, letterSpacing: 3, marginTop: 3, opacity: 0.75 },
 
   headerRight: { alignItems: 'flex-end', width: 68 },
-  qrImage:  { width: 60, height: 60, borderWidth: 1, borderColor: goldDim },
-  qrLabel:  { color: gray, fontSize: 6, marginTop: 3,  textAlign: 'center', letterSpacing: 0.5 , marginRight: 6 },
+  qrImage: { width: 60, height: 60, borderWidth: 1, borderColor: goldDim },
+  qrLabel: { color: gray, fontSize: 6, marginTop: 3, textAlign: 'center', letterSpacing: 0.5, marginRight: 6 },
 
   // ─── Meta Strip ─────────────────────────────────────────────────────────
   metaStrip: {
@@ -83,10 +83,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     borderBottomWidth: 1, borderBottomColor: '#2a1f08',
   },
-  metaItem:  { flexDirection: 'row', alignItems: 'center' },
+  metaItem: { flexDirection: 'row', alignItems: 'center' },
   metaLabel: { color: gray, fontSize: 7, letterSpacing: 1, marginRight: 4 },
   metaValue: { color: lightGold, fontSize: 8, letterSpacing: 0.5 },
-  metaDot:   { color: goldDim, fontSize: 10, marginHorizontal: 8, opacity: 0.5 },
+  metaDot: { color: goldDim, fontSize: 10, marginHorizontal: 8, opacity: 0.5 },
 
   // ─── Body ───────────────────────────────────────────────────────────────
   body: { paddingHorizontal: 40, paddingTop: 22, paddingBottom: 20 },
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     paddingVertical: 7, paddingHorizontal: 8,
   },
   thProduct: { color: gold, fontSize: 7, flex: 4, letterSpacing: 1 },
-  thCell:    { color: gold, fontSize: 7, flex: 1, textAlign: 'center', letterSpacing: 1 },
+  thCell: { color: gold, fontSize: 7, flex: 1, textAlign: 'center', letterSpacing: 1 },
 
   itemRow: {
     flexDirection: 'row', alignItems: 'center',
@@ -108,17 +108,17 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1, borderBottomColor: '#2a200a',
   },
   itemRowAlt: { backgroundColor: rowAlt },
-  itemImage:  { width: 44, height: 44, marginRight: 10, borderWidth: 1, borderColor: '#3a2d10' },
-  itemInfo:   { flex: 3 },
-  itemName:   { color: white, fontSize: 10, fontFamily: 'Cairo' },
-  itemDesc:   { color: gray, fontSize: 7, marginTop: 2 },
-  itemQty:    { flex: 1, color: lightGold, fontSize: 9, textAlign: 'center' },
-  itemPrice:  { flex: 1, color: lightGold, fontSize: 9, textAlign: 'center' },
-  itemTotal:  { flex: 1, color: gold, fontSize: 9, textAlign: 'center', fontFamily: 'Cairo' },
+  itemImage: { width: 44, height: 44, marginRight: 10, borderWidth: 1, borderColor: '#3a2d10' },
+  itemInfo: { flex: 3 },
+  itemName: { color: white, fontSize: 10, fontFamily: 'Cairo' },
+  itemDesc: { color: gray, fontSize: 7, marginTop: 2 },
+  itemQty: { flex: 1, color: lightGold, fontSize: 9, textAlign: 'center' },
+  itemPrice: { flex: 1, color: lightGold, fontSize: 9, textAlign: 'center' },
+  itemTotal: { flex: 1, color: gold, fontSize: 9, textAlign: 'center', fontFamily: 'Cairo' },
 
   // ─── Items count badge ───────────────────────────────────────────────────
-  badgeRow:  { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 10 },
-  badge:     { paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: goldDim, backgroundColor: '#1f1608' },
+  badgeRow: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 10 },
+  badge: { paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: goldDim, backgroundColor: '#1f1608' },
   badgeText: { color: gold, fontSize: 7, letterSpacing: 1.5 },
 
   // ─── Total Box ──────────────────────────────────────────────────────────
@@ -130,20 +130,29 @@ const styles = StyleSheet.create({
   },
   totalBoxHeaderText: { color: gold, fontSize: 7, letterSpacing: 2 },
   totalBoxBody: { padding: 14 },
-  totalRow:   { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 7 },
+  totalRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 7 },
   totalLabel: { color: gray, fontSize: 9 },
   totalValue: { color: lightGold, fontSize: 9, fontFamily: 'Cairo' },
   totalDivider: { height: 1, backgroundColor: gold, opacity: 0.25, marginVertical: 8 },
   grandTotalLabel: { color: gold, fontSize: 12, fontFamily: 'Cairo' },
   grandTotalValue: { color: gold, fontSize: 12, fontFamily: 'Cairo' },
 
+  // ─── Terms & Conditions ───────────────────────────────────────────────────
+  dividerTerms: {
+    width: '100%',
+    height: 1,
+    backgroundColor: gold,
+    opacity: 0.25,
+    marginVertical: 8,
+  },
+
   // ─── Footer ─────────────────────────────────────────────────────────────
   footer: {
     marginTop: 28, borderTopWidth: 1, borderTopColor: '#2a200a',
     paddingTop: 14, alignItems: 'center',
   },
-  footerText:    { color: gray, fontSize: 7, textAlign: 'center', letterSpacing: 0.5 },
-  footerBrand:   { color: gold, fontSize: 9, marginTop: 5, letterSpacing: 3 },
+  footerText: { color: gray, fontSize: 7, textAlign: 'center', letterSpacing: 0.5 },
+  footerBrand: { color: gold, fontSize: 9, marginTop: 5, letterSpacing: 3 },
   footerWebsite: { color: goldDim, fontSize: 7, marginTop: 3, letterSpacing: 1 },
 });
 
@@ -160,6 +169,9 @@ interface InvoiceItem {
   image?: string;
   image_file?: string;
   image_url?: string;
+  weight?: string | number;
+  karat?: string;
+  notes?: string;
 }
 
 interface InvoiceDocumentProps {
@@ -167,7 +179,8 @@ interface InvoiceDocumentProps {
   language?: string;
   invoiceNumber?: string;
   date?: string;
-  status?: string; 
+  status?: string;
+  customerName?: string;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -192,17 +205,21 @@ const InvoiceDocument = ({
   invoiceNumber,
   date,
   status,
+  customerName,
 }: InvoiceDocumentProps) => {
-  const validItems  = items.filter(i => !(i as any).isDeleted);
-  const subtotal    = validItems.reduce((acc, i) => acc + i.price * (i.quantity || 1), 0);
-  const invoiceNum  = invoiceNumber || `SS-${Date.now().toString().slice(-6)}`;
+  const validItems = items.filter(i => !(i as any).isDeleted);
+  const subtotal = validItems.reduce((acc, i) => acc + i.price * (i.quantity || 1), 0);
+  const invoiceNum = `SS-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
   const invoiceDate = date || new Date().toLocaleDateString('en-GB');
-  const isAr        = language === 'ar';
+  const isAr = language === 'ar';
   const orderStatus = status || (isAr ? 'مكتمل' : 'COMPLETED');
+
+  // If arabic, set direction to RTL
+  const pageStyle = { ...styles.page, direction: isAr ? 'rtl' : 'ltr' } as any;
 
   return (
     <Document>
-      <Page size="A4" style={styles.page}>
+      <Page size="A4" style={pageStyle}>
 
         {/* ── 4 Corner accents ── */}
         <View style={styles.cornerTL} />
@@ -247,6 +264,15 @@ const InvoiceDocument = ({
 
         {/* ── Body ── */}
         <View style={styles.body}>
+          <View style={{ marginBottom: 24, flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={{ color: goldDim, fontSize: 10, letterSpacing: 1.5 }}>
+              {isAr ? 'فاتورة إلى :' : 'BILL TO :'}
+            </Text>
+            <Text style={{ color: white, fontSize: 16, fontFamily: 'Cairo', marginHorizontal: 8 }}>
+              {customerName || (isAr ? 'عميل' : 'Customer')}
+            </Text>
+          </View>
+
           <Text style={styles.sectionTitle}>
             {isAr ? 'تفاصيل الطلب' : 'ORDER DETAILS'}
           </Text>
@@ -261,8 +287,8 @@ const InvoiceDocument = ({
 
           {/* Items with alternating rows */}
           {validItems.map((item, index) => {
-            const imageUrl  = getImageUrl(item);
-            const qty       = item.quantity || 1;
+            const imageUrl = getImageUrl(item);
+            const qty = item.quantity || 1;
             const lineTotal = item.price * qty;
 
             return (
@@ -273,9 +299,25 @@ const InvoiceDocument = ({
                 <Image src={imageUrl || FALLBACK_IMAGE} style={styles.itemImage} />
                 <View style={styles.itemInfo}>
                   <Text style={styles.itemName}>{getProductName(item, language)}</Text>
-                  <Text style={styles.itemDesc}>
-                    {isAr ? 'فضة سعودية أصيلة' : 'Authentic EL-SAUDI JEWELRY '}
-                  </Text>
+                  {(item.weight || item.karat || item.notes) && (
+                    <View style={{ marginTop: 5, flexDirection: isAr ? 'row-reverse' : 'row' }}>
+                      {item.weight && (
+                        <Text style={{ color: '#aaa', fontSize: 6, backgroundColor: '#2a200a', paddingHorizontal: 4, paddingVertical: 2, borderRadius: 2, marginRight: isAr ? 0 : 4, marginLeft: isAr ? 4 : 0 }}>
+                          {isAr ? `الوزن: ${item.weight}ج` : `Weight: ${item.weight}g`}
+                        </Text>
+                      )}
+                      {item.karat && (
+                        <Text style={{ color: '#aaa', fontSize: 6, backgroundColor: '#2a200a', paddingHorizontal: 4, paddingVertical: 2, borderRadius: 2, marginRight: isAr ? 0 : 4, marginLeft: isAr ? 4 : 0 }}>
+                          {isAr ? `العيار: ${item.karat}` : `Purity: ${item.karat}`}
+                        </Text>
+                      )}
+                      {item.notes && (
+                        <Text style={{ color: '#aaa', fontSize: 6, backgroundColor: '#2a200a', paddingHorizontal: 4, paddingVertical: 2, borderRadius: 2, marginRight: isAr ? 0 : 4, marginLeft: isAr ? 4 : 0 }}>
+                          {isAr ? `ملاحظات: ${item.notes}` : `Notes: ${item.notes}`}
+                        </Text>
+                      )}
+                    </View>
+                  )}
                 </View>
                 <Text style={styles.itemQty}>{qty}</Text>
                 <Text style={styles.itemPrice}>{fmt(Math.ceil(item.price))}</Text>
@@ -308,14 +350,6 @@ const InvoiceDocument = ({
                   <Text style={styles.totalLabel}>{isAr ? 'المجموع الفرعي' : 'Subtotal'}</Text>
                   <Text style={styles.totalValue}>{fmt(subtotal)}</Text>
                 </View>
-                <View style={styles.totalRow}>
-                  <Text style={styles.totalLabel}>{isAr ? 'الشحن' : 'Shipping'}</Text>
-                  <Text style={styles.totalValue}>{isAr ? 'مجاني' : 'Free'}</Text>
-                </View>
-                <View style={styles.totalRow}>
-                  <Text style={styles.totalLabel}>{isAr ? 'الضريبة' : 'Tax'}</Text>
-                  <Text style={styles.totalValue}>{isAr ? 'غير مطبق' : 'N/A'}</Text>
-                </View>
                 <View style={styles.totalDivider} />
                 <View style={styles.totalRow}>
                   <Text style={styles.grandTotalLabel}>{isAr ? 'الإجمالي' : 'Total'}</Text>
@@ -325,8 +359,45 @@ const InvoiceDocument = ({
             </View>
           </View>
 
+          <View style={styles.dividerTerms} />
+
+          {/* Terms & Conditions */}
+          <View style={{ marginTop: 20, marginBottom: 10, paddingHorizontal: 10, width: '100%', alignItems: isAr ? 'flex-end' : 'flex-start' }}>
+            <Text style={{ color: '#aaa', fontSize: 8, fontFamily: 'Cairo', marginBottom: 3, textAlign: isAr ? 'right' : 'left' }}>
+              {isAr ? '١- المنتجات التي تسترد بالفصوص تسترد حسب تعليمات الشركة المنتجة دون أدنى مسئولية ع المحل' : '1- Products returned with stones are returned according to the manufacturer\'s instructions without any responsibility on the store.'}
+            </Text>
+            <Text style={{ color: '#aaa', fontSize: 8, fontFamily: 'Cairo', marginBottom: 3, textAlign: isAr ? 'right' : 'left' }}>
+              {isAr ? '٢- على العميل مراجعة الوزن خلال ثلاث أيام من تاريخ الاستلام' : '2- The customer must review the weight within three days from the date of receipt.'}
+            </Text>
+            <Text style={{ color: '#aaa', fontSize: 8, fontFamily: 'Cairo', textAlign: isAr ? 'right' : 'left' }}>
+              {isAr ? '٣- ماعدا السهو والخطأ والتحفظات المعتادة' : '3- Errors and omissions excepted.'}
+            </Text>
+          </View>
+
+
           {/* Footer */}
           <View style={styles.footer}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginBottom: 12, paddingHorizontal: 20 }}>
+              {/* Head Center */}
+              <View style={{ alignItems: isAr ? 'flex-start' : 'flex-start', flex: 1 }}>
+                <Text style={{ color: goldDim, fontSize: 8, marginBottom: 3, fontFamily: 'Cairo' }}>
+                  {isAr ? 'بورسعيد .. المركز الرئيسي : ش أسوان (مساكن المعلمين)' : 'Port Said .. Head Center Aswan St,.'}
+                </Text>
+                <Text style={{ color: goldDim, fontSize: 8, fontFamily: 'Cairo' }}>
+                  {isAr ? 'فـــرع أســـــوان' : 'Aswan Branch'}
+                </Text>
+              </View>
+              {/* Phone Numbers */}
+              <View style={{ alignItems: isAr ? 'flex-end' : 'flex-end' }}>
+                <Text style={{ color: gray, fontSize: 8, marginBottom: 3, fontFamily: 'Cairo' }}>
+                  {isAr ? 'ت : 066/3252960' : 'Tel.: 066/3252960'}
+                </Text>
+                <Text style={{ color: gray, fontSize: 8, fontFamily: 'Cairo' }}>
+                  {isAr ? 'ت : 066/3252961' : 'Tel.: 066/3252961'}
+                </Text>
+              </View>
+            </View>
+
             <Text style={styles.footerText}>
               {isAr
                 ? 'شكراً لثقتك في EL-SAUDI JEWELRY  — نلتزم بأعلى معايير الجودة'
