@@ -299,6 +299,23 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
 
   const t = texts[language] || texts.ar;
 
+  // ── Close modals on ESC key ──
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') {
+        if (detailModalState.visible) {
+          setDetailModalState({ visible: false, itemId: null, weight: '', karat: '', notes: '', customPrice: '' });
+        } else if (showInvoiceModal) {
+          setShowInvoiceModal(false);
+          setInvoiceItems([]);
+          setCustomerName('');
+        }
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [showInvoiceModal, detailModalState.visible]);
+
   useEffect(() => {
     fetchProducts();
     fetchSections();
@@ -1574,7 +1591,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
               {invoiceItems.length > 0 && (
                 <div style={{ marginBottom: '20px', border: '1px solid #e0e0e0', borderRadius: '8px', overflow: 'hidden' }}>
                   {invoiceItems.map((item, idx) => (
-                    <div key={item.id} style={{
+                    <div key={item.id} className="invoice-item-row" style={{
                       display: 'flex', alignItems: 'center', gap: '10px',
                       padding: '10px 14px',
                       borderBottom: idx < invoiceItems.length - 1 ? '1px solid #f0f0f0' : 'none',

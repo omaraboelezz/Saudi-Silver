@@ -713,6 +713,7 @@ img {
   flex-direction: row;
   gap: 30px;
 }
+
 .price-column {
   flex: 1;
 }
@@ -730,17 +731,51 @@ img {
     gap: 20px;
   }
 }
+
 @media (max-width: 480px) {
   .price-cards-grid {
     gap: 8px;
   }
+
   .price-card-mini {
     padding: 8px;
   }
-  .price-card-mini > div:first-child {
+
+  .price-card-mini>div:first-child {
     font-size: 0.95rem !important;
   }
-  .price-card-mini > div:nth-child(2) {
+
+  .price-card-mini>div:nth-child(2) {
     font-size: 0.85rem !important;
+  }
+}
+
+/* ─── Invoice Item Row - Mobile ──────────────────────────── */
+@media (max-width: 480px) {
+  .invoice-item-row {
+    flex-wrap: wrap !important;
+    gap: 9px !important;
+    padding: 10px 10px !important;
+  }
+
+  .invoice-item-row>span:first-child {
+    flex: 1 1 100% !important;
+    font-size: 13px !important;
+  }
+
+  .invoice-item-row>span:nth-child(2) {
+    font-size: 12px !important;
+  }
+
+  .invoice-item-row>span:nth-child(4) {
+    font-size: 12px !important;
+  }
+
+  .invoice-item-row>div {
+    flex-shrink: 0;
+  }
+
+  .invoice-item-row>div:last-child {
+    margin-left: auto;
   }
 }

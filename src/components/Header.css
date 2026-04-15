@@ -567,6 +567,11 @@ body[dir="rtl"] .drawer-location-btn {
     display: none;
   }
 
+  /* But keep the language globe visible in admin mode (no drawer there) */
+  .admin-icons-only .language-selector {
+    display: block;
+  }
+
   /* Hide map icon on mobile (it's in the drawer) */
   .wishlist-badge.location-badge {
     display: none;
