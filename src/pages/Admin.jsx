@@ -1598,7 +1598,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                       background: idx % 2 === 0 ? '#fafafa' : 'white'
                     }}>
                       <span style={{ flex: 3, fontWeight: '600', fontSize: '14px' }}>{item.name}</span>
-                      <span style={{ color: '#28a745', fontWeight: '700', fontSize: '14px' }}>${item.price}</span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <button onClick={() => setInvoiceItems(prev => prev.map(i => i.id === item.id ? { ...i, quantity: Math.max(1, i.quantity - 1) } : i))}
                           style={{ width: '28px', height: '28px', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer', background: 'white', fontWeight: '700' }}>−</button>
