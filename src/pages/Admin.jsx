@@ -1631,7 +1631,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                   ))}
 
                   {/* الإجمالي */}
-                  <div style={{ padding: '12px 14px', background: '#1a1208', color: '#C9A84C', display: 'flex', justifyContent: 'space-between', fontWeight: '700', fontSize: '16px' }}>
+                  <div style={{ padding: '12px 14px', background: '#f5e6c8', color: '#5a3e00', display: 'flex', justifyContent: 'space-between', fontWeight: '700', fontSize: '16px' }}>
                     <span>{language === 'ar' ? 'الإجمالي' : 'Total'}</span>
                     <span>${invoiceItems.reduce((acc, i) => acc + i.price * i.quantity, 0).toLocaleString()}</span>
                   </div>
