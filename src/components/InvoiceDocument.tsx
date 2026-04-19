@@ -31,8 +31,6 @@ const rowAlt = '#1f160a';
 const QR_URL =
   'https://api.qrserver.com/v1/create-qr-code/?size=80x80&color=C9A84C&bgcolor=0d0a04&data=https://elsaudi-jewelry.vercel.app/';
 
-const FALLBACK_IMAGE = `${window.location.origin}/Saudi-Silver-Logo.png`;
-
 // ─── Currency formatter ───────────────────────────────────────────────────────
 const fmt = (amount: number) => `${amount.toLocaleString('en-US')} EGP`;
 
@@ -235,7 +233,7 @@ const InvoiceDocument = ({
 
           <View style={styles.headerCenter}>
             <Text style={styles.brandName}>El-Saudi JEWELRY</Text>
-            <Text style={styles.brandSub}>✦  LUXURY JEWELRY  ✦</Text>
+            <Text style={styles.brandSub}>* LUXURY JEWELRY *</Text>
           </View>
 
           <View style={styles.headerRight}>
@@ -296,7 +294,7 @@ const InvoiceDocument = ({
                 key={String(item.id)}
                 style={index % 2 !== 0 ? [styles.itemRow, styles.itemRowAlt] : styles.itemRow}
               >
-                <Image src={imageUrl || FALLBACK_IMAGE} style={styles.itemImage} />
+                <Image src={imageUrl || LogoImage} style={styles.itemImage} />
                 <View style={styles.itemInfo}>
                   <Text style={styles.itemName}>{getProductName(item, language)}</Text>
                   {(item.weight || item.karat || item.notes) && (
@@ -390,10 +388,7 @@ const InvoiceDocument = ({
               {/* Phone Numbers */}
               <View style={{ alignItems: isAr ? 'flex-end' : 'flex-end' }}>
                 <Text style={{ color: gray, fontSize: 8, marginBottom: 3, fontFamily: 'Cairo' }}>
-                  {isAr ? 'ت : 066/3252960' : 'Tel.: 066/3252960'}
-                </Text>
-                <Text style={{ color: gray, fontSize: 8, fontFamily: 'Cairo' }}>
-                  {isAr ? 'ت : 066/3252961' : 'Tel.: 066/3252961'}
+                  {isAr ? '+ت : 201067365567' : 'Tel.: +201067365567'}  
                 </Text>
               </View>
             </View>
@@ -403,7 +398,7 @@ const InvoiceDocument = ({
                 ? 'شكراً لثقتك في EL-SAUDI JEWELRY  — نلتزم بأعلى معايير الجودة'
                 : 'Thank you for choosing EL-SAUDI JEWELRY  — Committed to the highest quality standards'}
             </Text>
-            <Text style={styles.footerBrand}>✦  EL-SAUDI JEWELRY  ✦</Text>
+            <Text style={styles.footerBrand}>* EL-SAUDI JEWELRY *</Text>
             <Text style={styles.footerWebsite}>elsaudi-jewelry.vercel.app</Text>
           </View>
         </View>
