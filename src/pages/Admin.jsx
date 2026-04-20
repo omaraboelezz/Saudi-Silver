@@ -582,7 +582,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
       okText:
         language === "ar"
           ? "نعم، احذف القسم وانقل المنتجات"
-          : "Yes, Delete Section & Reassign Products",
+          : "Yes, Delete Section & Reassign",
       okType: "danger",
       cancelText: language === "ar" ? "إلغاء" : "Cancel",
       centered: true,
@@ -886,12 +886,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.section) {
-      setSectionError(true);
-      setIsSubmitting(false);
-      return;
-    }
-
     setIsSubmitting(true);
     setStatus({ type: "", message: "" });
 
@@ -909,7 +903,9 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
       form.append("price", Number(formData.price));
       form.append("badge", formData.badge || "");
       form.append("stock", formData.stock);
-      form.append("section", formData.section);
+      if (formData.section) {
+        form.append("section", formData.section);
+      }
       form.append("description_ar", formData.description_ar);
       form.append("description_en", formData.description_en);
       form.append("shortDescription_ar", formData.shortDescription_ar);
@@ -1993,65 +1989,67 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                   gap: "1.5rem",
                 }}
               >
-                {/* Section Selection
-                <div ref={sectionRef} className="form-group">
-                  <label
-                    style={{
-                      display: "block",
-                      marginBottom: "8px",
-                      fontWeight: "600",
-                      color: "#2c3e50",
-                    }}
-                  >
-                    {t.selectSection}
-                    <span style={{ marginLeft: "4px", color: "#e74c3c" }}>
-                      *
-                    </span>
-                  </label>
-                  <select
-                    required
-                    value={formData.section}
-                    onChange={(e) => {
-                      setFormData({ ...formData, section: e.target.value });
-                      setSectionError(false);
-                    }}
-                    style={{
-                      width: "100%",
-                      padding: "12px 15px",
-                      borderRadius: "8px",
-                      border: sectionError
-                        ? "2px solid #e74c3c"
-                        : "2px solid #e0e0e0",
-                      fontSize: "16px",
-                      background: "white",
-                    }}
-                  >
-                    <option value="" disabled>
-                      {t.noSection}
-                    </option>
-                    {sections
-                      .filter((s) => !s.is_featured)
-                      .map((section) => (
-                        <option key={section.id} value={section.id}>
-                          {language === "ar"
-                            ? section.title_ar
-                            : section.title_en}
-                        </option>
-                      ))}
-                  </select>
-                  {sectionError && (
-                    <span
+                {/* Section Selection */}
+                {!editingProductId && (
+                  <div ref={sectionRef} className="form-group">
+                    <label
                       style={{
-                        color: "#e74c3c",
-                        fontSize: "14px",
-                        marginTop: "6px",
                         display: "block",
+                        marginBottom: "8px",
+                        fontWeight: "600",
+                        color: "#2c3e50",
                       }}
                     >
-                      {t.sectionError}
-                    </span>
-                  )}
-                </div> */}
+                      {t.selectSection}
+                      <span style={{ marginLeft: "4px", color: "#e74c3c" }}>
+                        *
+                      </span>
+                    </label>
+                    <select
+                      required
+                      value={formData.section || ""}
+                      onChange={(e) => {
+                        setFormData({ ...formData, section: e.target.value });
+                        setSectionError(false);
+                      }}
+                      style={{
+                        width: "100%",
+                        padding: "12px 15px",
+                        borderRadius: "8px",
+                        border: sectionError
+                          ? "2px solid #e74c3c"
+                          : "2px solid #e0e0e0",
+                        fontSize: "16px",
+                        background: "white",
+                      }}
+                    >
+                      <option value="" disabled>
+                        {t.noSection}
+                      </option>
+                      {sections
+                        .filter((s) => !s.is_featured)
+                        .map((section) => (
+                          <option key={section.id} value={section.id}>
+                            {language === "ar"
+                              ? section.title_ar
+                              : section.title_en}
+                          </option>
+                        ))}
+                    </select>
+                    {sectionError && (
+                      <span
+                        style={{
+                          color: "#e74c3c",
+                          fontSize: "14px",
+                          marginTop: "6px",
+                          display: "block",
+                        }}
+                      >
+                        {t.sectionError}
+                      </span>
+                    )}
+                  </div>
+                )}
 
                 {/* Product Name AR */}
                 <div className="form-group">
