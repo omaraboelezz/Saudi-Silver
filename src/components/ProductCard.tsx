@@ -52,7 +52,7 @@ const ProductCard = ({ product, onCardClick, language = 'ar' }: ProductCardProps
     if (!price) return language === 'ar' ? 'غير متاح' : 'N/A';
     const numeric = parseFloat(price);
     if (isNaN(numeric)) return language === 'ar' ? 'غير متاح' : 'N/A';
-    const formatted = Math.ceil(numeric).toLocaleString();
+    const formatted = (Math.ceil(numeric / 5) * 5).toLocaleString();
     return language === 'ar' ? `${formatted} ج.م` : `EGP ${formatted}`;
   };
 

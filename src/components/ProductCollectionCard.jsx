@@ -113,7 +113,7 @@ const ProductCollectionCard = ({
 
   const formatPrice = (price) => {
     if (!price) return language === "ar" ? "غير متاح" : "N/A";
-    const formatted = price.toLocaleString();
+    const formatted = (Math.ceil(price / 5) * 5).toLocaleString();
     return language === "ar" ? `${formatted} ج.م` : `EGP ${formatted}`;
   };
 

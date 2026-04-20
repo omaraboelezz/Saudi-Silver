@@ -140,7 +140,7 @@ const Home = ({ language, onLanguageChange, navigate }) => {
     const message = encodeURIComponent(
       `${helloText}\n\n` +
       `${productText}: ${getProductName(product)}\n` +
-      `${priceText}: $${product.price?.toLocaleString() || 'غير متوفر'}\n\n` +
+      `${priceText}: $${product.price ? (Math.ceil(product.price / 5) * 5).toLocaleString() : 'غير متوفر'}\n\n` +
       `${moreInfoText}`
     );
 

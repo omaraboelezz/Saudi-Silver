@@ -206,7 +206,7 @@ const InvoiceDocument = ({
   customerName,
 }: InvoiceDocumentProps) => {
   const validItems = items.filter(i => !(i as any).isDeleted);
-  const subtotal = validItems.reduce((acc, i) => acc + i.price * (i.quantity || 1), 0);
+  const subtotal = validItems.reduce((acc, i) => acc + (Math.ceil(i.price / 5) * 5) * (i.quantity || 1), 0);
   const invoiceNum = `SS-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
   const invoiceDate = date || new Date().toLocaleDateString('en-GB');
   const isAr = language === 'ar';
@@ -287,7 +287,8 @@ const InvoiceDocument = ({
           {validItems.map((item, index) => {
             const imageUrl = getImageUrl(item);
             const qty = item.quantity || 1;
-            const lineTotal = item.price * qty;
+            const roundedPrice = Math.ceil(item.price / 5) * 5;
+            const lineTotal = roundedPrice * qty;
 
             return (
               <View
@@ -318,7 +319,7 @@ const InvoiceDocument = ({
                   )}
                 </View>
                 <Text style={styles.itemQty}>{qty}</Text>
-                <Text style={styles.itemPrice}>{fmt(Math.ceil(item.price))}</Text>
+                <Text style={styles.itemPrice}>{fmt(roundedPrice)}</Text>
                 <Text style={styles.itemTotal}>{fmt(lineTotal)}</Text>
               </View>
             );

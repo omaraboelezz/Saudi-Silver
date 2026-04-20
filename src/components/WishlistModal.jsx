@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import useWishlist from '../context/useWishlist';
-import { FaHeart } from 'react-icons/fa'; 
+import { FaHeart } from 'react-icons/fa';
 import './WishlistModal.css';
 
 /**
@@ -41,7 +41,7 @@ const WishlistModal = ({ isOpen, onClose, onProductClick, onContactClick, langua
   // ✅ دالة للحصول على الاسم حسب اللغة
   const getProductName = (product) => {
     if (!product) return '';
-    return language === 'ar' 
+    return language === 'ar'
       ? (product.name_ar || product.name || 'منتج')
       : (product.name_en || product.name || 'Product');
   };
@@ -106,12 +106,12 @@ const WishlistModal = ({ isOpen, onClose, onProductClick, onContactClick, langua
   };
 
   return (
-    <div 
+    <div
       className={`wishlist-modal-backdrop ${isOpen ? 'modal-open' : ''}`}
       onClick={handleBackdropClick}
     >
       <div className="wishlist-modal-content">
-        <button 
+        <button
           className="wishlist-modal-close-button"
           onClick={onClose}
           aria-label={t.closeWishlist}
@@ -119,7 +119,7 @@ const WishlistModal = ({ isOpen, onClose, onProductClick, onContactClick, langua
         >
           &times;
         </button>
-        
+
         <div className="wishlist-modal-header">
           <h2 className="wishlist-modal-title">{t.myWishlist}</h2>
           <p className="wishlist-modal-count">
@@ -130,25 +130,25 @@ const WishlistModal = ({ isOpen, onClose, onProductClick, onContactClick, langua
         <div className="wishlist-modal-body">
           {wishlist.length === 0 ? (
             <div className="wishlist-empty">
-              <div className="wishlist-empty-icon"><FaHeart/></div>
+              <div className="wishlist-empty-icon"><FaHeart /></div>
               <h3>{t.wishlistEmpty}</h3>
               <p>{t.startAdding}</p>
             </div>
           ) : (
             <div className="wishlist-items">
               {wishlist.map((product) => (
-                <div 
+                <div
                   key={product.id}
                   className="wishlist-item"
                   onClick={() => handleProductClick(product)}
                 >
                   <div className="wishlist-item-image-container">
-                    <img 
+                    <img
                       src={getImageUrl(product)}
                       alt={getProductName(product)}
                       className="wishlist-item-image"
                     />
-                    <button 
+                    <button
                       className="wishlist-item-remove"
                       onClick={(e) => handleRemoveClick(product, e)}
                       aria-label={t.removeFromWishlist}
@@ -160,7 +160,7 @@ const WishlistModal = ({ isOpen, onClose, onProductClick, onContactClick, langua
                     {/* ✅ عرض الاسم حسب اللغة */}
                     <h3 className="wishlist-item-name">{getProductName(product)}</h3>
                     <p className="wishlist-item-price">${Math.ceil(product.price || 0).toLocaleString() || 'N/A'}</p>
-                    <button 
+                    <button
                       className="wishlist-item-contact"
                       onClick={(e) => handleContactClick(product, e)}
                     >

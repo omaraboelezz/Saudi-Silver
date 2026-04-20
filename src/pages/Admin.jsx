@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import React from "react";
 import { Table, Input, Button, Space, Modal } from "antd";
 import { SearchOutlined, ExclamationCircleOutlined, DeleteFilled } from "@ant-design/icons";
 import Header from "../components/Header";
@@ -62,6 +61,12 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
   const [selectedOrphans, setSelectedOrphans] = useState([]);
   const [showDeleteOrphansModal, setShowDeleteOrphansModal] = useState(false);
   const [isDeletingOrphans, setIsDeletingOrphans] = useState(false);
+
+  // ✅ Move Product State
+  const [showMoveProductModal, setShowMoveProductModal] = useState(false);
+  const [productToMove, setProductToMove] = useState(null);
+  const [newSectionForMove, setNewSectionForMove] = useState("");
+  const [isMovingProduct, setIsMovingProduct] = useState(false);
 
 
 
@@ -236,6 +241,11 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
       editOrder: "تعديل الترتيب",
       updateOrder: "تحديث الترتيب",
       logout: "تسجيل الخروج",
+      moveProduct: "نقل",
+      selectNewSection: "اختر القسم الجديد",
+      confirmMove: "تأكيد النقل",
+      moving: "جاري النقل...",
+      productMoved: "✅ تم نقل المنتج بنجاح",
     },
     en: {
       title: "Admin Dashboard",
@@ -294,6 +304,11 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
       editOrder: "Edit Order",
       updateOrder: "Update Order",
       logout: "Logout",
+      moveProduct: "Move",
+      selectNewSection: "Select New Section",
+      confirmMove: "Confirm Move",
+      moving: "Moving...",
+      productMoved: "✅ Product moved successfully",
     },
   };
 
@@ -831,6 +846,43 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
       },
     });
   };
+  const handleMoveProductSubmit = async () => {
+    if (!newSectionForMove || !productToMove) {
+      Modal.error({ title: language === 'ar' ? 'خطأ' : 'Error', content: language === 'ar' ? 'الرجاء تحديد قسم' : 'Please select a section', centered: true });
+      return;
+    }
+    setIsMovingProduct(true);
+    try {
+      const form = new FormData();
+      form.append("section", newSectionForMove);
+
+      const response = await fetch(`${API_URL}${productToMove.id || productToMove._id}/`, {
+        method: "PATCH",
+        body: form,
+      });
+
+      if (response.ok) {
+        Modal.success({
+          title: language === 'ar' ? '🎉 تم النقل!' : '🎉 Moved!',
+          content: t.productMoved,
+          centered: true,
+          okText: language === "ar" ? "حسناً" : "OK",
+        });
+        setShowMoveProductModal(false);
+        setProductToMove(null);
+        setNewSectionForMove("");
+        fetchProducts(); // Refresh products
+      } else {
+        const data = await response.json();
+        Modal.error({ title: language === 'ar' ? '❌ خطأ' : '❌ Error', content: data.error || data.message || 'Failed to move product', centered: true });
+      }
+    } catch (err) {
+      Modal.error({ title: language === 'ar' ? '❌ خطأ في الاتصال' : '❌ Network Error', content: err.message, centered: true });
+    } finally {
+      setIsMovingProduct(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -852,7 +904,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
       form.append("type", formData.type);
       form.append("karat", formData.karat || "");
       form.append("weight", Number(formData.weight));
-      form.append("show_weight", formData.show_weight);
+      form.append("show_weight", formData.show_weight ? "True" : "False");
       form.append("manufacturing_cost", Number(formData.manufacturing_cost));
       form.append("price", Number(formData.price));
       form.append("badge", formData.badge || "");
@@ -1528,6 +1580,63 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
           </button>
         </div>
 
+        {/* ✅ Move Product Modal */}
+        {showMoveProductModal && productToMove && (
+          <div style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0,0,0,0.7)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 1000, padding: '20px'
+          }}>
+            <div style={{
+              background: 'white', padding: '30px', borderRadius: '12px',
+              maxWidth: '400px', width: '100%',
+              boxShadow: '0 10px 40px rgba(0,0,0,0.2)'
+            }}>
+              <h3 style={{ marginBottom: '20px', color: '#1a1a1a', fontSize: '20px', fontWeight: '700' }}>
+                🔄 {t.moveProduct}: {language === 'ar' ? (productToMove.name_ar || productToMove.name) : (productToMove.name_en || productToMove.name)}
+              </h3>
+
+              <div style={{ marginBottom: "20px" }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>{t.selectNewSection}</label>
+                <select
+                  value={newSectionForMove}
+                  onChange={(e) => setNewSectionForMove(e.target.value)}
+                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ccc' }}
+                >
+                  <option value="" disabled>-- {t.selectSection} --</option>
+                  {sections.filter(s => s.id !== productToMove.section).map((sec) => (
+                    <option key={sec.id} value={sec.id}>
+                      {language === 'ar' ? sec.title_ar : sec.title_en}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+                <button
+                  onClick={() => {
+                    setShowMoveProductModal(false);
+                    setProductToMove(null);
+                    setNewSectionForMove("");
+                  }}
+                  style={{ padding: "10px 20px", borderRadius: "8px", border: "none", background: "#f1f1f1", cursor: "pointer", fontWeight: "600", color: "#333" }}
+                  disabled={isMovingProduct}
+                >
+                  {t.cancel}
+                </button>
+                <button
+                  onClick={handleMoveProductSubmit}
+                  style={{ padding: "10px 20px", borderRadius: "8px", border: "none", background: "linear-gradient(135deg, #17a2b8 0%, #117a8b 100%)", color: "white", cursor: "pointer", fontWeight: "600" }}
+                  disabled={isMovingProduct}
+                >
+                  {isMovingProduct ? t.moving : t.confirmMove}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ✅ Invoice Modal */}
         {showInvoiceModal && (
           <div style={{
@@ -1606,7 +1715,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                           style={{ width: '28px', height: '28px', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer', background: 'white', fontWeight: '700' }}>+</button>
                       </div>
                       <span style={{ fontWeight: '700', color: '#C9A84C', minWidth: '60px', textAlign: 'right' }}>
-                        ${(item.price * item.quantity).toLocaleString()}
+                        ${((Math.ceil(item.price / 5) * 5) * item.quantity).toLocaleString()}
                       </span>
                       <button
                         onClick={() => {
@@ -1633,7 +1742,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                   {/* الإجمالي */}
                   <div style={{ padding: '12px 14px', background: '#f5e6c8', color: '#5a3e00', display: 'flex', justifyContent: 'space-between', fontWeight: '700', fontSize: '16px' }}>
                     <span>{language === 'ar' ? 'الإجمالي' : 'Total'}</span>
-                    <span>${invoiceItems.reduce((acc, i) => acc + i.price * i.quantity, 0).toLocaleString()}</span>
+                    <span>${invoiceItems.reduce((acc, i) => acc + (Math.ceil(i.price / 5) * 5) * i.quantity, 0).toLocaleString()}</span>
                   </div>
                 </div>
               )}
@@ -1884,7 +1993,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                   gap: "1.5rem",
                 }}
               >
-                {/* Section Selection */}
+                {/* Section Selection
                 <div ref={sectionRef} className="form-group">
                   <label
                     style={{
@@ -1942,7 +2051,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                       {t.sectionError}
                     </span>
                   )}
-                </div>
+                </div> */}
 
                 {/* Product Name AR */}
                 <div className="form-group">
@@ -3181,7 +3290,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                                 fontSize: "13px",
                               }}
                             >
-                              ${product.price}
+                              ${Math.ceil(product.price / 5) * 5}
                             </span>
 
                             {/* ✨ Type Badge (Gold/Silver/Accessories) */}
@@ -3249,6 +3358,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                                     type: product.type || "silver",
                                     karat: product.karat || (product.type === "gold" ? "21K" : "999"),
                                     weight: product.weight || "",
+                                    show_weight: product.show_weight !== false,
                                     manufacturing_cost:
                                       product.manufacturing_cost || "",
                                     price: product.price,
@@ -3289,6 +3399,27 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                                 }}
                               >
                                 {t.edit}
+                              </button>
+
+                              <button
+                                onClick={() => {
+                                  setProductToMove(product);
+                                  setNewSectionForMove("");
+                                  setShowMoveProductModal(true);
+                                }}
+                                style={{
+                                  flex: 1,
+                                  background: "#17a2b8",
+                                  color: "white",
+                                  border: "none",
+                                  padding: "7px 4px",
+                                  borderRadius: "4px",
+                                  cursor: "pointer",
+                                  fontSize: "12px",
+                                  fontWeight: "600",
+                                }}
+                              >
+                                {t.moveProduct}
                               </button>
 
                               <button
@@ -3731,7 +3862,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                             color: "#28a745",
                           }}
                         >
-                          ${product.price}
+                          ${Math.ceil(product.price / 5) * 5}
                         </span>
                         {(product.type === "gold" || product.type === "silver") && (
                           <span
@@ -3777,6 +3908,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                               type: product.type || "silver",
                               karat: product.karat || (product.type === "gold" ? "21K" : "999"),
                               weight: product.weight || "",
+                              show_weight: product.show_weight !== false,
                               manufacturing_cost: product.manufacturing_cost || "",
                               price: product.price,
                               badge: product.badge || "",
@@ -3809,6 +3941,27 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                           }}
                         >
                           {t.edit}
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setProductToMove(product);
+                            setNewSectionForMove("");
+                            setShowMoveProductModal(true);
+                          }}
+                          style={{
+                            flex: 1,
+                            background: "#17a2b8",
+                            color: "white",
+                            border: "none",
+                            padding: "10px",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            fontSize: "14px",
+                            fontWeight: "600",
+                          }}
+                        >
+                          {t.moveProduct}
                         </button>
 
                         <button

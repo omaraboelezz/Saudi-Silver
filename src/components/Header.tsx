@@ -80,18 +80,18 @@ const Header = ({
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
 
   // Close on outside click (زي language):
-// ✅ useEffect مخصص للـ filter
-useEffect(() => {
-  const handler = (e: MouseEvent) => {
-    if (!(e.target as HTMLElement).closest('.filter-selector')) {
-      setIsFilterMenuOpen(false);
-    }
-  };
-  if (isFilterMenuOpen) document.addEventListener('click', handler);
-  return () => document.removeEventListener('click', handler);
-}, [isFilterMenuOpen]);
+  // ✅ useEffect مخصص للـ filter
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement).closest('.filter-selector')) {
+        setIsFilterMenuOpen(false);
+      }
+    };
+    if (isFilterMenuOpen) document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, [isFilterMenuOpen]);
 
-  
+
 
   /* ── Fetch sections & products ── */
   useEffect(() => {
@@ -176,7 +176,7 @@ useEffect(() => {
   };
 
   const openLocation = () => {
-    window.open('https://maps.app.goo.gl/qRKKuKsW12zPRh327', '_blank');
+    window.open('https://maps.app.goo.gl/9QRFR7vEsF17gERB7', '_blank');
     closeDrawer();
   };
 
@@ -505,7 +505,7 @@ useEffect(() => {
                 English
               </button>
             </div>
-             {/* ── Filter ── */}
+            {/* ── Filter ── */}
             <p className="drawer-section-label">
               {language === 'ar' ? 'تصفية حسب النوع :' : 'Filter by Type :'}
             </p>

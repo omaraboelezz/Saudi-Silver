@@ -139,7 +139,7 @@ const CartModal: React.FC<CartModalProps> = ({
   const calculateTotal = (): number =>
     validatedItems
       .filter((item) => !item.isDeleted)
-      .reduce((acc: number, item: any) => acc + item.price * (item.quantity || 1), 0);
+      .reduce((acc: number, item: any) => acc + (Math.ceil(item.price / 5) * 5) * (item.quantity || 1), 0);
 
   const handleConnectToBuy = () => {
     const validItems = validatedItems.filter((item) => !item.isDeleted);
@@ -155,7 +155,7 @@ const CartModal: React.FC<CartModalProps> = ({
           ? item.name_ar || item.arabic_name || item.name || 'منتج'
           : item.name_en || item.english_name || item.name || 'Product';
 
-      message += `${index + 1}. ${productName} (x${qty}) - $${(item.price * qty).toLocaleString()}\n`;
+      message += `${index + 1}. ${productName} (x${qty}) - $${((Math.ceil(item.price / 5) * 5) * qty).toLocaleString()}\n`;
       message += `   🔗 https://elsaudi-jewelry.vercel.app/?product=${item.id}\n\n`;
     });
 
@@ -355,10 +355,10 @@ const CartModal: React.FC<CartModalProps> = ({
                     <h3 className="cart-item-name">{getProductName(product)}</h3>
 
                     <div className="cart-item-details">
-                              <p className="cart-item-price">${Math.ceil(product.price || 0).toLocaleString() ?? 'N/A'}</p>
+                      <p className="cart-item-price">${(Math.ceil((product.price || 0) / 5) * 5).toLocaleString() ?? 'N/A'}</p>
                       {(product.quantity ?? 0) > 1 && !product.isDeleted && (
                         <span className="cart-item-subtotal">
-                          ${Math.ceil(product.price || 0 * product.quantity || 0).toLocaleString()} total
+                          ${((Math.ceil((product.price || 0) / 5) * 5) * (product.quantity || 0)).toLocaleString()} total
                         </span>
                       )}
                     </div>
@@ -422,7 +422,7 @@ const CartModal: React.FC<CartModalProps> = ({
           <div className="cart-modal-footer">
             <div className="cart-footer-total-block">
               <span className="cart-footer-total-label">{t.total}</span>
-              <span className="cart-total-price">${Math.ceil(calculateTotal()).toLocaleString()}</span>
+              <span className="cart-total-price">${calculateTotal().toLocaleString()}</span>
               <span className="cart-footer-items-note">
                 {getTotalQuantity()} {getTotalQuantity() === 1 ? t.item : t.items}
               </span>

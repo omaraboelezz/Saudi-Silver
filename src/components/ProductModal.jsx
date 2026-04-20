@@ -102,12 +102,12 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
   };
 
   const getBadgeClass = (badge) => {
-  if (customBadgeColor) return 'badge-custom';
-  if (badge === 'New Arrival') return 'badge-new';
-  if (badge === 'Best Seller') return 'badge-bestseller';
-  if (badge === 'Limited Edition') return 'badge-limited';
-  return 'badge-default';
-};
+    if (customBadgeColor) return 'badge-custom';
+    if (badge === 'New Arrival') return 'badge-new';
+    if (badge === 'Best Seller') return 'badge-bestseller';
+    if (badge === 'Limited Edition') return 'badge-limited';
+    return 'badge-default';
+  };
 
   const translateBadge = (badge) => {
     if (badge === 'New Arrival') return t.newArrival;
@@ -203,7 +203,7 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
           `──────────\n\n` +
           `💎 *${productName}*\n\n` +
           safeDesc +
-          `💰 Price: *$${product.price?.toLocaleString()}*\n\n` +
+          `💰 Price: *$${product.price ? (Math.ceil(product.price / 5) * 5).toLocaleString() : 0}*\n\n` +
           `🔥 *Limited Stock - Order Now!*\n\n` +
           `🌐 View Product :\n${productUrl}\n\n` +
           `✅ Premium Quality Guaranteed\n` +
@@ -221,7 +221,7 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
           `✨ El-Saudi jewelry ✨\n` +
           `──────────\n\n` +
           `💎 ${productName}\n\n` +
-          `💰 Price: $${product.price?.toLocaleString()}\n\n` +
+          `💰 Price: $${product.price ? (Math.ceil(product.price / 5) * 5).toLocaleString() : 0}\n\n` +
           `🌐 View Product:\n${productUrl}\n\n` +
           `✅ Premium Quality Guaranteed\n` +
           `✅ Worldwide Shipping Available`;
@@ -317,12 +317,12 @@ const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {
   };
 
   const formatPrice = (price) => {
-  if (!price) return language === 'ar' ? 'غير متاح' : 'N/A';
-  const formatted = price.toLocaleString();
-  return language === 'ar'
-    ? `${formatted} ج.م`
-    : `EGP ${formatted}`; // add `EGP` prefix for English
-};
+    if (!price) return language === 'ar' ? 'غير متاح' : 'N/A';
+    const formatted = (Math.ceil(price / 5) * 5).toLocaleString();
+    return language === 'ar'
+      ? `${formatted} ج.م`
+      : `EGP ${formatted}`; // add `EGP` prefix for English
+  };
 
 
   return (
