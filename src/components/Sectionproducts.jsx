@@ -13,7 +13,7 @@ const SectionProducts = ({
   onContactClick,
   searchQuery = '',
   language = 'ar',
-  activeFilter = null
+  activeFilter = 'gold'
 }) => {
   const texts = {
     ar: {
@@ -64,11 +64,25 @@ const SectionProducts = ({
     );
 
     // ✅ ضيف الفلتر بالـ type
-    const typeFiltered = sectionProducts.filter(p =>
-      activeFilter === null ? p.type === 'gold' : p.type === activeFilter
-    );
+    const filterType = activeFilter === null || activeFilter === 'gold' ? 'gold' : activeFilter;
+    const typeFiltered = sectionProducts.filter(p => p.type === filterType);
 
     return filterProducts(typeFiltered);
+  };
+  
+  const getSectionTitle = (section, originalTitle) => {
+    const filterType = activeFilter === null || activeFilter === 'gold' ? 'gold' : activeFilter;
+    if (language === 'ar') {
+      let suffix = '';
+      if (filterType === 'gold') suffix = 'ذهب';
+      else if (filterType === 'silver') suffix = 'فضة';
+      return suffix ? `${originalTitle} ${suffix}` : originalTitle;
+    } else {
+      let prefix = '';
+      if (filterType === 'gold') prefix = 'Gold';
+      else if (filterType === 'silver') prefix = 'Silver';
+      return prefix ? `${prefix} ${originalTitle}` : originalTitle;
+    }
   };
   // Get products without section
   const getProductsWithoutSection = () => {
@@ -101,11 +115,14 @@ if (sectionProducts.length === 0) {
 }
 
         return (
-          <section key={section.id} className="product-section" id={`section-${section.id}`}>
+          <section key={section.id} className="product-section" id={`section-${section.id}`} style={{ transition: 'opacity 0.4s ease-in-out' }}>
             <div className="container">
               <div className="section-header">
                 <h2 className="section-title">
-                  {language === 'ar' ? section.title_ar : section.title_en}
+                  {getSectionTitle(section, language === 'ar' ? section.title_ar : section.title_en)}
+                  <span style={{ fontSize: '1.2rem', color: '#6c757d', marginLeft: '10px', alignSelf: 'center', fontWeight: 'normal' }}>
+                    ({sectionProducts.length})
+                  </span>
                 </h2>
               </div>
 

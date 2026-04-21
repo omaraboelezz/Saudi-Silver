@@ -68,6 +68,7 @@ const Header = ({
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const [sections, setSections] = useState<Section[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [hasFeaturedWithProducts, setHasFeaturedWithProducts] = useState(false);
 
   const { wishlistCount } = useWishlist();
@@ -108,10 +109,11 @@ const Header = ({
           const sorted = sectionsData.sort((a, b) => a.order - b.order);
           setSections(sorted);
 
-          const featured = sorted.find((s) => s.is_featured === true);
-          if (featured && Array.isArray(productsData)) {
+          if (Array.isArray(productsData)) {
+            setProducts(productsData);
+            const featured = sorted.find((s) => s.is_featured === true);
             setHasFeaturedWithProducts(
-              productsData.some((p) => p.section === featured.id)
+              featured ? productsData.some((p) => p.section === featured.id) : false
             );
           } else {
             setHasFeaturedWithProducts(false);
@@ -237,7 +239,11 @@ const Header = ({
               )}
 
               {sections
-                .filter((s) => !s.is_featured)
+                .filter((s) => {
+                  if (s.is_featured) return false;
+                  const filterVal = activeFilter === null || activeFilter === 'gold' ? 'gold' : activeFilter;
+                  return products.some((p) => p.section === s.id && p.type === filterVal);
+                })
                 .map((s) => (
                   <button
                     key={s.id}
@@ -449,7 +455,11 @@ const Header = ({
               )}
 
               {sections
-                .filter((s) => !s.is_featured)
+                .filter((s) => {
+                  if (s.is_featured) return false;
+                  const filterVal = activeFilter === null || activeFilter === 'gold' ? 'gold' : activeFilter;
+                  return products.some((p) => p.section === s.id && p.type === filterVal);
+                })
                 .map((s) => (
                   <button
                     key={s.id}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import Header from '../components/Header';
 import Hero from '../components/Hero';
 import Features from '../components/Features';
@@ -6,12 +6,14 @@ import ProductCarousel from '../components/ProductCarousel';
 import ProductGrid from '../components/ProductGrid';
 import SectionProducts from '../components/Sectionproducts';
 import Footer from '../components/Footer';
-import ProductModal from '../components/ProductModal';
-import WishlistModal from '../components/WishlistModal';
 import { fetchProducts } from '../utils/api';
-import CartModal from '../components/CartModal';
 import ScrollReveal from '../components/ScrollReveal';
+import HomeSkeleton from '../components/HomeSkeleton';
 import './Home.css';
+
+const ProductModal = lazy(() => import('../components/ProductModal'));
+const WishlistModal = lazy(() => import('../components/WishlistModal'));
+const CartModal = lazy(() => import('../components/CartModal'));
 
 
 
@@ -25,6 +27,8 @@ const Home = ({ language, onLanguageChange, navigate }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState(null);
+  const [error, setError] = useState(null);
+  const [showSplash, setShowSplash] = useState(true);
 
 
 
@@ -46,22 +50,35 @@ const Home = ({ language, onLanguageChange, navigate }) => {
 
 
   useEffect(() => {
+    // Hide the hybrid splash overlay strictly after 800ms
+    const timer = setTimeout(() => setShowSplash(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
     const loadData = async () => {
       setLoading(true);
+      setError(null);
       try {
-        // Fetch products
-        const fetchedProducts = await fetchProducts();
-        setProducts(fetchedProducts);
+        const fetchPromise = Promise.all([
+          fetchProducts(),
+          fetch(SECTION_API_URL).then(res => res.json())
+        ]);
 
-        // Fetch sections
-        const sectionsResponse = await fetch(SECTION_API_URL);
-        const sectionsData = await sectionsResponse.json();
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error("Timeout")), 4000);
+        });
 
+        // Use Promise.race to abort waiting if it takes more than 4 seconds
+        const [fetchedProducts, sectionsData] = await Promise.race([fetchPromise, timeoutPromise]);
+
+        setProducts(fetchedProducts || []);
         if (Array.isArray(sectionsData)) {
           setSections(sectionsData);
         }
-      } catch (error) {
-        console.error('Failed to load data:', error);
+      } catch (err) {
+        console.error('Failed to load data:', err);
+        setError(err.message === "Timeout" ? "Connection timeout. Please try again." : "Failed to load data. Please refresh.");
       } finally {
         setLoading(false);
       }
@@ -191,10 +208,21 @@ const Home = ({ language, onLanguageChange, navigate }) => {
         <Hero language={language} onLanguageChange={onLanguageChange} />
       </ScrollReveal>
 
-      {loading ? (
-        <div className="luxury-preloader">
+      {showSplash && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 99999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(5px)', transition: 'opacity 0.3s ease-out' }}>
           <div className="loader-ring"></div>
           <div className="loader-logo">El-Saudi Jewelry</div>
+        </div>
+      )}
+
+      {loading ? (
+        <HomeSkeleton />
+      ) : error ? (
+        <div style={{ textAlign: 'center', padding: '100px 20px', minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <p style={{ color: '#666', marginBottom: '20px', fontSize: '1.2rem' }}>{error}</p>
+          <button onClick={() => window.location.reload()} style={{ padding: '12px 24px', background: '#d4af37', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+            {language === 'ar' ? 'إعادة المحاولة' : 'Retry'}
+          </button>
         </div>
       ) : (
         <>
@@ -246,30 +274,38 @@ const Home = ({ language, onLanguageChange, navigate }) => {
       {/* <Features /> */}
       <Footer language={language} onLanguageChange={onLanguageChange} />
 
-      <ProductModal
-        language={language}
-        onLanguageChange={onLanguageChange}
-        product={selectedProduct}
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-      />
+      <Suspense fallback={null}>
+        {isModalOpen && (
+          <ProductModal
+            language={language}
+            onLanguageChange={onLanguageChange}
+            product={selectedProduct}
+            isOpen={isModalOpen}
+            onClose={handleCloseModal}
+          />
+        )}
 
-      <WishlistModal
-        language={language}
-        onLanguageChange={onLanguageChange}
-        isOpen={isWishlistOpen}
-        onClose={handleCloseWishlist}
-        onProductClick={handleProductClick}
-        onContactClick={handleContactClick}
-      />
+        {isWishlistOpen && (
+          <WishlistModal
+            language={language}
+            onLanguageChange={onLanguageChange}
+            isOpen={isWishlistOpen}
+            onClose={handleCloseWishlist}
+            onProductClick={handleProductClick}
+            onContactClick={handleContactClick}
+          />
+        )}
 
-      <CartModal
-        language={language}
-        onLanguageChange={onLanguageChange}
-        isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
-        onProductClick={handleProductClick}
-      />
+        {isCartOpen && (
+          <CartModal
+            language={language}
+            onLanguageChange={onLanguageChange}
+            isOpen={isCartOpen}
+            onClose={() => setIsCartOpen(false)}
+            onProductClick={handleProductClick}
+          />
+        )}
+      </Suspense>
     </div>
   );
 };

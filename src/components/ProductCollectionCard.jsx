@@ -105,10 +105,16 @@ const ProductCollectionCard = ({
   };
 
   const getImageUrl = () => {
-    if (product.image_file) return product.image_file;
-    if (product.image_url) return product.image_url;
-    if (product.image) return product.image;
-    return "https://via.placeholder.com/400x400?text=No+Image";
+    let url = "https://via.placeholder.com/400x400?text=No+Image";
+    if (product.image_file) url = product.image_file;
+    else if (product.image_url) url = product.image_url;
+    else if (product.image) url = product.image;
+
+    // Apply Cloudinary transformations if applicable
+    if (typeof url === 'string' && url.includes('res.cloudinary.com') && !url.includes('upload/w_')) {
+      url = url.replace('/upload/', '/upload/w_500,f_webp,q_auto/');
+    }
+    return url;
   };
 
   const formatPrice = (price) => {
