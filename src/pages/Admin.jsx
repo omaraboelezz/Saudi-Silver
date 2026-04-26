@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { Table, Input, Button, Space, Modal } from "antd";
-import { SearchOutlined, ExclamationCircleOutlined, DeleteFilled } from "@ant-design/icons";
 import Header from "../components/Header";
+import { SearchOutlined, ExclamationCircleOutlined, DeleteFilled, EditOutlined, SwapOutlined } from "@ant-design/icons";
 import "./Admin.css";
 import { pdf } from '@react-pdf/renderer';
 import InvoiceDocument from '../components/InvoiceDocument';
 import { fetchWithAuth } from '../utils/api';
+import { Tooltip } from 'antd';
+
 
 const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
   const [formData, setFormData] = useState({
@@ -67,9 +69,8 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
   const [productToMove, setProductToMove] = useState(null);
   const [newSectionForMove, setNewSectionForMove] = useState("");
   const [isMovingProduct, setIsMovingProduct] = useState(false);
-
-
-
+  const [showEditSectionNameModal, setShowEditSectionNameModal] = useState(false);
+  const [editingSectionName, setEditingSectionName] = useState({ id: null, title_ar: '', title_en: '' });
   // eslint-disable-next-line no-unused-vars
   const [searchText, setSearchText] = useState("");
   // eslint-disable-next-line no-unused-vars
@@ -116,6 +117,35 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
       });
     } finally {
       setIsDeletingOrphans(false);
+    }
+  };
+
+  const handleEditSectionName = async () => {
+    if (!editingSectionName.title_ar.trim() || !editingSectionName.title_en.trim()) return;
+    try {
+      const response = await fetch(`${SECTION_API_URL}${editingSectionName.id}/`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title_ar: editingSectionName.title_ar.trim(),
+          title_en: editingSectionName.title_en.trim(),
+        }),
+      });
+      if (response.ok) {
+        Modal.success({
+          title: language === 'ar' ? '🎉 تم التحديث!' : '🎉 Updated!',
+          content: language === 'ar' ? '✅ تم تحديث اسم القسم بنجاح!' : '✅ Section name updated successfully!',
+          centered: true,
+          okText: language === 'ar' ? 'حسناً' : 'OK',
+        });
+        setShowEditSectionNameModal(false);
+        fetchSections();
+      } else {
+        const data = await response.json();
+        Modal.error({ title: '❌ Error', content: data.error || 'Failed', centered: true });
+      }
+    } catch (err) {
+      Modal.error({ title: '❌ Network Error', content: err.message, centered: true });
     }
   };
 
@@ -362,7 +392,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
           }
         }
       } catch (error) {
-        console.error("Error creating featured section:", error);
+        return;
       }
     };
 
@@ -431,9 +461,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
       const response = await fetch(API_URL);
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
-        console.error(
-          "Fetch error: Server returned HTML instead of JSON. Check API_URL port.",
-        );
         return;
       }
       const data = await response.json();
@@ -443,7 +470,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
         setProducts(data.products);
       }
     } catch (error) {
-      console.error("Error fetching products:", error);
+      return;
     }
   };
 
@@ -455,7 +482,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
         setSections(data);
       }
     } catch (error) {
-      console.error("Error fetching sections:", error);
+      return;
     }
   };
 
@@ -496,7 +523,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
         });
       }
     } catch (error) {
-      console.error("Error creating section:", error);
       setStatus({ type: "error", message: `❌ Error: ${error.message}` });
     } finally {
       setIsSubmitting(false); // ✅ دايماً يرجع false سواء نجح أو فشل
@@ -638,8 +664,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
             });
           }
         } catch (err) {
-          console.error("Error deleting section:", err);
-
           Modal.error({
             title: language === "ar" ? "❌ خطأ في الاتصال" : "❌ Network Error",
             content: err.message,
@@ -704,7 +728,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
         });
       }
     } catch (error) {
-      console.error("Error updating section order:", error);
       Modal.error({
         title: language === "ar" ? "❌ خطأ في الاتصال" : "❌ Network Error",
         content: error.message,
@@ -834,8 +857,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
             });
           }
         } catch (err) {
-          console.error("Error deleting product:", err);
-
           Modal.error({
             title: language === "ar" ? "❌ خطأ في الاتصال" : "❌ Network Error",
             content: err.message,
@@ -957,7 +978,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
       try {
         data = await response.json();
       } catch (err) {
-        console.error("❌ Failed to parse response:", err);
         setStatus({
           type: "error",
           message: "❌ Server returned invalid response",
@@ -1007,7 +1027,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
           },
         });
       } else {
-        console.error("❌ Backend error:", data);
         const errorMsg = data.error || data.message || "Failed to save product";
 
         // ✅ عرض Error Modal
@@ -1020,8 +1039,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
         });
       }
     } catch (error) {
-      console.error("❌ Error submitting product:", error);
-
       // ✅ عرض Network Error Modal
       Modal.error({
         title: language === "ar" ? "❌ خطأ في الاتصال" : "❌ Network Error",
@@ -1050,7 +1067,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
       const data = await response.json();
       setAllPrices(data);
     } catch (error) {
-      console.error("Error fetching prices:", error);
+      return;
     }
   };
 
@@ -1062,7 +1079,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
       const data = await response.json();
       if (Array.isArray(data)) setCustomBadges(data);
     } catch (error) {
-      console.error("Error fetching badges:", error);
+      return;
     }
   };
 
@@ -1139,7 +1156,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
               const form = new FormData();
               form.append("badge", language === 'ar' ? newBadgeNameAr.trim() : newBadgeNameEn.trim());
               await fetch(`${API_URL}${p.id || p._id}/`, { method: "PATCH", body: form });
-            } catch (e) { console.error('Error updating product badge:', e); }
+            } catch (e) { return; }
           }
           fetchProducts(); // Refresh after patching
         }
@@ -1174,7 +1191,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
           const form = new FormData();
           form.append("badge", ""); // Remove the badge assignment securely
           await fetch(`${API_URL}${p.id || p._id}/`, { method: "PATCH", body: form });
-        } catch (e) { console.error('Error updating affected product:', e); }
+        } catch (e) { return; }
       }
 
       fetchProducts(); // Refresh local products list
@@ -1236,7 +1253,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
         });
       }
     } catch (error) {
-      console.error("Error updating prices:", error);
       Modal.error({
         title: language === "ar" ? "❌ خطأ في الاتصال" : "❌ Network Error",
         content: error.message,
@@ -1365,27 +1381,46 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
       key: "action",
       render: (_, record) =>
         record.is_featured ? (
-          <span
-            style={{
-              display: "inline-block",
-              padding: "8px 12px",
-              background: "#f8f9fa",
-              color: "#6c757d",
-              borderRadius: "6px",
-              fontSize: "12px",
-              fontStyle: "italic",
-            }}
-          >
+          <span style={{
+            display: "inline-block", padding: "8px 12px",
+            background: "#f8f9fa", color: "#6c757d",
+            borderRadius: "6px", fontSize: "12px", fontStyle: "italic",
+          }}>
             {t.cannotDelete}
           </span>
         ) : (
-          <Button
-            danger
-            onClick={() => handleDeleteSection(record.id)}
-            style={{ width: "90%" }}
-          >
-            {t.delete}
-          </Button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <Tooltip title={t.edit} mouseEnterDelay={0} mouseLeaveDelay={0}>
+              <button
+                onClick={() => {
+                  setEditingSectionName({ id: record.id, title_ar: record.title_ar, title_en: record.title_en });
+                  setShowEditSectionNameModal(true);
+                }}
+                style={{
+                  background: '#07b5ffff', color: 'white', border: 'none',
+                  borderRadius: '6px', width: '34px', height: '34px',
+                  cursor: 'pointer', fontSize: '16px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}
+              >
+                <EditOutlined />
+              </button>
+            </Tooltip>
+            <Tooltip title={language === 'ar' ? 'حذف' : 'Delete'} mouseEnterDelay={0} mouseLeaveDelay={0}>
+              <button
+                onClick={() => handleDeleteSection(record.id)}
+                style={{
+                  background: '#dc3545', color: 'white', border: 'none',
+                  borderRadius: '6px', width: '34px', height: '34px',
+                  cursor: 'pointer', fontSize: '16px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}
+                title={language === 'ar' ? 'حذف' : 'Delete'}
+              >
+                <DeleteFilled />
+              </button>
+            </Tooltip>
+          </div>
         ),
     },
   ];
@@ -1904,7 +1939,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                       URL.revokeObjectURL(url);
 
                     } catch (error) {
-                      console.error('Error generating PDF:', error);
                       Modal.error({
                         title: language === 'ar' ? '❌ خطأ' : '❌ Error',
                         content: language === 'ar' ? 'فشل توليد الفاتورة' : 'Failed to generate invoice',
@@ -3147,6 +3181,73 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
           </div>
         )}
 
+        {showEditSectionNameModal && (
+          <div style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0,0,0,0.7)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 1100, padding: '20px'
+          }}>
+            <div style={{
+              background: 'white', padding: '30px', borderRadius: '12px',
+              maxWidth: '450px', width: '100%',
+              boxShadow: '0 10px 40px rgba(0,0,0,0.2)'
+            }}>
+              <h3 style={{ marginBottom: '20px', color: '#2c3e50', fontSize: '20px', fontWeight: '700' }}>
+                <EditOutlined style={{ marginLeft: '8px' }} />
+                {language === 'ar' ? 'تعديل اسم القسم' : 'Edit Section Name'}
+              </h3>
+
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+                  {t.sectionTitleAr} *
+                </label>
+                <input
+                  type="text"
+                  value={editingSectionName.title_ar}
+                  onChange={e => setEditingSectionName(prev => ({ ...prev, title_ar: e.target.value }))}
+                  maxLength={20}
+                  autoFocus
+                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '2px solid #667eea', fontSize: '16px', direction: 'rtl' }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+                  {t.sectionTitleEn} *
+                </label>
+                <input
+                  type="text"
+                  value={editingSectionName.title_en}
+                  onChange={e => setEditingSectionName(prev => ({ ...prev, title_en: e.target.value }))}
+                  maxLength={20}
+                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '2px solid #667eea', fontSize: '16px' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => setShowEditSectionNameModal(false)}
+                  style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#6c757d', color: 'white', cursor: 'pointer', fontWeight: '600' }}
+                >
+                  {t.cancel}
+                </button>
+                <button
+                  onClick={handleEditSectionName}
+                  disabled={!editingSectionName.title_ar.trim() || !editingSectionName.title_en.trim()}
+                  style={{
+                    padding: '10px 20px', borderRadius: '8px', border: 'none',
+                    background: (!editingSectionName.title_ar.trim() || !editingSectionName.title_en.trim()) ? '#ccc' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    color: 'white', cursor: 'pointer', fontWeight: '600'
+                  }}
+                >
+                  {language === 'ar' ? '💾 حفظ' : '💾 Save'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {status.message && (
           <div className={`status-message ${status.type}`}>
             {status.message}
@@ -3343,101 +3444,111 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                                 marginTop: "auto",
                               }}
                             >
-                              <button
-                                onClick={() => {
-                                  setEditingProductId(
-                                    product.id || product._id,
-                                  );
-                                  setFormData({
-                                    name_ar:
-                                      product.name_ar || product.name || "",
-                                    name_en:
-                                      product.name_en || product.name || "",
-                                    type: product.type || "silver",
-                                    karat: product.karat || (product.type === "gold" ? "21K" : "999"),
-                                    weight: product.weight || "",
-                                    show_weight: product.show_weight !== false,
-                                    manufacturing_cost:
-                                      product.manufacturing_cost || "",
-                                    price: product.price,
-                                    badge: product.badge || "",
-                                    stock: product.stock,
-                                    section: product.section,
-                                    image_url:
-                                      product.image_url || product.image || "",
-                                    description_ar:
-                                      product.description_ar ||
-                                      product.description ||
-                                      "",
-                                    description_en:
-                                      product.description_en ||
-                                      product.description ||
-                                      "",
-                                    shortDescription_ar:
-                                      product.shortDescription_ar ||
-                                      product.shortDescription ||
-                                      "",
-                                    shortDescription_en:
-                                      product.shortDescription_en ||
-                                      product.shortDescription ||
-                                      "",
-                                  });
-                                  setShowProductModal(true);
-                                }}
-                                style={{
-                                  flex: 1,
-                                  background: "#ffc107",
-                                  color: "white",
-                                  border: "none",
-                                  padding: "7px 4px",
-                                  borderRadius: "4px",
-                                  cursor: "pointer",
-                                  fontSize: "12px",
-                                  fontWeight: "600",
-                                }}
-                              >
-                                {t.edit}
-                              </button>
+                              <Tooltip title={t.edit} mouseEnterDelay={0} mouseLeaveDelay={0}>
+                                <button
+                                  onClick={() => {
+                                    setEditingProductId(
+                                      product.id || product._id,
+                                    );
+                                    setFormData({
+                                      name_ar:
+                                        product.name_ar || product.name || "",
+                                      name_en:
+                                        product.name_en || product.name || "",
+                                      type: product.type || "silver",
+                                      karat: product.karat || (product.type === "gold" ? "21K" : "999"),
+                                      weight: product.weight || "",
+                                      show_weight: product.show_weight !== false,
+                                      manufacturing_cost:
+                                        product.manufacturing_cost || "",
+                                      price: product.price,
+                                      badge: product.badge || "",
+                                      stock: product.stock,
+                                      section: product.section,
+                                      image_url:
+                                        product.image_url || product.image || "",
+                                      description_ar:
+                                        product.description_ar ||
+                                        product.description ||
+                                        "",
+                                      description_en:
+                                        product.description_en ||
+                                        product.description ||
+                                        "",
+                                      shortDescription_ar:
+                                        product.shortDescription_ar ||
+                                        product.shortDescription ||
+                                        "",
+                                      shortDescription_en:
+                                        product.shortDescription_en ||
+                                        product.shortDescription ||
+                                        "",
+                                    });
+                                    setShowProductModal(true);
+                                  }}
+                                  title={t.edit}
+                                  style={{
+                                    flex: 1,
+                                    background: "#ffc107",
+                                    color: "white",
+                                    border: "none",
+                                    padding: "7px 4px",
+                                    borderRadius: "4px",
+                                    cursor: "pointer",
+                                    fontSize: "12px",
+                                    fontWeight: "600",
+                                  }}
+                                >
+                                  <EditOutlined />
+                                </button>
+                              </Tooltip>
 
-                              <button
-                                onClick={() => {
-                                  setProductToMove(product);
-                                  setNewSectionForMove("");
-                                  setShowMoveProductModal(true);
-                                }}
-                                style={{
-                                  flex: 1,
-                                  background: "#17a2b8",
-                                  color: "white",
-                                  border: "none",
-                                  padding: "7px 4px",
-                                  borderRadius: "4px",
-                                  cursor: "pointer",
-                                  fontSize: "12px",
-                                  fontWeight: "600",
-                                }}
-                              >
-                                {t.moveProduct}
-                              </button>
+                              <Tooltip title={t.moveProduct} mouseEnterDelay={0} mouseLeaveDelay={0}>
+                                <button
+                                  onClick={() => {
+                                    setProductToMove(product);
+                                    setNewSectionForMove("");
+                                    setShowMoveProductModal(true);
+                                  }}
+                                  title={t.moveProduct}
+                                  style={{
+                                    flex: 1,
+                                    background: "#17a2b8",
+                                    color: "white",
+                                    border: "none",
+                                    padding: "7px 4px",
+                                    borderRadius: "4px",
+                                    cursor: "pointer",
+                                    fontSize: "12px",
+                                    fontWeight: "600",
+                                  }}
+                                >
+                                  <SwapOutlined />
+                                </button>
+                              </Tooltip>
 
-                              <button
-                                onClick={() =>
-                                  handleDelete(product.id || product._id)
-                                }
-                                style={{
-                                  flex: 1,
-                                  background: "#dc3545",
-                                  color: "white",
-                                  border: "none",
-                                  padding: "7px 4px",
-                                  borderRadius: "4px",
-                                  cursor: "pointer",
-                                  fontSize: "12px",
-                                  fontWeight: "600",
-                                }}
-                              >
-                                {t.delete}
-                              </button>
+
+                              <Tooltip title={t.delete} mouseEnterDelay={0} mouseLeaveDelay={0}>
+                                <button
+                                  onClick={() =>
+                                    handleDelete(product.id || product._id)
+                                  }
+                                  title={t.delete}
+                                  style={{
+                                    flex: 1,
+                                    background: "#dc3545",
+                                    color: "white",
+                                    border: "none",
+                                    padding: "7px 4px",
+                                    borderRadius: "4px",
+                                    cursor: "pointer",
+                                    fontSize: "12px",
+                                    fontWeight: "600",
+                                  }}
+                                >
+                                  <DeleteFilled />
+                                </button>
+                              </Tooltip>
                             </div>
                           </div>
                         ))}
@@ -3893,10 +4004,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                       </span>
 
                       {/* Stop propagation on action buttons */}
-                      <div
-                        style={{ display: "flex", gap: "10px", marginTop: "auto" }}
-                        onClick={(e) => e.stopPropagation()}
-                      >
+                      <div style={{ display: "flex", gap: "6px", marginTop: "auto" }}>
                         <button
                           onClick={() => {
                             setEditingProductId(product.id || product._id);
@@ -3911,34 +4019,23 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                               price: product.price,
                               badge: product.badge || "",
                               stock: product.stock,
-                              section: product.section || "",
+                              section: product.section,
                               image_url: product.image_url || product.image || "",
-                              description_ar:
-                                product.description_ar || product.description || "",
-                              description_en:
-                                product.description_en || product.description || "",
-                              shortDescription_ar:
-                                product.shortDescription_ar ||
-                                product.shortDescription || "",
-                              shortDescription_en:
-                                product.shortDescription_en ||
-                                product.shortDescription || "",
+                              description_ar: product.description_ar || product.description || "",
+                              description_en: product.description_en || product.description || "",
+                              shortDescription_ar: product.shortDescription_ar || product.shortDescription || "",
+                              shortDescription_en: product.shortDescription_en || product.shortDescription || "",
                             });
                             setShowProductModal(true);
                           }}
                           style={{
-                            flex: 1,
-                            background: "#ffc107",
-                            color: "white",
-                            border: "none",
-                            padding: "10px",
-                            borderRadius: "6px",
-                            cursor: "pointer",
-                            fontSize: "14px",
-                            fontWeight: "600",
+                            flex: 1, background: "#ffc107", color: "white", border: "none",
+                            padding: "7px 4px", borderRadius: "4px", cursor: "pointer",
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
                           }}
+                          title={t.edit}
                         >
-                          {t.edit}
+                          <EditOutlined />
                         </button>
 
                         <button
@@ -3948,35 +4045,25 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                             setShowMoveProductModal(true);
                           }}
                           style={{
-                            flex: 1,
-                            background: "#17a2b8",
-                            color: "white",
-                            border: "none",
-                            padding: "10px",
-                            borderRadius: "6px",
-                            cursor: "pointer",
-                            fontSize: "14px",
-                            fontWeight: "600",
+                            flex: 1, background: "#17a2b8", color: "white", border: "none",
+                            padding: "7px 4px", borderRadius: "4px", cursor: "pointer",
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
                           }}
+                          title={t.moveProduct}
                         >
-                          {t.moveProduct}
+                          <SwapOutlined />
                         </button>
 
                         <button
                           onClick={() => handleDelete(product.id || product._id)}
                           style={{
-                            flex: 1,
-                            background: "#dc3545",
-                            color: "white",
-                            border: "none",
-                            padding: "10px",
-                            borderRadius: "6px",
-                            cursor: "pointer",
-                            fontSize: "14px",
-                            fontWeight: "600",
+                            flex: 1, background: "#dc3545", color: "white", border: "none",
+                            padding: "7px 4px", borderRadius: "4px", cursor: "pointer",
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
                           }}
+                          title={t.delete}
                         >
-                          {t.delete}
+                          <DeleteFilled />
                         </button>
                       </div>
                     </div>

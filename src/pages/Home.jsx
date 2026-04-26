@@ -77,7 +77,6 @@ const Home = ({ language, onLanguageChange, navigate }) => {
           setSections(sectionsData);
         }
       } catch (err) {
-        console.error('Failed to load data:', err);
         setError(err.message === "Timeout" ? "Connection timeout. Please try again." : "Failed to load data. Please refresh.");
       } finally {
         setLoading(false);
@@ -205,7 +204,7 @@ const Home = ({ language, onLanguageChange, navigate }) => {
         onFilterChange={setActiveFilter}
       />
       <ScrollReveal>
-        <Hero language={language} onLanguageChange={onLanguageChange} />
+        <Hero language={language} activeFilter={activeFilter} onFilterChange={setActiveFilter} />
       </ScrollReveal>
 
       {showSplash && (

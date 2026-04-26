@@ -32,21 +32,22 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.6),
-    rgba(0, 0, 0, 0.4)
-  );
+  background: linear-gradient(to bottom,
+      rgba(0, 0, 0, 0.6),
+      rgba(0, 0, 0, 0.4));
   z-index: 1;
 }
 
 /* Hero content container - Fixed position during scroll */
 .hero-content {
   position: sticky;
-  top: 40%; /* أو أي قيمة حسب مكان البداية */
+  top: 40%;
+  /* أو أي قيمة حسب مكان البداية */
   left: 0;
   right: 0;
-  margin: 0 auto; /* للتوسيط أفقي */;
+  margin: 0 auto;
+  /* للتوسيط أفقي */
+  ;
   z-index: 2;
   text-align: center;
   color: #fff;
@@ -116,7 +117,7 @@
   background: #0f0f0f;
   padding: 10px 12px;
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
   animation: shareFadeUp 0.25s ease;
 }
 
@@ -142,8 +143,18 @@
 }
 
 
-.hero-cta-btn {
+
+.hero-cta-wrapper {
   margin-top: 2rem;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  pointer-events: auto;
+  position: relative;
+}
+
+.hero-cta-btn {
   padding: 14px 40px;
   background: linear-gradient(135deg, #d4af37, #f5e6c0);
   color: #1a1a1a;
@@ -155,6 +166,11 @@
   letter-spacing: 1px;
   transition: all 0.3s ease;
   box-shadow: 0 4px 20px rgba(212, 175, 55, 0.4);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  z-index: 2;
 }
 
 .hero-cta-btn:hover {
@@ -162,12 +178,125 @@
   box-shadow: 0 8px 30px rgba(212, 175, 55, 0.6);
 }
 
-/* أنيميشن */
+.hero-cta-btn--expanded {
+  border-radius: 30px 30px 20px 20px;
+}
+
+.hero-cta-arrow {
+  display: inline-block;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 0.9rem;
+}
+
+.hero-cta-arrow--up {
+  transform: rotate(180deg);
+}
+
+/* Filter options dropdown */
+.hero-filter-options {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  opacity: 0;
+  transform: translateY(-10px) scale(0.95);
+  pointer-events: none;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: 0;
+  overflow: hidden;
+}
+
+.hero-filter-options--visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+  max-height: 100px;
+}
+
+/* Individual filter buttons */
+.hero-filter-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 22px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 90px;
+}
+
+/* Filter icon image */
+.hero-filter-icon-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: invert(1);
+  opacity: 0.85;
+  transition: all 0.3s ease;
+}
+
+.hero-filter-btn:hover .hero-filter-icon-img {
+  transform: scale(1.15);
+  opacity: 1;
+}
+
+.hero-filter-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Gold active state */
+.hero-filter-btn--gold.hero-filter-btn--active {
+  border-color: #d4af37;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.3), rgba(245, 230, 192, 0.15));
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.35), inset 0 0 15px rgba(212, 175, 55, 0.1);
+  color: #f5e6c0;
+}
+
+.hero-filter-btn--gold.hero-filter-btn--active .hero-filter-icon-img {
+  filter: invert(76%) sepia(60%) saturate(500%) hue-rotate(10deg) brightness(95%);
+  opacity: 1;
+}
+
+/* Silver active state */
+.hero-filter-btn--silver.hero-filter-btn--active {
+  border-color: #c0c0c0;
+  background: linear-gradient(135deg, rgba(192, 192, 192, 0.3), rgba(220, 220, 220, 0.15));
+  box-shadow: 0 0 20px rgba(192, 192, 192, 0.35), inset 0 0 15px rgba(192, 192, 192, 0.1);
+  color: #e0e0e0;
+}
+
+.hero-filter-btn--silver.hero-filter-btn--active .hero-filter-icon-img {
+  filter: invert(1) brightness(1.2);
+  opacity: 1;
+}
+
+/* Accessories active state — warm bronze/copper */
+.hero-filter-btn--accessories.hero-filter-btn--active {
+  border-color: #cd7f32;
+  background: linear-gradient(135deg, rgba(205, 127, 50, 0.3), rgba(205, 127, 50, 0.15));
+  box-shadow: 0 0 20px rgba(205, 127, 50, 0.35), inset 0 0 15px rgba(205, 127, 50, 0.1);
+  color: #e8c590;
+}
+
+.hero-filter-btn--accessories.hero-filter-btn--active .hero-filter-icon-img {
+  filter: invert(55%) sepia(70%) saturate(400%) hue-rotate(350deg) brightness(90%);
+  opacity: 1;
+}
+
+/* Animations */
 @keyframes shareFadeUp {
   from {
     opacity: 0;
     transform: translateY(10px) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -180,6 +309,7 @@
     opacity: 0;
     transform: translateY(40px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -192,6 +322,7 @@
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -209,6 +340,19 @@
     font-size: 1.2rem;
     letter-spacing: 1px;
   }
+
+  .hero-filter-options {
+    gap: 8px;
+  }
+
+  .hero-filter-btn {
+    min-width: 75px;
+    padding: 12px 16px;
+  }
+
+  .hero-filter-label {
+    font-size: 0.75rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -224,5 +368,24 @@
   .hero-tagline {
     font-size: 1rem;
   }
-}
 
+  .hero-cta-btn {
+    padding: 12px 30px;
+    font-size: 1rem;
+  }
+
+  .hero-filter-btn {
+    min-width: 65px;
+    padding: 10px 12px;
+    border-radius: 12px;
+  }
+
+  .hero-filter-icon-img {
+    width: 22px;
+    height: 22px;
+  }
+
+  .hero-filter-label {
+    font-size: 0.7rem;
+  }
+}

@@ -9,9 +9,9 @@ const API_BASE_URL = 'https://omarawad9.pythonanywhere.com/api';
  * Helper function to make authenticated API calls (for admin only)
  */
 export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
-    const token = 
-    localStorage.getItem('accessToken') || 
-    localStorage.getItem('adminToken') || 
+  const token =
+    localStorage.getItem('accessToken') ||
+    localStorage.getItem('adminToken') ||
     localStorage.getItem('token');
 
   const headers: Record<string, string> = {
@@ -31,7 +31,7 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
     // إذا كان 401 - جرب تجديد الـ Token
     if (response.status === 401) {
       const refreshToken = localStorage.getItem('refreshToken');
-      
+
 
       if (refreshToken) {
         try {
@@ -67,7 +67,6 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
 
     return response;
   } catch (error) {
-    console.error('API Error:', error);
     throw error;
   }
 };
@@ -87,7 +86,6 @@ export const fetchProducts = async () => {
 
     return await response.json();
   } catch (error) {
-    console.error('Error fetching products:', error);
     return [];
   }
 };
@@ -107,7 +105,6 @@ export const fetchSections = async () => {
 
     return await response.json();
   } catch (error) {
-    console.error('Error fetching sections:', error);
     return [];
   }
 };
@@ -131,7 +128,6 @@ export const addProduct = async (productData: any) => {
 
     return await response.json();
   } catch (error) {
-    console.error('Error adding product:', error);
     throw error;
   }
 };
@@ -156,7 +152,6 @@ export const updateProduct = async (id: number, productData: any) => {
 
     return await response.json();
   } catch (error) {
-    console.error('Error updating product:', error);
     throw error;
   }
 };
@@ -176,7 +171,6 @@ export const deleteProduct = async (id: number) => {
       throw new Error('Failed to delete product');
     }
   } catch (error) {
-    console.error('Error deleting product:', error);
     throw error;
   }
 };
@@ -200,7 +194,6 @@ export const addSection = async (sectionData: any) => {
 
     return await response.json();
   } catch (error) {
-    console.error('Error adding section:', error);
     throw error;
   }
 };
@@ -225,7 +218,6 @@ export const updateSection = async (id: number, sectionData: any) => {
 
     return await response.json();
   } catch (error) {
-    console.error('Error updating section:', error);
     throw error;
   }
 };
@@ -245,7 +237,6 @@ export const deleteSection = async (id: number) => {
       throw new Error('Failed to delete section');
     }
   } catch (error) {
-    console.error('Error deleting section:', error);
     throw error;
   }
 };
@@ -264,7 +255,6 @@ export const fetchMetalPrices = async () => {
 
     return await response.json();
   } catch (error) {
-    console.error('Error fetching metal prices:', error);
     return null;
   }
 };
@@ -288,7 +278,6 @@ export const updateMetalPrices = async (pricesData: { gold_price_per_gram?: numb
 
     return await response.json();
   } catch (error) {
-    console.error('Error updating metal prices:', error);
     throw error;
   }
 };

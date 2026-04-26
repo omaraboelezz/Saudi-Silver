@@ -535,6 +535,20 @@ body[dir="rtl"] .drawer-location-btn {
   transform: translateY(0);
 }
 
+/* الصورة تظهر على موبايل بس */
+.header-logo-img {
+  display: none;
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
+.header-logo-text {
+  display: block;
+}
+
+
+
 /* ── Responsive ─────────────────────────────────────────── */
 @media (max-width: 768px) {
   .header-container {
@@ -563,7 +577,7 @@ body[dir="rtl"] .drawer-location-btn {
 
   /* Hide desktop nav & language selector on mobile */
   .header-nav,
-  .language-selector {
+  .language-selector:not(.filter-selector) {
     display: none;
   }
 
@@ -601,5 +615,15 @@ body[dir="rtl"] .drawer-location-btn {
   .header.admin-mode {
     padding: 0.4rem 0.8rem;
     min-height: 45px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-logo-img {
+    display: block;
+  }
+
+  .header-logo-text {
+    display: none;
   }
 }

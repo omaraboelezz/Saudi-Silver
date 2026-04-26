@@ -49,9 +49,8 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     try {
       const response = await fetch('https://omarawad9.pythonanywhere.com/api/products/');
-      
+
       if (!response.ok) {
-        console.error('Failed to fetch products');
         return;
       }
 
@@ -67,7 +66,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setCartItems(validCartItems);
       }
     } catch (error) {
-      console.error('❌ Error cleaning up cart:', error);
+      return;
     }
   };
 
@@ -130,12 +129,12 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
-    <CartContext.Provider 
-      value={{ 
-        cartItems, 
-        addToCart, 
-        removeFromCart, 
-        clearCart, 
+    <CartContext.Provider
+      value={{
+        cartItems,
+        addToCart,
+        removeFromCart,
+        clearCart,
         cartCount,
         cleanupDeletedProducts, // ✅ تصدير الدالة
         removeEntireItem

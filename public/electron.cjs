@@ -58,7 +58,6 @@ function createWindow() {
 
   // ✅ معالجة أخطاء التحميل
   mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
-    console.error('Failed to load:', errorCode, errorDescription);
 
     // في Production، حاول إعادة التحميل
     if (!isDev) {
@@ -194,18 +193,6 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
-
-// ✅ معالجة الأخطاء غير المتوقعة
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-});
-
-// ✅ تعطيل GPU acceleration إذا كانت هناك مشاكل (اختياري)
-// app.disableHardwareAcceleration();
 
 // ✅ تعطيل تحذيرات Security (في Development فقط)
 if (isDev) {

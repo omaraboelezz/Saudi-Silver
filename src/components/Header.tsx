@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import useWishlist from '../context/useWishlist';
 import { useCart } from '../context/CartContext';
+import LogoImage from '../assets/Logos/Saudi-Silver-Logo-removebg-preview.png';
 import {
   FaShoppingCart,
   FaHeart,
@@ -221,7 +222,14 @@ const Header = ({
           {/* ── Logo ── */}
           {!adminMode && (
             <div className="header-logo" onClick={scrollToTop}>
-              <h1>El-Saudi jewelry</h1>
+              {/* موبايل: صورة — ديسكتوب: نص */}
+
+              <img
+                src={LogoImage}
+                alt="El-Saudi Jewelry"
+                className="header-logo-img"
+              />
+              <h1 className="header-logo-text">El-Saudi jewelry</h1>
             </div>
           )}
 
@@ -513,31 +521,6 @@ const Header = ({
                 onClick={() => handleLanguageChange('en')}
               >
                 English
-              </button>
-            </div>
-            {/* ── Filter ── */}
-            <p className="drawer-section-label">
-              {language === 'ar' ? 'تصفية حسب النوع :' : 'Filter by Type :'}
-            </p>
-
-            <div className="drawer-lang-row">
-              <button
-                className={`drawer-lang-btn ${(activeFilter ?? 'gold') === 'gold' ? 'active' : ''}`}
-                onClick={() => { onFilterChange?.(null); closeDrawer(); }}
-              >
-                {language === 'ar' ? 'ذهب' : 'Gold'}
-              </button>
-              <button
-                className={`drawer-lang-btn ${activeFilter === 'silver' ? 'active' : ''}`}
-                onClick={() => { onFilterChange?.('silver'); closeDrawer(); }}
-              >
-                {language === 'ar' ? 'فضة' : 'Silver'}
-              </button>
-              <button
-                className={`drawer-lang-btn ${activeFilter === 'accessories' ? 'active' : ''}`}
-                onClick={() => { onFilterChange?.('accessories'); closeDrawer(); }}
-              >
-                {language === 'ar' ? 'إكسسوارات' : 'Accessories'}
               </button>
             </div>
 

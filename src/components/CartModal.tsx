@@ -58,7 +58,6 @@ const CartModal: React.FC<CartModalProps> = ({
 
       setValidatedItems(validated);
     } catch (error) {
-      console.error('Error validating cart items:', error);
       setValidatedItems(cartItems);
     }
   };

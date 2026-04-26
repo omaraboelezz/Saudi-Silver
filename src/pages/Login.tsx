@@ -89,7 +89,6 @@ const Login = ({ onLogin, language, onLanguageChange }: LoginProps) => {
         setIsLoading(false);
       }
     } catch (err) {
-      console.error('Login error:', err);
       setError(t.networkError);
       setIsLoading(false);
     }

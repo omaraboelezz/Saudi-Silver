@@ -27,7 +27,6 @@ const useBadges = () => {
           }
         })
         .catch(err => {
-          console.error("Error fetching badges:", err);
           // Retry logic can be added here if necessary
         })
         .finally(() => {

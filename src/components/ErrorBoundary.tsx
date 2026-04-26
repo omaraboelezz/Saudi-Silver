@@ -16,9 +16,6 @@ class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, info: React.ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, info);
-  }
 
   handleReset = () => {
     // Navigate to home page first, then reset error state
