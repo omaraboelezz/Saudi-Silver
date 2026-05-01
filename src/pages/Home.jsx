@@ -4,7 +4,7 @@ import Hero from '../components/Hero/Hero';
 import Features from '../components/Features/Features';
 import ProductCarousel from '../components/ProductCarousel/ProductCarousel';
 import ProductGrid from '../components/ProductGrid/ProductGrid';
-import SectionProducts from '../components/Sectionproducts/Sectionproducts';
+import SectionProducts from '../components/SectionProducts/SectionProducts';
 import Footer from '../components/Footer/Footer';
 import { fetchProducts } from '../utils/api';
 import ScrollReveal from '../components/ScrollReveal/ScrollReveal';
