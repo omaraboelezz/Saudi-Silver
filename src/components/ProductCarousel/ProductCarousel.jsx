@@ -1,5 +1,5 @@
 import { useEffect, useRef, } from 'react';
-import ProductCard from './ProductCard';
+import ProductCard from '../ProductCard/ProductCard';
 import './ProductCarousel.css';
 
 /**

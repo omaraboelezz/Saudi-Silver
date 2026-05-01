@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import useWishlist from '../context/useWishlist';
+import useWishlist from '../../context/useWishlist';
 import { FaWhatsapp, FaStar, FaRegStar, FaHeart, FaLink, FaShoppingCart, FaMinus, FaPlus, FaShareAlt, FaInstagram } from 'react-icons/fa';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../../context/CartContext';
 import { FaRegHeart } from 'react-icons/fa';
-import useBadges from '../utils/useBadges';
+import useBadges from '../../utils/useBadges';
 import './ProductModal.css';
 
 const ProductModal = ({ product, isOpen, onClose, language = 'ar' }) => {

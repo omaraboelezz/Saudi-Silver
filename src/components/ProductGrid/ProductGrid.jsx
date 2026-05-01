@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import CategoriesBar from './CategoriesBar';
-import ProductCollectionCard from './ProductCollectionCard';
+import CategoriesBar from '../CategoriesBar/CategoriesBar';
+import ProductCollectionCard from '../ProductCollectionCard/ProductCollectionCard';
 import './ProductGrid.css';
 
 /**
@@ -63,14 +63,12 @@ const ProductGrid = ({ products, onProductClick, onContactClick, searchQuery = '
 
   return (
     <section id="collection" className="product-grid-section">
-      {/* 👇 مرر language للـ CategoriesBar */}
       <CategoriesBar 
         selectedCategory={selectedCategory}
         onCategoryChange={handleCategoryChange}
         language={language}
       />
       <div className="container">
-        {/* 👇 عنوان مترجم */}
         <h2 className="section-title">{t.ourCollection}</h2>
         {filteredProducts.length > 0 ? (
           <div className="product-collection-grid">
@@ -86,7 +84,6 @@ const ProductGrid = ({ products, onProductClick, onContactClick, searchQuery = '
           </div>
         ) : (
           <div className="no-products-message">
-            {/* 👇 رسالة مترجمة */}
             <p>{t.noProducts}</p>
           </div>
         )}

@@ -1,7 +1,7 @@
-import useWishlist from "../context/useWishlist";
-import { useCart } from "../context/CartContext";
+import useWishlist from "../../context/useWishlist";
+import { useCart } from "../../context/CartContext";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
-import useBadges from "../utils/useBadges";
+import useBadges from "../../utils/useBadges";
 import "./ProductCollectionCard.css";
 
 /**

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import './Hero.css';
-import ringIcon from '../assets/Logos/magic-ring.png';
+import ringIcon from '../../assets/Logos/magic-ring.png';
 
 type FilterType = 'gold' | 'silver' | 'accessories';
 

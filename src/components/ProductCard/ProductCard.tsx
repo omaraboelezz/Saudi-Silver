@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import './ProductCard.css';
-import useBadges from '../utils/useBadges';
+import useBadges from '../../utils/useBadges';
 
 interface Product {
   id: number;

@@ -1,4 +1,4 @@
-import ProductCollectionCard from './ProductCollectionCard';
+import ProductCollectionCard from '../ProductCollectionCard/ProductCollectionCard';
 import './Sectionproducts.css';
 
 /**
@@ -71,21 +71,7 @@ const SectionProducts = ({
   };
   
   const getSectionTitle = (section, originalTitle) => {
-    const filterType = activeFilter === null || activeFilter === 'gold' ? 'gold' : activeFilter;
-    if (language === 'ar') {
-      let suffix = '';
-      if (filterType === 'gold') suffix = 'ذهب';
-      else if (filterType === 'silver') suffix = 'فضة';
-      else if (filterType === 'accessories') suffix = 'إكسسوارات';
-      return suffix ? `${originalTitle} ${suffix}` : originalTitle;
-    } else {
-      let prefix = '';
-      if (filterType === 'gold') prefix = 'Gold';
-      else if (filterType === 'silver') prefix = 'Silver';
-      else if (filterType === 'accessories') prefix = 'Accessories';
-      return prefix ? `${prefix} ${originalTitle}` : originalTitle;
-    }
-  };
+    return originalTitle;  };
   // Get products without section
   const getProductsWithoutSection = () => {
     const noSectionProducts = products.filter(

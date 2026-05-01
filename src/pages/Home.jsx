@@ -1,19 +1,19 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
-import Header from '../components/Header';
-import Hero from '../components/Hero';
-import Features from '../components/Features';
-import ProductCarousel from '../components/ProductCarousel';
-import ProductGrid from '../components/ProductGrid';
-import SectionProducts from '../components/Sectionproducts';
-import Footer from '../components/Footer';
+import Header from '../components/Header/Header';
+import Hero from '../components/Hero/Hero';
+import Features from '../components/Features/Features';
+import ProductCarousel from '../components/ProductCarousel/ProductCarousel';
+import ProductGrid from '../components/ProductGrid/ProductGrid';
+import SectionProducts from '../components/Sectionproducts/Sectionproducts';
+import Footer from '../components/Footer/Footer';
 import { fetchProducts } from '../utils/api';
-import ScrollReveal from '../components/ScrollReveal';
-import HomeSkeleton from '../components/HomeSkeleton';
+import ScrollReveal from '../components/ScrollReveal/ScrollReveal';
+import HomeSkeleton from '../components/SkeletonLoading/HomeSkeleton';
 import './Home.css';
 
-const ProductModal = lazy(() => import('../components/ProductModal'));
-const WishlistModal = lazy(() => import('../components/WishlistModal'));
-const CartModal = lazy(() => import('../components/CartModal'));
+const ProductModal = lazy(() => import('../components/ProductModal/ProductModal'));
+const WishlistModal = lazy(() => import('../components/WishlistModal/WishlistModal'));
+const CartModal = lazy(() => import('../components/CartModal/CartModal'));
 
 
 

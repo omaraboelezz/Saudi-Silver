@@ -1,7 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { useCart } from '../context/CartContext';
-import { FaWhatsapp, FaTrash, FaExclamationTriangle, FaMinus, FaPlus } from 'react-icons/fa';
-import './CartModal.css';
+import React, { useEffect, useState } from "react";
+import { useCart } from "../../context/CartContext";
+import {
+  FaWhatsapp,
+  FaTrash,
+  FaExclamationTriangle,
+  FaMinus,
+  FaPlus,
+} from "react-icons/fa";
+import "../CartModal/CartModal.css";
+import translations from "../CartModal/translate.json";
 
 export interface Product {
   id: number | string;
@@ -26,10 +33,15 @@ const CartModal: React.FC<CartModalProps> = ({
   isOpen,
   onClose,
   onProductClick,
-  language = 'ar',
+  language = "ar",
 }) => {
-  const { cartItems, removeFromCart, addToCart, removeEntireItem, cleanupDeletedProducts } =
-    useCart();
+  const {
+    cartItems,
+    removeFromCart,
+    addToCart,
+    removeEntireItem,
+    cleanupDeletedProducts,
+  } = useCart();
   const [validatedItems, setValidatedItems] = useState<any[]>([]);
 
   useEffect(() => {
@@ -44,10 +56,11 @@ const CartModal: React.FC<CartModalProps> = ({
 
   const validateCartItems = async () => {
     try {
-      const response = await fetch('https://omarawad9.pythonanywhere.com/api/products/');
+      const response = await fetch(
+        "https://omarawad9.pythonanywhere.com/api/products/",
+      );
       const existingProducts = await response.json();
       const existingMap = new Map(existingProducts.map((p: any) => [p.id, p]));
-
       const validated = cartItems.map((item) => {
         const freshProduct = existingMap.get(item.id);
         if (!freshProduct) {
@@ -80,87 +93,96 @@ const CartModal: React.FC<CartModalProps> = ({
     }
   > = {
     ar: {
-      shoppingCart: 'سلة التسوق',
-      item: 'عنصر',
-      items: 'عناصر',
-      cartEmpty: 'سلة التسوق فارغة',
-      nothingAdded: 'يبدو أنك لم تضف أي شيء بعد.',
-      total: 'الإجمالي:',
-      connectToBuy: 'اطلب عبر واتساب',
-      removeFromCart: 'إزالة من السلة',
-      closeCart: 'إغلاق السلة',
-      whatsappMessage: 'مرحباً، أود طلب العناصر التالية من El-Saudi jewelry:',
-      productDeleted: 'هذا المنتج تم حذفه',
-      cleanDeletedItems: 'إزالة المنتجات المحذوفة',
+      shoppingCart: "سلة التسوق",
+      item: "عنصر",
+      items: "عناصر",
+      cartEmpty: "سلة التسوق فارغة",
+      nothingAdded: "يبدو أنك لم تضف أي شيء بعد.",
+      total: "الإجمالي:",
+      connectToBuy: "اطلب عبر واتساب",
+      removeFromCart: "إزالة من السلة",
+      closeCart: "إغلاق السلة",
+      whatsappMessage: "مرحباً، أود طلب العناصر التالية من El-Saudi jewelry:",
+      productDeleted: "هذا المنتج تم حذفه",
+      cleanDeletedItems: "إزالة المنتجات المحذوفة",
     },
     en: {
-      shoppingCart: 'Shopping Cart',
-      item: 'item',
-      items: 'items',
-      cartEmpty: 'Your cart is empty',
+      shoppingCart: "Shopping Cart",
+      item: "item",
+      items: "items",
+      cartEmpty: "Your cart is empty",
       nothingAdded: "Looks like you haven't added anything yet.",
-      total: 'Total:',
-      connectToBuy: 'Connect to Buy',
-      removeFromCart: 'Remove from cart',
-      closeCart: 'Close cart',
+      total: "Total:",
+      connectToBuy: "Connect to Buy",
+      removeFromCart: "Remove from cart",
+      closeCart: "Close cart",
       whatsappMessage:
-        'Hello, I would like to order the following items from El-Saudi jewelry:',
-      productDeleted: 'This product has been deleted',
-      cleanDeletedItems: 'Remove Deleted Items',
+        "Hello, I would like to order the following items from El-Saudi jewelry:",
+      productDeleted: "This product has been deleted",
+      cleanDeletedItems: "Remove Deleted Items",
     },
   };
 
-  const t = texts[language as string] || texts.ar;
+  const t =
+    translations.cart[language as keyof typeof translations.cart] ||
+    translations.cart.ar;
 
   const getImageUrl = (product: Product): string => {
     if (product.image_url) return product.image_url;
     if (product.image_file) return product.image_file;
     if (product.image) return product.image;
-    return 'https://via.placeholder.com/400x400?text=No+Image';
+    return "https://via.placeholder.com/400x400?text=No+Image";
   };
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) onClose();
+      if (e.key === "Escape" && isOpen) onClose();
     };
 
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
+      document.addEventListener("keydown", handleEscape);
+      document.body.style.overflow = "hidden";
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "unset";
     };
   }, [isOpen, onClose]);
 
   const calculateTotal = (): number =>
     validatedItems
       .filter((item) => !item.isDeleted)
-      .reduce((acc: number, item: any) => acc + (Math.ceil(item.price / 5) * 5) * (item.quantity || 1), 0);
+      .reduce(
+        (acc: number, item: any) =>
+          acc + Math.ceil(item.price / 5) * 5 * (item.quantity || 1),
+        0,
+      );
 
   const handleConnectToBuy = () => {
     const validItems = validatedItems.filter((item) => !item.isDeleted);
     if (validItems.length === 0) return;
 
-    const phoneNumber = '201067365567';
+    const phoneNumber = "201067365567";
     let message = `${t.whatsappMessage}\n\n`;
 
     validItems.forEach((item: any, index: number) => {
       const qty = item.quantity || 1;
       const productName =
-        language === 'ar'
-          ? item.name_ar || item.arabic_name || item.name || 'منتج'
-          : item.name_en || item.english_name || item.name || 'Product';
+        language === "ar"
+          ? item.name_ar || item.arabic_name || item.name || "منتج"
+          : item.name_en || item.english_name || item.name || "Product";
 
-      message += `${index + 1}. ${productName} (x${qty}) - $${((Math.ceil(item.price / 5) * 5) * qty).toLocaleString()}\n`;
+      message += `${index + 1}. ${productName} (x${qty}) - $${(Math.ceil(item.price / 5) * 5 * qty).toLocaleString()}\n`;
       message += `   🔗 https://elsaudi-jewelry.vercel.app/?product=${item.id}\n\n`;
     });
 
     message += `*${t.total} $${calculateTotal().toLocaleString()}*`;
 
-    window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
+    window.open(
+      `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`,
+      "_blank",
+    );
   };
 
   if (!isOpen) return null;
@@ -178,10 +200,10 @@ const CartModal: React.FC<CartModalProps> = ({
   };
 
   const getProductName = (product: any): string => {
-    if (!product) return '';
-    return language === 'ar'
-      ? product.arabic_name || product.name_ar || product.name || 'منتج'
-      : product.english_name || product.name_en || product.name || 'Product';
+    if (!product) return "";
+    return language === "ar"
+      ? product.arabic_name || product.name_ar || product.name || "منتج"
+      : product.english_name || product.name_en || product.name || "Product";
   };
 
   const getTotalQuantity = (): number =>
@@ -193,7 +215,7 @@ const CartModal: React.FC<CartModalProps> = ({
 
   return (
     <div
-      className={`cart-modal-backdrop ${isOpen ? 'modal-open' : ''}`}
+      className={`cart-modal-backdrop ${isOpen ? "modal-open" : ""}`}
       onClick={handleBackdropClick}
     >
       <div className="cart-modal-content">
@@ -202,7 +224,7 @@ const CartModal: React.FC<CartModalProps> = ({
           className="cart-modal-close-button"
           onClick={onClose}
           aria-label={t.closeCart}
-          style={{ fontSize: '35px' }}
+          style={{ fontSize: "35px" }}
         >
           &times;
         </button>
@@ -219,33 +241,31 @@ const CartModal: React.FC<CartModalProps> = ({
         {hasDeletedItems && (
           <div
             style={{
-              background: '#fff3cd',
-              border: '1px solid #ffc107',
-              borderRadius: '8px',
-              padding: '12px',
-              margin: '10px 20px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
+              background: "#fff3cd",
+              border: "1px solid #ffc107",
+              borderRadius: "8px",
+              padding: "12px",
+              margin: "10px 20px",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
             }}
           >
             <FaExclamationTriangle color="#856404" size={20} />
-            <span style={{ flex: 1, color: '#856404', fontSize: '14px' }}>
-              {language === 'ar'
-                ? 'بعض المنتجات تم حذفها ولن يتم تضمينها في الطلب'
-                : "Some products have been deleted and won't be included in the order"}
+            <span style={{ flex: 1, color: "#856404", fontSize: "14px" }}>
+              {t.someProductsDeleted}
             </span>
             <button
               onClick={() => cleanupDeletedProducts?.()}
               style={{
-                background: '#dc3545',
-                color: 'white',
-                border: 'none',
-                padding: '6px 12px',
-                borderRadius: '6px',
-                fontSize: '12px',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
+                background: "#dc3545",
+                color: "white",
+                border: "none",
+                padding: "6px 12px",
+                borderRadius: "6px",
+                fontSize: "12px",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
               }}
             >
               {t.cleanDeletedItems}
@@ -266,27 +286,27 @@ const CartModal: React.FC<CartModalProps> = ({
               {validatedItems.map((product: any) => (
                 <div
                   key={product.id}
-                  className={`cart-item ${product.isDeleted ? 'cart-item-deleted' : ''}`}
+                  className={`cart-item ${product.isDeleted ? "cart-item-deleted" : ""}`}
                   onClick={() => handleProductClick(product)}
                   style={{
-                    cursor: product.isDeleted ? 'not-allowed' : 'pointer',
+                    cursor: product.isDeleted ? "not-allowed" : "pointer",
                     opacity: product.isDeleted ? 0.6 : 1,
-                    position: 'relative',
+                    position: "relative",
                   }}
                 >
                   {/* Deleted badge */}
                   {product.isDeleted && (
                     <div
                       style={{
-                        position: 'absolute',
-                        top: '10px',
-                        right: '10px',
-                        background: '#dc3545',
-                        color: 'white',
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        fontSize: '11px',
-                        fontWeight: 'bold',
+                        position: "absolute",
+                        top: "10px",
+                        right: "10px",
+                        background: "#dc3545",
+                        color: "white",
+                        padding: "4px 8px",
+                        borderRadius: "4px",
+                        fontSize: "11px",
+                        fontWeight: "bold",
                         zIndex: 2,
                       }}
                     >
@@ -300,12 +320,16 @@ const CartModal: React.FC<CartModalProps> = ({
                       src={getImageUrl(product)}
                       alt={getProductName(product)}
                       className="cart-item-image"
-                      style={{ filter: product.isDeleted ? 'grayscale(100%)' : 'none' }}
+                      style={{
+                        filter: product.isDeleted ? "grayscale(100%)" : "none",
+                      }}
                     />
 
                     {/* Quantity badge — fades on hover */}
                     {!product.isDeleted && (product.quantity ?? 0) > 0 && (
-                      <div className="cart-item-qty-badge">x{product.quantity}</div>
+                      <div className="cart-item-qty-badge">
+                        x{product.quantity}
+                      </div>
                     )}
 
                     {/* Desktop: hover overlay controls */}
@@ -351,13 +375,26 @@ const CartModal: React.FC<CartModalProps> = ({
 
                   {/* Text info */}
                   <div className="cart-item-info">
-                    <h3 className="cart-item-name">{getProductName(product)}</h3>
+                    <h3 className="cart-item-name">
+                      {getProductName(product)}
+                    </h3>
 
                     <div className="cart-item-details">
-                      <p className="cart-item-price">${(Math.ceil((product.price || 0) / 5) * 5).toLocaleString() ?? 'N/A'}</p>
+                      <p className="cart-item-price">
+                        $
+                        {(
+                          Math.ceil((product.price || 0) / 5) * 5
+                        ).toLocaleString() ?? "N/A"}
+                      </p>
                       {(product.quantity ?? 0) > 1 && !product.isDeleted && (
                         <span className="cart-item-subtotal">
-                          ${((Math.ceil((product.price || 0) / 5) * 5) * (product.quantity || 0)).toLocaleString()} total
+                          $
+                          {(
+                            Math.ceil((product.price || 0) / 5) *
+                            5 *
+                            (product.quantity || 0)
+                          ).toLocaleString()}{" "}
+                          total
                         </span>
                       )}
                     </div>
@@ -380,7 +417,9 @@ const CartModal: React.FC<CartModalProps> = ({
                             <FaMinus size={12} />
                           </button>
 
-                          <span className="mobile-qty-count">{product.quantity || 1}</span>
+                          <span className="mobile-qty-count">
+                            {product.quantity || 1}
+                          </span>
 
                           <button
                             className="mobile-qty-btn"
@@ -421,9 +460,12 @@ const CartModal: React.FC<CartModalProps> = ({
           <div className="cart-modal-footer">
             <div className="cart-footer-total-block">
               <span className="cart-footer-total-label">{t.total}</span>
-              <span className="cart-total-price">${calculateTotal().toLocaleString()}</span>
+              <span className="cart-total-price">
+                ${calculateTotal().toLocaleString()}
+              </span>
               <span className="cart-footer-items-note">
-                {getTotalQuantity()} {getTotalQuantity() === 1 ? t.item : t.items}
+                {getTotalQuantity()}{" "}
+                {getTotalQuantity() === 1 ? t.item : t.items}
               </span>
             </div>
 

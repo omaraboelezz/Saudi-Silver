@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import useWishlist from '../context/useWishlist';
+import useWishlist from '../../context/useWishlist';
 import { FaHeart } from 'react-icons/fa';
 import './WishlistModal.css';
 
