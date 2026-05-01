@@ -39,65 +39,65 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
   const t = translations[language] || translations.ar;
 
   // ── Local state (non-modal) ────────────────────────────────────────────────
-  const [formData, setFormData]               = useState(DEFAULT_FORM_DATA);
-  const [products, setProducts]               = useState([]);
-  const [sections, setSections]               = useState([]);
-  const [status,   setStatus]                 = useState({ type: "", message: "" });
-  const [isSubmitting, setIsSubmitting]       = useState(false);
+  const [formData, setFormData] = useState(DEFAULT_FORM_DATA);
+  const [products, setProducts] = useState([]);
+  const [sections, setSections] = useState([]);
+  const [status, setStatus] = useState({ type: "", message: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingProductId, setEditingProductId] = useState(null);
-  const [selectedFile, setSelectedFile]       = useState(null);
-  const [imageType, setImageType]             = useState("url");
-  const [sectionError, setSectionError]       = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [imageType, setImageType] = useState("url");
+  const [sectionError, setSectionError] = useState(false);
   const [expandedSections, setExpandedSections] = useState([]);
-  const [pageSize, setPageSize]               = useState(5);
-  const [customBadges, setCustomBadges]       = useState([]);
-  const [allPrices, setAllPrices]             = useState(null);
-  const [logoBase64, setLogoBase64]           = useState(null);
+  const [pageSize, setPageSize] = useState(5);
+  const [customBadges, setCustomBadges] = useState([]);
+  const [allPrices, setAllPrices] = useState(null);
+  const [logoBase64, setLogoBase64] = useState(null);
   // eslint-disable-next-line no-unused-vars
-  const [searchText, setSearchText]           = useState("");
+  const [searchText, setSearchText] = useState("");
   // eslint-disable-next-line no-unused-vars
-  const [searchedColumn, setSearchedColumn]   = useState("");
+  const [searchedColumn, setSearchedColumn] = useState("");
 
-  const sectionRef  = useRef(null);
+  const sectionRef = useRef(null);
   const searchInput = useRef(null);
 
   // ── All modal state from hook ──────────────────────────────────────────────
   const {
     showProductModal, setShowProductModal,
     showSectionModal, setShowSectionModal,
-    sectionFormData,  setSectionFormData,
+    sectionFormData, setSectionFormData,
     showEditOrderModal, setShowEditOrderModal,
-    editingSectionId,   setEditingSectionId,
-    editOrderValue,     setEditOrderValue,
+    editingSectionId, setEditingSectionId,
+    editOrderValue, setEditOrderValue,
     showEditSectionNameModal, setShowEditSectionNameModal,
-    editingSectionName,       setEditingSectionName,
+    editingSectionName, setEditingSectionName,
     showMoveProductModal, setShowMoveProductModal,
-    productToMove,        setProductToMove,
-    newSectionForMove,    setNewSectionForMove,
-    isMovingProduct,      setIsMovingProduct,
+    productToMove, setProductToMove,
+    newSectionForMove, setNewSectionForMove,
+    isMovingProduct, setIsMovingProduct,
     closeMoveModal,
     showInvoiceModal, setShowInvoiceModal,
-    invoiceItems,     setInvoiceItems,
-    isGenerating,     setIsGenerating,
-    customerName,     setCustomerName,
-    invoiceLanguage,  setInvoiceLanguage,
+    invoiceItems, setInvoiceItems,
+    isGenerating, setIsGenerating,
+    customerName, setCustomerName,
+    invoiceLanguage, setInvoiceLanguage,
     closeInvoiceModal,
     detailModalState, setDetailModalState,
     closeDetailModal,
-    showBadgeModal,  setShowBadgeModal,
-    badgeModalView,  setBadgeModalView,
-    editingBadgeId,  setEditingBadgeId,
-    badgeToDelete,   setBadgeToDelete,
-    newBadgeNameAr,  setNewBadgeNameAr,
-    newBadgeNameEn,  setNewBadgeNameEn,
-    newBadgeColor,   setNewBadgeColor,
-    isSavingBadge,   setIsSavingBadge,
+    showBadgeModal, setShowBadgeModal,
+    badgeModalView, setBadgeModalView,
+    editingBadgeId, setEditingBadgeId,
+    badgeToDelete, setBadgeToDelete,
+    newBadgeNameAr, setNewBadgeNameAr,
+    newBadgeNameEn, setNewBadgeNameEn,
+    newBadgeColor, setNewBadgeColor,
+    isSavingBadge, setIsSavingBadge,
     closeBadgeModal,
     showPriceModal, setShowPriceModal,
-    priceEditData,  setPriceEditData,
+    priceEditData, setPriceEditData,
     showDeleteOrphansModal, setShowDeleteOrphansModal,
-    selectedOrphans,        setSelectedOrphans,
-    isDeletingOrphans,      setIsDeletingOrphans,
+    selectedOrphans, setSelectedOrphans,
+    isDeletingOrphans, setIsDeletingOrphans,
   } = useAdminModals();
 
   // ── Utility ────────────────────────────────────────────────────────────────
@@ -317,7 +317,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
         const cloudinaryForm = new FormData();
         cloudinaryForm.append("file", selectedFile);
         cloudinaryForm.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-        const cloudRes  = await fetch(CLOUDINARY_URL, { method: "POST", body: cloudinaryForm });
+        const cloudRes = await fetch(CLOUDINARY_URL, { method: "POST", body: cloudinaryForm });
         const cloudData = await cloudRes.json();
         if (!cloudData.secure_url) {
           Modal.error({
@@ -334,7 +334,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
       }
 
       const method = editingProductId ? "PUT" : "POST";
-      const url    = editingProductId ? `${API_URL}${editingProductId}/` : API_URL;
+      const url = editingProductId ? `${API_URL}${editingProductId}/` : API_URL;
       const response = await fetch(url, { method, body: form });
 
       let data;
@@ -350,7 +350,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
           title: language === "ar" ? "🎉 تم بنجاح!" : "🎉 Success!",
           content: editingProductId
             ? (language === "ar" ? "✅ تم تحديث المنتج بنجاح!" : "✅ Product updated successfully!")
-            : (language === "ar" ? "✅ تم إضافة المنتج بنجاح!"  : "✅ Product added successfully!"),
+            : (language === "ar" ? "✅ تم إضافة المنتج بنجاح!" : "✅ Product added successfully!"),
           centered: true,
           okText: language === "ar" ? "حسناً" : "OK",
           onOk: () => {
@@ -384,9 +384,9 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
 
   // ── Delete product ─────────────────────────────────────────────────────────
   const handleDelete = async (id) => {
-    const product        = products.find((p) => (p._id || p.id) === id);
+    const product = products.find((p) => (p._id || p.id) === id);
     const featuredSection = sections.find((s) => s.is_featured);
-    const isFeatured     = product && featuredSection &&
+    const isFeatured = product && featuredSection &&
       String(product.section) === String(featuredSection.id);
 
     Modal.confirm({
@@ -517,8 +517,8 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
             <p>{language === "ar" ? "هذا القسم أساسي ومهم للموقع." : "This is an essential section for the website."}</p>
             <ul style={{ marginTop: 10, paddingLeft: 20 }}>
               <li>✅ {language === "ar" ? "يمكنك إضافة منتجات جديدة فيه" : "You can add new products to it"}</li>
-              <li>✅ {language === "ar" ? "يمكنك حذف المنتجات منه"       : "You can delete products from it"}</li>
-              <li>❌ {language === "ar" ? "لكن لا يمكن حذف القسم نفسه"   : "But you cannot delete the section itself"}</li>
+              <li>✅ {language === "ar" ? "يمكنك حذف المنتجات منه" : "You can delete products from it"}</li>
+              <li>❌ {language === "ar" ? "لكن لا يمكن حذف القسم نفسه" : "But you cannot delete the section itself"}</li>
             </ul>
           </div>
         ),
@@ -673,7 +673,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
     if (!newBadgeNameAr.trim() || !newBadgeNameEn.trim() || !editingBadgeId) return;
     setIsSavingBadge(true);
     try {
-      const oldBadge    = customBadges.find((b) => b.id === editingBadgeId);
+      const oldBadge = customBadges.find((b) => b.id === editingBadgeId);
       const nameChanged = oldBadge && (oldBadge.name_ar !== newBadgeNameAr.trim() || oldBadge.name_en !== newBadgeNameEn.trim());
       await fetch(`${BADGES_API_URL}${editingBadgeId}/`, { method: "DELETE" });
       const postResponse = await fetch(BADGES_API_URL, {
@@ -1026,10 +1026,10 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
             badgeModalView={badgeModalView} setBadgeModalView={setBadgeModalView}
             customBadges={customBadges}
             editingBadgeId={editingBadgeId} setEditingBadgeId={setEditingBadgeId}
-            badgeToDelete={badgeToDelete}   setBadgeToDelete={setBadgeToDelete}
+            badgeToDelete={badgeToDelete} setBadgeToDelete={setBadgeToDelete}
             newBadgeNameAr={newBadgeNameAr} setNewBadgeNameAr={setNewBadgeNameAr}
             newBadgeNameEn={newBadgeNameEn} setNewBadgeNameEn={setNewBadgeNameEn}
-            newBadgeColor={newBadgeColor}   setNewBadgeColor={setNewBadgeColor}
+            newBadgeColor={newBadgeColor} setNewBadgeColor={setNewBadgeColor}
             isSavingBadge={isSavingBadge}
             products={products}
             onSave={handleSaveBadge}
@@ -1056,8 +1056,8 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
             <div style={{ background: "white", padding: 30, borderRadius: 12, maxWidth: 800, width: "100%", maxHeight: "90vh", overflow: "auto", boxShadow: "0 10px 40px rgba(0,0,0,0.2)" }}>
               <h3 style={{ marginBottom: 20, color: "#2c3e50", fontSize: 24, fontWeight: 700 }}>
                 {editingProductId
-                  ? (language === "ar" ? "🔄 تعديل المنتج"      : "🔄 Edit Product")
-                  : (language === "ar" ? "➕ إضافة منتج جديد"  : "➕ Add New Product")}
+                  ? (language === "ar" ? "🔄 تعديل المنتج" : "🔄 Edit Product")
+                  : (language === "ar" ? "➕ إضافة منتج جديد" : "➕ Add New Product")}
               </h3>
 
               <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
@@ -1159,13 +1159,13 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                     <label htmlFor="manufacturing_cost">
                       {parseFloat(formData.weight) < 3
                         ? (language === "ar" ? "المصنعية (للقطعة كلها)" : "Manufacturing Cost (per piece)")
-                        : (language === "ar" ? "المصنعية (للجرام)"      : "Manufacturing Cost (per gram)")} *
+                        : (language === "ar" ? "المصنعية (للجرام)" : "Manufacturing Cost (per gram)")} *
                     </label>
                     <input type="number" id="manufacturing_cost" name="manufacturing_cost" value={formData.manufacturing_cost} onChange={handleChange} required onWheel={(e) => e.target.blur()} min="0" step="0.01" placeholder={language === "ar" ? "مثال: 2.5" : "e.g., 2.5"} />
                     <small style={{ color: "#6c757d", fontSize: 13, marginTop: 5, display: "block" }}>
                       {parseFloat(formData.weight) < 3
                         ? (language === "ar" ? "💡 مصنعية ثابتة للقطعة" : "💡 Flat cost per piece")
-                        : (language === "ar" ? "💡 مصنعية لكل جرام"     : "💡 Cost per gram")}
+                        : (language === "ar" ? "💡 مصنعية لكل جرام" : "💡 Cost per gram")}
                     </small>
                   </div>
                 )}
@@ -1268,7 +1268,7 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
                     style={{ background: isSubmitting ? "#ccc" : "#28a745", color: "white", border: "none", padding: "12px 24px", borderRadius: 6, cursor: isSubmitting ? "not-allowed" : "pointer", fontWeight: 600, fontSize: 16 }}>
                     {isSubmitting
                       ? (editingProductId ? t.updatingProduct : t.addingProduct)
-                      : (editingProductId ? t.updateProduct  : t.addProduct)}
+                      : (editingProductId ? t.updateProduct : t.addProduct)}
                   </button>
                 </div>
               </form>
@@ -1487,7 +1487,6 @@ const Admin = ({ language, onLanguageChange, navigate, onLogout }) => {
         })()}
       </div>
 
-      {/* ── Price edit modal (Ant Design Modal) ───────────────────────────── */}
       <Modal
         title={language === "ar" ? "📊 تعديل الأسعار اليومية" : "📊 Edit Daily Prices"}
         open={showPriceModal}
