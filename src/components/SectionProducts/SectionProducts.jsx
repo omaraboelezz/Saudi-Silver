@@ -1,5 +1,5 @@
 import ProductCollectionCard from '../ProductCollectionCard/ProductCollectionCard';
-import './Sectionproducts.css';
+import './SectionProducts.css';
 
 /**
  * SectionProducts Component
@@ -69,9 +69,10 @@ const SectionProducts = ({
 
     return filterProducts(typeFiltered);
   };
-  
+
   const getSectionTitle = (section, originalTitle) => {
-    return originalTitle;  };
+    return originalTitle;
+  };
   // Get products without section
   const getProductsWithoutSection = () => {
     const noSectionProducts = products.filter(
@@ -98,9 +99,9 @@ const SectionProducts = ({
         const sectionProducts = getProductsBySection(section.id);
 
         // Skip section if no products (and there's a search query)
-if (sectionProducts.length === 0) {
-  return null;
-}
+        if (sectionProducts.length === 0) {
+          return null;
+        }
 
         return (
           <section key={section.id} className="product-section" id={`section-${section.id}`} style={{ transition: 'opacity 0.4s ease-in-out' }}>
