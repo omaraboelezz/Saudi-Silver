@@ -27,7 +27,7 @@ const Login = ({ onLogin, language, onLanguageChange }: LoginProps) => {
       login: 'دخول',
       error: 'اسم المستخدم أو كلمة المرور غير صحيحة',
       required: 'من فضلك أدخل اسم المستخدم وكلمة المرور',
-      networkError: 'خطأ في الاتصال بالخادم. حاول مرة أخرى.',
+      networkError: 'خطأ في الاتصال بالخادم. يرجى إبلاغ الأدمن أن اشتراك سيرفر PythonAnywhere يحتاج يتمد شهر إضافي.',
       loggingIn: 'جاري تسجيل الدخول...'
     },
     en: {
@@ -38,7 +38,7 @@ const Login = ({ onLogin, language, onLanguageChange }: LoginProps) => {
       login: 'Login',
       error: 'Invalid username or password',
       required: 'Please enter username and password',
-      networkError: 'Network error. Please try again.',
+      networkError: 'PythonAnywhere server subscription needs to be renewed for another month.',
       loggingIn: 'Logging in...'
     }
   };
