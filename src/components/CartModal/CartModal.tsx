@@ -174,7 +174,7 @@ const CartModal: React.FC<CartModalProps> = ({
           : item.name_en || item.english_name || item.name || "Product";
 
       message += `${index + 1}. ${productName} (x${qty}) - $${(Math.ceil(item.price / 5) * 5 * qty).toLocaleString()}\n`;
-      message += `   🔗 https://elsaudi-jewelry.vercel.app/?product=${item.id}\n\n`;
+      message += `   🔗 https://alhussieny.vercel.app/?product=${item.id}\n\n`;
     });
 
     message += `*${t.total} $${calculateTotal().toLocaleString()}*`;

@@ -42,7 +42,7 @@ function createWindow() {
 
   const startUrl = isDev
     ? 'http://localhost:5173'
-    : 'https://elsaudi-jewelry.vercel.app/';
+    : 'https://alhussieny.vercel.app/';
 
   mainWindow.loadURL(startUrl);
 
@@ -87,7 +87,7 @@ function createWindow() {
         event.preventDefault();
       }
     } else {
-      if (!navigationUrl.startsWith('https://elsaudi-jewelry.vercel.app')) {
+      if (!navigationUrl.startsWith('https://alhussieny.vercel.app')) {
         event.preventDefault();
       }
     }

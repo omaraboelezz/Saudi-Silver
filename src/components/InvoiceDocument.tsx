@@ -30,7 +30,7 @@ const rowAlt = '#1f160a';
 
 // ─── QR Code via free API (gold on dark) ─────────────────────────────────────
 const QR_URL =
-  'https://api.qrserver.com/v1/create-qr-code/?size=80x80&color=C9A84C&bgcolor=0d0a04&data=https://elsaudi-jewelry.vercel.app/';
+  'https://api.qrserver.com/v1/create-qr-code/?size=80x80&color=C9A84C&bgcolor=0d0a04&data=https://alhussieny.vercel.app/';
 
 // ─── Currency formatter ───────────────────────────────────────────────────────
 const fmt = (amount: number) => `${amount.toLocaleString('en-US')} EGP`;
@@ -401,7 +401,7 @@ const InvoiceDocument = ({
                 : 'Thank you for choosing ALHUSSIENY  — Committed to the highest quality standards'}
             </Text>
             <Text style={styles.footerBrand}>* ALHUSSIENY *</Text>
-            <Text style={styles.footerWebsite}>elsaudi-jewelry.vercel.app</Text>
+            <Text style={styles.footerWebsite}>alhussieny.vercel.app</Text>
           </View>
         </View>
 
