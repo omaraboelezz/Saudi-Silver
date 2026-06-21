@@ -535,17 +535,14 @@ body[dir="rtl"] .drawer-location-btn {
   transform: translateY(0);
 }
 
-/* الصورة تظهر على موبايل بس */
 .header-logo-img {
-  display: none;
-  height: 40px;
+  height: 60px;           
   width: auto;
+  max-width: 160px;      
   object-fit: contain;
+  object-position: left center;
 }
 
-.header-logo-text {
-  display: block;
-}
 
 
 

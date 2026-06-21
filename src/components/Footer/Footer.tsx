@@ -70,7 +70,7 @@ const Footer = ({ language = 'ar' }: FooterProps) => {
     <footer className="footer">
       <div className="footer-container">
         <div className="footer-section">
-          <h3 className="footer-title">El-Saudi jewelry</h3>
+          <h3 className="footer-title">ALHUSSIENY</h3>
           <p className="footer-tagline">{t.tagline}</p>
         </div>
 
@@ -137,7 +137,7 @@ const Footer = ({ language = 'ar' }: FooterProps) => {
       </div>
 
       <div className="footer-bottom">
-        <p>&copy; {new Date().getFullYear()} El-Saudi jewelry | {t.allRightsReserved}.</p>
+        <p>&copy; {new Date().getFullYear()} ALHUSSIENY | {t.allRightsReserved}.</p>
       </div>
     </footer>
   );

@@ -10,7 +10,8 @@ import {
 } from '@react-pdf/renderer';
 
 import CairoFont from '../assets/fonts/Cairo.ttf';
-import LogoImage from '../assets/Saudi-Silver-Logo.png';
+import LogoImage from "../assets/Logos/Saudi-Silver-Logo-removebg-preview.png";
+
 
 Font.register({
   family: 'Cairo',
@@ -232,13 +233,13 @@ const InvoiceDocument = ({
           </View>
 
           <View style={styles.headerCenter}>
-            <Text style={styles.brandName}>El-Saudi JEWELRY</Text>
+            <Text style={styles.brandName}>ALHUSSIENY</Text>
             <Text style={styles.brandSub}>* LUXURY JEWELRY *</Text>
           </View>
 
           <View style={styles.headerRight}>
             <Image src={QR_URL} style={styles.qrImage} />
-            <Text style={styles.qrLabel}>elsaudi-jewelry</Text>
+            <Text style={styles.qrLabel}>ALHUSSIENY</Text>
           </View>
         </View>
 
@@ -396,10 +397,10 @@ const InvoiceDocument = ({
 
             <Text style={styles.footerText}>
               {isAr
-                ? 'شكراً لثقتك في EL-SAUDI JEWELRY  — نلتزم بأعلى معايير الجودة'
-                : 'Thank you for choosing EL-SAUDI JEWELRY  — Committed to the highest quality standards'}
+                ? 'شكراً لثقتك في ALHUSSIENY  — نلتزم بأعلى معايير الجودة'
+                : 'Thank you for choosing ALHUSSIENY  — Committed to the highest quality standards'}
             </Text>
-            <Text style={styles.footerBrand}>* EL-SAUDI JEWELRY *</Text>
+            <Text style={styles.footerBrand}>* ALHUSSIENY *</Text>
             <Text style={styles.footerWebsite}>elsaudi-jewelry.vercel.app</Text>
           </View>
         </View>

@@ -181,7 +181,7 @@ const Header = ({
   };
 
   const openLocation = () => {
-    window.open("https://maps.app.goo.gl/9QRFR7vEsF17gERB7", "_blank");
+    window.open("https://maps.app.goo.gl/hkd71fpkndTcDMN39", "_blank");
     closeDrawer();
   };
 
@@ -227,10 +227,9 @@ const Header = ({
 
               <img
                 src={LogoImage}
-                alt="El-Saudi Jewelry"
-                className="header-logo-img"
+                alt="ALHUSSIENY"
+                className="header-logo-img"              
               />
-              <h1 className="header-logo-text">El-Saudi jewelry</h1>
             </div>
           )}
 

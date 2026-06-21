@@ -102,7 +102,7 @@ const CartModal: React.FC<CartModalProps> = ({
       connectToBuy: "اطلب عبر واتساب",
       removeFromCart: "إزالة من السلة",
       closeCart: "إغلاق السلة",
-      whatsappMessage: "مرحباً، أود طلب العناصر التالية من El-Saudi jewelry:",
+      whatsappMessage: "مرحباً، أود طلب العناصر التالية من ALHUSSIENY:",
       productDeleted: "هذا المنتج تم حذفه",
       cleanDeletedItems: "إزالة المنتجات المحذوفة",
     },
@@ -117,7 +117,7 @@ const CartModal: React.FC<CartModalProps> = ({
       removeFromCart: "Remove from cart",
       closeCart: "Close cart",
       whatsappMessage:
-        "Hello, I would like to order the following items from El-Saudi jewelry:",
+        "Hello, I would like to order the following items from ALHUSSIENY:",
       productDeleted: "This product has been deleted",
       cleanDeletedItems: "Remove Deleted Items",
     },
